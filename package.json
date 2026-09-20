@@ -1,0 +1,22 @@
+{
+  "name": "jev-codex-router-lab",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "check": "npm run lint && npm run typecheck && npm test && openspec validate build-jev-router-lab --strict --no-interactive",
+    "route": "npm run build --silent && node dist/src/cli.js"
+  },
+  "dependencies": { "@typesafe-ai/sdk": "0.6.0" },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "25.5.0",
+    "eslint": "10.11.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0"
+  }
+}
