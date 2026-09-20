@@ -37,44 +37,80 @@ const RISK_DIMENSIONS: readonly RiskDimension[] = [
   "user-behavior",
 ];
 
-const isNonEmpty = (value: string): boolean => value.trim().length > 0;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-const isProbability = (value: number): boolean =>
-  Number.isFinite(value) && value >= 0 && value <= 1;
+const isString = (value: unknown): value is string => typeof value === "string";
+
+const isNonEmptyString = (value: unknown): value is string =>
+  isString(value) && value.trim().length > 0;
+
+const isProbability = (value: unknown): boolean =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1;
+
+const hasStringId = (value: unknown): value is { id: string } =>
+  isRecord(value) && isString(value.id);
 
 const dedupe = (ids: readonly string[]): string[] => [...new Set(ids)];
 
-const requireUniqueIds = (ids: readonly string[], field: string): void => {
-  for (const id of ids) {
-    if (!isNonEmpty(id)) {
-      throw new PolicyError(`${field} contains an empty id`);
+const requireStringIdArray = (value: unknown, field: string): void => {
+  if (!Array.isArray(value) || !value.every(isNonEmptyString)) {
+    throw new PolicyError(`${field} must be an array of non-empty string ids`);
+  }
+};
+
+const requireCandidateEntries = (
+  value: unknown,
+  field: string,
+  check: (entry: Record<string, unknown>) => boolean,
+): void => {
+  if (value === undefined) {
+    return;
+  }
+  if (!Array.isArray(value)) {
+    throw new PolicyError(`${field} must be an array`);
+  }
+  for (const entry of value) {
+    if (!isRecord(entry) || !check(entry)) {
+      throw new PolicyError(`${field} contains an invalid entry`);
     }
   }
+};
+
+const requireUniqueIds = (ids: readonly string[], field: string): void => {
   if (new Set(ids).size !== ids.length) {
     throw new PolicyError(`${field} contains duplicate ids`);
   }
 };
 
 export function precheck(input: RouterInput): PrecheckedInput {
+  if (!isRecord(input)) {
+    throw new PolicyError("input must be an object");
+  }
   if (
-    !isNonEmpty(input.taskId) ||
-    !isNonEmpty(input.taskText) ||
-    !isNonEmpty(input.policyVersion) ||
-    !isNonEmpty(input.catalogHash)
+    !isNonEmptyString(input.taskId) ||
+    !isNonEmptyString(input.taskText) ||
+    !isNonEmptyString(input.policyVersion) ||
+    !isNonEmptyString(input.catalogHash)
   ) {
-    throw new PolicyError("taskId, taskText, policyVersion, and catalogHash must be non-empty");
+    throw new PolicyError("taskId, taskText, policyVersion, and catalogHash must be non-empty strings");
   }
   if (!Number.isInteger(input.taskRevision) || input.taskRevision < 1) {
     throw new PolicyError("taskRevision must be a positive integer");
   }
+  requireStringIdArray(input.explicitSkillIds, "explicitSkillIds");
+  requireStringIdArray(input.requiredSkillIds, "requiredSkillIds");
   if (!Array.isArray(input.skills)) {
     throw new PolicyError("skills catalogue must be an array");
   }
 
   const catalogIds = new Set<string>();
   for (const skill of input.skills) {
-    if (!isNonEmpty(skill.id)) {
-      throw new PolicyError("skills catalogue contains an empty id");
+    if (!isRecord(skill) || !isNonEmptyString(skill.id)) {
+      throw new PolicyError("skills catalogue entries must be objects with a non-empty string id");
+    }
+    if (!isString(skill.description) || !isString(skill.excerpt)) {
+      throw new PolicyError(`skills catalogue entry ${skill.id} must have string description and excerpt`);
     }
     if (catalogIds.has(skill.id)) {
       throw new PolicyError(`skills catalogue contains duplicate id ${skill.id}`);
@@ -87,6 +123,24 @@ export function precheck(input: RouterInput): PrecheckedInput {
       throw new PolicyError(`mandatory skill ${id} is not in the catalogue allowlist`);
     }
   }
+
+  requireCandidateEntries(input.criticalGapCandidates, "criticalGapCandidates", (entry) =>
+    isNonEmptyString(entry.id) && isString(entry.fact) && isString(entry.blocks),
+  );
+  requireCandidateEntries(input.architectureForkCandidates, "architectureForkCandidates", (entry) =>
+    isNonEmptyString(entry.id) &&
+    Array.isArray(entry.alternatives) &&
+    entry.alternatives.every(isString) &&
+    isString(entry.tradeoff),
+  );
+  requireCandidateEntries(input.reuseCandidates, "reuseCandidates", (entry) =>
+    isNonEmptyString(entry.id) && isString(entry.summary),
+  );
+  requireCandidateEntries(input.contextFragments, "contextFragments", (entry) =>
+    isNonEmptyString(entry.id) &&
+    isString(entry.summary) &&
+    (entry.protected === undefined || typeof entry.protected === "boolean"),
+  );
 
   requireUniqueIds((input.criticalGapCandidates ?? []).map((c) => c.id), "criticalGapCandidates");
   requireUniqueIds((input.architectureForkCandidates ?? []).map((c) => c.id), "architectureForkCandidates");
@@ -111,18 +165,21 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
   const forcedSkillIds = input.forcedSkillIds;
 
   if (
-    typeof semantic.taskType !== "string" ||
+    !isRecord(semantic) ||
+    !isString(semantic.taskType) ||
     !TASK_TYPES.has(semantic.taskType) ||
     !Array.isArray(semantic.skillCandidates) ||
+    !semantic.skillCandidates.every(isString) ||
     !Array.isArray(semantic.contextRelevance) ||
-    typeof semantic.riskDimensions !== "object" ||
-    semantic.riskDimensions === null ||
+    !isRecord(semantic.riskDimensions) ||
     RISK_DIMENSIONS.some((dimension) => !isProbability(semantic.riskDimensions[dimension])) ||
     semantic.contextRelevance.some(
-      (entry) => typeof entry !== "object" || entry === null || !isProbability(entry.probability),
+      (entry) => !isRecord(entry) || !isString(entry.id) || !isProbability(entry.probability),
     ) ||
-    typeof semantic.echo !== "object" ||
-    semantic.echo === null
+    (semantic.criticalGap != null && !hasStringId(semantic.criticalGap)) ||
+    (semantic.architectureFork != null && !hasStringId(semantic.architectureFork)) ||
+    (semantic.reuseCandidate != null && !isString(semantic.reuseCandidate)) ||
+    !isRecord(semantic.echo)
   ) {
     return fallback("malformed-response", forcedSkillIds);
   }
@@ -182,8 +239,17 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     architectureFork: architectureFork
       ? { id: architectureFork.id, alternatives: architectureFork.alternatives, tradeoff: architectureFork.tradeoff }
       : null,
-    riskDimensions: semantic.riskDimensions,
-    contextRelevance: semantic.contextRelevance,
+    riskDimensions: {
+      security: semantic.riskDimensions.security,
+      "data-loss": semantic.riskDimensions["data-loss"],
+      "public-contract": semantic.riskDimensions["public-contract"],
+      migration: semantic.riskDimensions.migration,
+      "user-behavior": semantic.riskDimensions["user-behavior"],
+    },
+    contextRelevance: semantic.contextRelevance.map((entry) => ({
+      id: entry.id,
+      probability: entry.probability,
+    })),
   };
 
   return { status: "ok", signals, forcedSkillIds };

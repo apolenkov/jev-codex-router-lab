@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { RouterInput, SemanticResponse } from "../src/contracts.js";
-import { precheck, postcheck } from "../src/policy.js";
+import { PolicyError, precheck, postcheck } from "../src/policy.js";
 
 const validInput: RouterInput = {
   taskId: "synthetic-task-001",
@@ -67,5 +67,72 @@ test("precheck preserves more than three mandatory skills", () => {
 });
 
 test("postcheck rejects semantic identifiers outside the allowlist", () => {
-  assert.equal(postcheck(prechecked, { ...validSemantic, skillCandidates: ["unknown"] }).status, "fallback");
+  const decision = postcheck(prechecked, { ...validSemantic, skillCandidates: ["unknown"] });
+  if (decision.status !== "fallback") {
+    assert.fail("expected fallback decision");
+  }
+  assert.equal(decision.reason, "unknown-id");
+  assert.deepEqual(decision.forcedSkillIds, prechecked.forcedSkillIds);
+});
+
+test("precheck reports invalid-input for shape-invalid JSON input", () => {
+  const cases: unknown[] = [
+    null,
+    "task text only",
+    { ...validInput, taskId: 7 },
+    { ...validInput, taskText: {} },
+    { ...validInput, explicitSkillIds: "brainstorming" },
+    { ...validInput, requiredSkillIds: [null] },
+    { ...validInput, skills: "not-an-array" },
+    { ...validInput, skills: [null] },
+    { ...validInput, skills: [{ id: "brainstorming" }] },
+    { ...validInput, criticalGapCandidates: { id: "gap-1" } },
+    { ...validInput, architectureForkCandidates: [null] },
+    { ...validInput, reuseCandidates: [{ id: "reuse-1" }] },
+    { ...validInput, contextFragments: "ctx" },
+    { ...validInput, contextFragments: [{ id: "ctx-9" }] },
+  ];
+  for (const bad of cases) {
+    try {
+      precheck(bad as RouterInput);
+      assert.fail(`precheck accepted shape-invalid input: ${JSON.stringify(bad)}`);
+    } catch (error) {
+      assert.ok(error instanceof PolicyError, `expected PolicyError, got ${String(error)}`);
+      assert.equal((error as PolicyError).reason, "invalid-input");
+    }
+  }
+});
+
+test("postcheck reports malformed-response for non-string semantic ids", () => {
+  const cases: unknown[] = [
+    null,
+    { ...validSemantic, skillCandidates: [42] },
+    { ...validSemantic, criticalGap: { id: 9, fact: "f", blocks: "b" } },
+    { ...validSemantic, architectureFork: "fork-1" },
+    { ...validSemantic, reuseCandidate: 3 },
+    { ...validSemantic, contextRelevance: [{ id: 7, probability: 0.5 }] },
+  ];
+  for (const semantic of cases) {
+    const decision = postcheck(prechecked, semantic as SemanticResponse);
+    if (decision.status !== "fallback") {
+      assert.fail(`expected fallback for ${JSON.stringify(semantic)}`);
+    }
+    assert.equal(decision.reason, "malformed-response");
+  }
+});
+
+test("postcheck re-derives closed signal objects without model-added fields", () => {
+  const decision = postcheck(prechecked, {
+    ...validSemantic,
+    riskDimensions: { ...validSemantic.riskDimensions, confidence: 1 },
+    contextRelevance: [{ id: "ctx-1", probability: 0.9, note: "model-added" }],
+  } as unknown as SemanticResponse);
+  if (decision.status !== "ok") {
+    assert.fail("expected ok decision");
+  }
+  assert.deepEqual(decision.signals.contextRelevance, [{ id: "ctx-1", probability: 0.9 }]);
+  assert.deepEqual(
+    Object.keys(decision.signals.riskDimensions).sort(),
+    ["data-loss", "migration", "public-contract", "security", "user-behavior"],
+  );
 });
