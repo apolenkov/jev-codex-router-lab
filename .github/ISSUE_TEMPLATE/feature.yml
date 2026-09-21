@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a focused improvement to the experimental lab
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep requests within the experimental, advisory, privacy-preserving boundary.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for a similar request.
+          required: true
+        - label: The example and motivation contain no private or corporate data.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete limitation or use case should be addressed?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior and how it could be verified.
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Smallest alternative considered
+      description: Could existing behavior, configuration, or documentation solve this?
