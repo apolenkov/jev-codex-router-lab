@@ -1,16 +1,34 @@
 {
   "name": "jev-codex-router-lab",
+  "version": "0.1.0",
+  "description": "Experimental TypeScript lab for deterministic, two-pass Jev skill routing.",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
+  "keywords": ["jev", "routing", "skills", "typesafe-ai", "typescript"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apolenkov/jev-codex-router-lab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/apolenkov/jev-codex-router-lab/issues"
+  },
+  "homepage": "https://github.com/apolenkov/jev-codex-router-lab#readme",
+  "files": ["CHANGELOG.md", "LICENSE", "README.md", "docs/", "examples/", "src/"],
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "npm run build && node --test dist/test/*.test.js",
-    "check": "npm run lint && npm run typecheck && npm test && openspec validate build-jev-router-lab --strict --no-interactive",
+    "check:openspec": "openspec validate build-jev-router-lab --strict --no-interactive && openspec validate calibrate-jev-routing-thresholds --strict --no-interactive && openspec validate prepare-public-open-source --strict --no-interactive",
+    "check:licenses": "npm run build --silent && node --test --test-name-pattern=\"every installed dependency\" dist/test/public-surface.test.js",
+    "check:surface": "npm run build --silent && node --test dist/test/public-surface.test.js",
+    "check:pack": "npm run build --silent && node --test --test-name-pattern=\"tracked and packed surfaces\" dist/test/public-surface.test.js",
+    "check": "npm run lint && npm run typecheck && npm test && npm run check:openspec",
     "route": "npm run build --silent && node dist/src/cli.js",
-    "calibrate": "npm run build --silent && node dist/src/calibration-cli.js"
+    "calibrate": "npm run build --silent && node dist/src/calibration-cli.js",
+    "example:offline": "npm run build --silent && node dist/src/offline-example.js"
   },
   "dependencies": { "@typesafe-ai/sdk": "0.6.0" },
   "devDependencies": {

@@ -1,0 +1,16 @@
+{
+  "taskId": "synthetic-bug-001",
+  "taskRevision": 1,
+  "taskText": "Fix a synthetic parser that accepts an empty identifier.",
+  "policyVersion": "example-v1",
+  "catalogHash": "sha256:synthetic-catalog",
+  "explicitSkillIds": ["systematic-debugging"],
+  "requiredSkillIds": [],
+  "skills": [
+    {
+      "id": "systematic-debugging",
+      "description": "Find the root cause before changing code.",
+      "excerpt": "Reproduce, isolate, and verify."
+    }
+  ]
+}

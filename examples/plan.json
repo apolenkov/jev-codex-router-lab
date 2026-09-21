@@ -1,0 +1,16 @@
+{
+  "taskId": "synthetic-plan-001",
+  "taskRevision": 1,
+  "taskText": "Plan a public, reversible migration for a synthetic command-line flag.",
+  "policyVersion": "example-v1",
+  "catalogHash": "sha256:synthetic-catalog",
+  "explicitSkillIds": ["writing-plans"],
+  "requiredSkillIds": [],
+  "skills": [
+    {
+      "id": "writing-plans",
+      "description": "Write a verifiable implementation plan.",
+      "excerpt": "Define steps, acceptance, and rollback."
+    }
+  ]
+}
