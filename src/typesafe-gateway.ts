@@ -20,6 +20,11 @@ import {
   type SystemOneClientPort,
   type SystemOneRequest,
 } from "./semantic-gateway.js";
+import {
+  DEFAULT_PASS2_THRESHOLDS,
+  evaluatePass2,
+  type ParsedPass2,
+} from "./threshold-calibration.js";
 
 const TASK_TYPES: readonly TaskType[] = [
   "explain",
@@ -219,6 +224,33 @@ const mapWithMetadata = <T>(metadata: PassMetadata, operation: () => T): T => {
   }
 };
 
+export const parsePass2Record = (
+  answers: Readonly<Record<string, unknown>>,
+  input: PrecheckedInput,
+  shortlist: readonly string[],
+): ParsedPass2 => {
+  const expectedAnswers = [
+    "echo_task_id",
+    "echo_task_revision",
+    "echo_policy_version",
+    "echo_catalog_hash",
+    "skill_ranking",
+    ...shortlist.map((_, index) => `skill_fit_${index}`),
+  ];
+  if (!exactKeys(answers, expectedAnswers)) {
+    return malformed();
+  }
+  parseEchoes(answers, input);
+  const ranking = parseChoice(answers.skill_ranking, [...shortlist, NONE]);
+  const fits = shortlist.map((_, index) => parseNoul(answers[`skill_fit_${index}`]));
+  return {
+    shortlist: [...shortlist],
+    ranking,
+    ranked: rankedIds(ranking, shortlist),
+    fits,
+  };
+};
+
 export class TypeSafeGateway implements SemanticGateway {
   constructor(private readonly client: SystemOneClientPort) {}
 
@@ -314,25 +346,13 @@ export class TypeSafeGateway implements SemanticGateway {
     const request = buildPass2Request(input, shortlist);
     const { answers, metadata } = await this.call(request);
     return mapWithMetadata(metadata, () => {
-      parseEchoes(answers, input);
-      const ranking = parseChoice(answers.skill_ranking, [...shortlist, NONE]);
-      if (ranking.confidence < 0.5) {
+      const record = parsePass2Record(answers, input, shortlist);
+      const evaluation = evaluatePass2(record, DEFAULT_PASS2_THRESHOLDS);
+      if (evaluation.status === "low-confidence") {
         throw new SemanticGatewayError("low-confidence");
       }
-
-      const fits = shortlist.map((_, index) => parseNoul(answers[`skill_fit_${index}`]));
-      if (fits.some((probability) => probability >= 0.4 && probability <= 0.6)) {
-        throw new SemanticGatewayError("low-confidence");
-      }
-      if (ranking.choice === NONE) {
-        return { skillCandidates: [], metadata };
-      }
-
-      const accepted = new Set(
-        shortlist.filter((_, index) => fits[index]! > 0.6),
-      );
       return {
-        skillCandidates: rankedIds(ranking, shortlist).filter((id) => accepted.has(id)),
+        skillCandidates: evaluation.skillCandidates,
         metadata,
       };
     });

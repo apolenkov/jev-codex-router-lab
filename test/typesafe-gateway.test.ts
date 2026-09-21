@@ -449,6 +449,24 @@ test("pass2 treats relative Choice confidence below 0.5 as low confidence", asyn
   );
 });
 
+test("pass2 validates every shortlisted fit before applying the ranking threshold", async () => {
+  for (const malformedFit of [{ type: "noul", noul: 1.5 }, undefined]) {
+    const response = pass2Response([0.9, 0.8, 0.7], 0.1);
+    const answers = response.answers as Record<string, unknown>;
+    if (malformedFit === undefined) {
+      delete answers.skill_fit_2;
+    } else {
+      answers.skill_fit_2 = malformedFit;
+    }
+
+    await assertGatewayReason(
+      () => new TypeSafeGateway(new RecordingSystemOneClient(response))
+        .pass2(input, ["a", "b", "c"]),
+      "malformed-response",
+    );
+  }
+});
+
 test("pass1 and pass2 make exactly two client calls", async () => {
   const client = new RecordingSystemOneClient(pass1Response(), pass2Response());
   const gateway = new TypeSafeGateway(client);
