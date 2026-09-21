@@ -20,5 +20,5 @@
 
 - [ ] 4.1 Execute the six calibration cases once, stop on the first terminal condition, select one tuple offline, and record calls/usage/latency/cost plus denominator
 - [ ] 4.2 If and only if calibration succeeds, execute both holdout cases once with the frozen tuple and record exact labels, invariants, accounting, and PASS/FAIL
-- [ ] 4.3 If and only if both holdout cases pass and at least two requests plus reserved spend remain, execute the original frozen TASK-054 smoke once through the experimental runner and selected tuple; cap the smoke at two requests, do not retry or change defaults
+- [ ] 4.3 If and only if both holdout cases pass and at least two requests plus reserved spend remain, execute the original frozen two-pass smoke once through the experimental runner and selected tuple; cap the smoke at two requests, do not retry or change defaults
 - [ ] 4.4 Run final local verification, obtain mandatory Astra review of the exact evidence-bound candidate, update backlog truthfully, and commit the accepted result

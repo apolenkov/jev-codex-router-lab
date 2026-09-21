@@ -1,9 +1,10 @@
 # Jev threshold calibration: terminal negative result
 
-The frozen calibration experiment was executed exactly once on 2026-09-21 from
-Git commit `92072191f7a0fa1d52c73df910918c14fb805cc2`. It used only the approved
-public synthetic corpus and the create-once bounded runner. No retry, threshold
-adjustment, holdout request, or smoke request followed the terminal result.
+The frozen calibration experiment was executed exactly once on 2026-09-21. It
+used only the approved public synthetic corpus and the create-once bounded
+runner. No retry, threshold adjustment, holdout request, or smoke request
+followed the terminal result. Private development commit identifiers are
+omitted because the public repository uses a clean one-commit export.
 
 ## Preflight
 

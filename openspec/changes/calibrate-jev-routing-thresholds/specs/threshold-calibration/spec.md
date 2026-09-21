@@ -85,7 +85,7 @@ retry, relabeling, forced shortlist, threshold adjustment, or case substitution.
 
 ### Requirement: Original smoke is reserved for successful holdout
 The system MUST reserve the final two requests for one execution of the original
-frozen TASK-054 smoke through the experimental runner with the selected tuple,
+frozen two-pass smoke through the experimental runner with the selected tuple,
 without changing default router constants, and SHALL run it only after both
 holdout cases PASS.
 

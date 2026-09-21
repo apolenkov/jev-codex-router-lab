@@ -1,7 +1,8 @@
 # Jev router local smoke evidence
 
-This file records local-only Task 4A evidence at Git SHA
-`55fcf1ee9be76b0620e35fa6ca9656e96c654e0d`.
+This file records the bounded smoke experiments retained with the public lab.
+The public repository uses a clean one-commit export, so private development
+commit identifiers are intentionally omitted.
 
 Initial credential presence check: `TYPESAFE_API_KEY=absent`. The owner later
 installed a non-empty key in mode-0600 `.env.local`; only presence and file mode
@@ -193,11 +194,8 @@ continuing to accept explicit `null` for nullable signals.
 After these fixes, `npm run check` passed lint, strict typecheck, 59/59 tests,
 and strict OpenSpec validation; staged and unstaged diff checks also passed.
 
-## Final candidate fingerprint
+## Public provenance
 
-The initial Task 4A fingerprint was stale after live evidence and code fixes and
-is intentionally removed. The exact final evidence-bound fingerprint is added
-after all corrected code, fixtures, decision JSON, reports, and this summary are
-staged together; it excludes only its own digest line.
-
-Candidate fingerprint: `sha256:793afa543d632ceb6e538fce0f81e711163b7af01e4e5399b15a69cd251f89bd` (sorted staged mode/blob manifest; this line omitted from the normalized summary blob).
+These artifacts are published together with the source and fixtures in the
+repository's reviewed clean export. Their interpretation depends on the
+limitations above; none is evidence of routing quality or economy.

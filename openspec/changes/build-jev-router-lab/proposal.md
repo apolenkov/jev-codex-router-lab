@@ -44,7 +44,7 @@ Codex installation and never sees private or corporate data.
 
 ## Impact
 
-- New standalone repository at `/Users/wrk/work/jev-codex-router-lab`;
+- New standalone repository rooted at the project directory;
   no changes to the working Codex installation or harness.
 - Dependencies: `@typesafe-ai/sdk` (pinned), TypeScript, ESLint,
   typescript-eslint, `@types/node` — all dev tooling is local to the lab.
