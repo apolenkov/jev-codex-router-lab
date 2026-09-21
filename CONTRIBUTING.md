@@ -16,7 +16,7 @@ Thanks for helping improve this experimental reference implementation.
 
 ## Local workflow
 
-Use Node.js 20 or newer:
+Use Node.js 20.19.0 or newer:
 
 ```bash
 npm ci

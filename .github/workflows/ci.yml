@@ -30,15 +30,6 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm test
-
       - name: Run the complete local gate
         run: npm run check
 
