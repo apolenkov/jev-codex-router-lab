@@ -1,0 +1,18 @@
+{
+  "status": "ok",
+  "callCount": 1,
+  "passes": [
+    {
+      "pass": "pass1",
+      "model": "jev-1.13.0",
+      "inputTokens": 757,
+      "outputTokens": 342,
+      "latencyMs": 923.1794580000001
+    }
+  ],
+  "totalLatencyMs": 923.8225,
+  "inputTokens": 757,
+  "outputTokens": 342,
+  "cacheStatus": "not-used",
+  "costUsd": 0.000031794
+}

@@ -13,6 +13,7 @@ import {
 } from "../src/semantic-gateway.js";
 import { route, routeWithTelemetry } from "../src/router.js";
 import { buildReport } from "../src/telemetry.js";
+import { TypeSafeGateway } from "../src/typesafe-gateway.js";
 
 const validInput: RouterInput = {
   taskId: "synthetic-router-001",
@@ -80,6 +81,20 @@ const pass2 = (
   },
 ): Pass2Result => ({ skillCandidates, metadata });
 
+const choiceAnswer = (
+  selected: string,
+  probabilities: Readonly<Record<string, number>>,
+  confidence = 0.9,
+): Record<string, unknown> => ({
+  type: "choice",
+  choice: selected,
+  confidence,
+  probabilities,
+});
+
+const echoAnswer = (value: string): Record<string, unknown> =>
+  choiceAnswer(value, { [value]: 1, none: 0 }, 1);
+
 const forcedSkills = ["brainstorming", "typesafe-ai", "a", "b"];
 
 test("route preserves every uncapped forced skill when an unknown gateway error is thrown", async () => {
@@ -94,6 +109,7 @@ test("route preserves every uncapped forced skill when an unknown gateway error 
     status: "fallback",
     reason: "service-error",
     forcedSkillIds: forcedSkills,
+    protectedContextIds: [],
   });
   assert.equal(JSON.stringify(decision).includes("DO-NOT-LOG"), false);
 });
@@ -161,6 +177,7 @@ test("route maps every typed gateway reason without losing forced skills", async
       status: "fallback",
       reason,
       forcedSkillIds: forcedSkills,
+      protectedContextIds: [],
     });
   }
 });
@@ -182,9 +199,33 @@ test("route maps malformed, stale, and unknown pass1 results through postcheck",
       },
     };
     const decision = await route(validInput, gateway);
-    assert.deepEqual(decision, { status: "fallback", reason, forcedSkillIds: forcedSkills });
+    assert.deepEqual(decision, {
+      status: "fallback",
+      reason,
+      forcedSkillIds: forcedSkills,
+      protectedContextIds: [],
+    });
     assert.equal(pass2Calls, 0);
   }
+});
+
+test("route rejects a gateway result that omits a nullable signal", async () => {
+  const missingReuseCandidate: Partial<Pass1Result> = { ...pass1() };
+  delete missingReuseCandidate.reuseCandidate;
+  const decision = await route(validInput, {
+    pass1: async () => missingReuseCandidate as unknown as Pass1Result,
+    pass2: async () => { assert.fail("pass2 must not be called"); },
+  });
+  const serialized = JSON.stringify(decision);
+
+  assert.deepEqual(decision, {
+    status: "fallback",
+    reason: "malformed-response",
+    forcedSkillIds: forcedSkills,
+    protectedContextIds: [],
+  });
+  assert.equal(serialized.includes('"status":"ok"'), false);
+  assert.equal(serialized.includes('"signals"'), false);
 });
 
 test("route returns invalid-input before the gateway and preserves valid forced IDs", async () => {
@@ -206,8 +247,72 @@ test("route returns invalid-input before the gateway and preserves valid forced 
     status: "fallback",
     reason: "invalid-input",
     forcedSkillIds: forcedSkills,
+    protectedContextIds: [],
   });
   assert.equal(calls, 0);
+});
+
+test("route rejects oversized task text and skill excerpts before an SDK call", async () => {
+  const protectedContext = [
+    { id: "ctx-protected", summary: "DO-NOT-SEND protected body", protected: true as const },
+  ];
+  const oversizedInputs: readonly RouterInput[] = [
+    { ...validInput, taskText: "t".repeat(8_001), contextFragments: protectedContext },
+    {
+      ...validInput,
+      skills: validInput.skills.map((skill, index) =>
+        index === 0 ? { ...skill, excerpt: "x".repeat(4_001) } : skill),
+      contextFragments: protectedContext,
+    },
+  ];
+
+  for (const oversizedInput of oversizedInputs) {
+    let sdkCalls = 0;
+    const decision = await route(oversizedInput, new TypeSafeGateway({
+      systemOne: async () => {
+        sdkCalls += 1;
+        return {};
+      },
+    }));
+
+    assert.deepEqual(decision, {
+      status: "fallback",
+      reason: "invalid-input",
+      forcedSkillIds: forcedSkills,
+      protectedContextIds: ["ctx-protected"],
+    });
+    assert.equal(sdkCalls, 0);
+    assert.equal(JSON.stringify(decision).includes("DO-NOT-SEND"), false);
+  }
+});
+
+test("route preserves protected context IDs in ok and fallback decisions", async () => {
+  const inputWithProtectedContext: RouterInput = {
+    ...validInput,
+    contextFragments: [
+      { id: "ctx-protected", summary: "DO-NOT-SEND protected body", protected: true },
+      { id: "ctx-public", summary: "Synthetic public context." },
+    ],
+  };
+  const ok = await route(inputWithProtectedContext, {
+    pass1: async () => pass1(),
+    pass2: async () => { assert.fail("pass2 must not be called"); },
+  });
+  const fallback = await route(inputWithProtectedContext, {
+    pass1: async () => { throw new SemanticGatewayError("service-error"); },
+    pass2: async () => { assert.fail("pass2 must not be called"); },
+  });
+
+  assert.equal(ok.status, "ok");
+  assert.deepEqual(ok.protectedContextIds, ["ctx-protected"]);
+  assert.deepEqual(fallback, {
+    status: "fallback",
+    reason: "service-error",
+    forcedSkillIds: forcedSkills,
+    protectedContextIds: ["ctx-protected"],
+  });
+  assert.equal(JSON.stringify(ok).includes("DO-NOT-SEND"), false);
+  assert.equal(JSON.stringify(fallback).includes("DO-NOT-SEND"), false);
 });
 
 test("metadata report contains only accounting fields and uses null for unconfigured cost", async () => {
@@ -235,6 +340,65 @@ test("metadata report contains only accounting fields and uses null for unconfig
   assert.equal(serialized.includes("DO-NOT-LOG"), false);
   assert.equal(serialized.includes("synthetic-router-001"), false);
   assert.equal(serialized.includes("brainstorming"), false);
+});
+
+test("low-confidence pass2 fallback retains validated provider metadata for reporting", async () => {
+  const pass2Gateway = new TypeSafeGateway({
+    systemOne: async () => ({
+      model: "jev-low-confidence",
+      usage: { input_tokens: 10, output_tokens: 5 },
+      answers: {
+        echo_task_id: echoAnswer(validInput.taskId),
+        echo_task_revision: echoAnswer(String(validInput.taskRevision)),
+        echo_policy_version: echoAnswer(validInput.policyVersion),
+        echo_catalog_hash: echoAnswer(validInput.catalogHash),
+        skill_ranking: choiceAnswer("c", { c: 0.8, none: 0.2 }, 0.49),
+        skill_fit_0: { type: "noul", noul: 0.9 },
+      },
+    }),
+  });
+  const execution = await routeWithTelemetry(validInput, {
+    pass1: async () => pass1(["c"]),
+    pass2: (checked, shortlist) => pass2Gateway.pass2(checked, shortlist),
+  });
+  const report = buildReport(execution.decision, execution.telemetry, {
+    TYPESAFE_INPUT_USD_PER_MILLION: "2",
+    TYPESAFE_OUTPUT_USD_PER_MILLION: "8",
+  });
+
+  assert.deepEqual(execution.decision, {
+    status: "fallback",
+    reason: "low-confidence",
+    forcedSkillIds: forcedSkills,
+    protectedContextIds: [],
+  });
+  assert.equal(execution.telemetry.passes.length, 2);
+  assert.equal(execution.telemetry.passes[1]!.model, "jev-low-confidence");
+  assert.equal(execution.telemetry.passes[1]!.inputTokens, 10);
+  assert.equal(execution.telemetry.passes[1]!.outputTokens, 5);
+  assert.equal(Number.isFinite(execution.telemetry.passes[1]!.latencyMs), true);
+  assert.equal(report.callCount, 2);
+  assert.equal(report.inputTokens, 110);
+  assert.equal(report.outputTokens, 25);
+  assert.equal(report.costUsd, 0.00042);
+  assert.equal(JSON.stringify(report).includes(validInput.taskText), false);
+});
+
+test("pre-envelope malformed responses do not fabricate provider metadata", async () => {
+  const execution = await routeWithTelemetry(validInput, new TypeSafeGateway({
+    systemOne: async () => ({ model: "jev-test", answers: {}, usage: undefined }),
+  }));
+  const report = buildReport(execution.decision, execution.telemetry, {
+    TYPESAFE_INPUT_USD_PER_MILLION: "2",
+    TYPESAFE_OUTPUT_USD_PER_MILLION: "8",
+  });
+
+  assert.equal(execution.decision.status, "fallback");
+  assert.deepEqual(Object.keys(execution.telemetry.passes[0]!).sort(), ["latencyMs", "pass"]);
+  assert.equal(report.inputTokens, null);
+  assert.equal(report.outputTokens, null);
+  assert.equal(report.costUsd, null);
+  assert.equal(report.costReason, "usage-not-observable");
 });
 
 test("metadata report calculates cost only from two valid non-negative prices", async () => {
@@ -281,7 +445,12 @@ test("retry count appears only when the gateway exposes it", async () => {
 
 test("configured prices do not turn zero observed passes into zero cost", () => {
   const report = buildReport(
-    { status: "fallback", reason: "service-error", forcedSkillIds: ["brainstorming"] },
+    {
+      status: "fallback",
+      reason: "service-error",
+      forcedSkillIds: ["brainstorming"],
+      protectedContextIds: [],
+    },
     { passes: [], totalLatencyMs: 0 },
     {
       TYPESAFE_INPUT_USD_PER_MILLION: "2",
@@ -298,7 +467,12 @@ test("configured prices do not turn zero observed passes into zero cost", () => 
 
 test("non-finite calculated cost is reported as cost-overflow", () => {
   const report = buildReport(
-    { status: "fallback", reason: "service-error", forcedSkillIds: [] },
+    {
+      status: "fallback",
+      reason: "service-error",
+      forcedSkillIds: [],
+      protectedContextIds: [],
+    },
     {
       passes: [{
         pass: "pass1",

@@ -1,5 +1,7 @@
 import {
   MAX_OPTIONAL_SKILL_CANDIDATES,
+  MAX_SEMANTIC_FIELD_CHARS,
+  MAX_TASK_TEXT_CHARS,
   type AdvisorySignals,
   type FallbackReason,
   type PrecheckedInput,
@@ -37,6 +39,16 @@ const RISK_DIMENSIONS: readonly RiskDimension[] = [
   "user-behavior",
 ];
 
+const ADVISORY_SIGNAL_KEYS: readonly (keyof AdvisorySignals)[] = [
+  "taskType",
+  "skillCandidates",
+  "criticalGap",
+  "reuseCandidate",
+  "architectureFork",
+  "riskDimensions",
+  "contextRelevance",
+];
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -44,6 +56,12 @@ const isString = (value: unknown): value is string => typeof value === "string";
 
 const isNonEmptyString = (value: unknown): value is string =>
   isString(value) && value.trim().length > 0;
+
+const isBoundedString = (value: unknown, maxChars: number): value is string =>
+  isString(value) && value.length <= maxChars;
+
+const isNonEmptyBoundedString = (value: unknown, maxChars: number): value is string =>
+  isNonEmptyString(value) && value.length <= maxChars;
 
 const isProbability = (value: unknown): boolean =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1;
@@ -89,11 +107,15 @@ export function precheck(input: RouterInput): PrecheckedInput {
   }
   if (
     !isNonEmptyString(input.taskId) ||
-    !isNonEmptyString(input.taskText) ||
     !isNonEmptyString(input.policyVersion) ||
     !isNonEmptyString(input.catalogHash)
   ) {
-    throw new PolicyError("taskId, taskText, policyVersion, and catalogHash must be non-empty strings");
+    throw new PolicyError("taskId, policyVersion, and catalogHash must be non-empty strings");
+  }
+  if (!isNonEmptyBoundedString(input.taskText, MAX_TASK_TEXT_CHARS)) {
+    throw new PolicyError(
+      `taskText must be a non-empty string of at most ${MAX_TASK_TEXT_CHARS} UTF-16 code units`,
+    );
   }
   if (!Number.isInteger(input.taskRevision) || input.taskRevision < 1) {
     throw new PolicyError("taskRevision must be a positive integer");
@@ -109,8 +131,13 @@ export function precheck(input: RouterInput): PrecheckedInput {
     if (!isRecord(skill) || !isNonEmptyString(skill.id)) {
       throw new PolicyError("skills catalogue entries must be objects with a non-empty string id");
     }
-    if (!isString(skill.description) || !isString(skill.excerpt)) {
-      throw new PolicyError(`skills catalogue entry ${skill.id} must have string description and excerpt`);
+    if (
+      !isBoundedString(skill.description, MAX_SEMANTIC_FIELD_CHARS) ||
+      !isBoundedString(skill.excerpt, MAX_SEMANTIC_FIELD_CHARS)
+    ) {
+      throw new PolicyError(
+        `skills catalogue entry ${skill.id} must have description and excerpt of at most ${MAX_SEMANTIC_FIELD_CHARS} UTF-16 code units`,
+      );
     }
     if (catalogIds.has(skill.id)) {
       throw new PolicyError(`skills catalogue contains duplicate id ${skill.id}`);
@@ -125,20 +152,23 @@ export function precheck(input: RouterInput): PrecheckedInput {
   }
 
   requireCandidateEntries(input.criticalGapCandidates, "criticalGapCandidates", (entry) =>
-    isNonEmptyString(entry.id) && isString(entry.fact) && isString(entry.blocks),
+    isNonEmptyString(entry.id) &&
+    isBoundedString(entry.fact, MAX_SEMANTIC_FIELD_CHARS) &&
+    isBoundedString(entry.blocks, MAX_SEMANTIC_FIELD_CHARS),
   );
   requireCandidateEntries(input.architectureForkCandidates, "architectureForkCandidates", (entry) =>
     isNonEmptyString(entry.id) &&
     Array.isArray(entry.alternatives) &&
-    entry.alternatives.every(isString) &&
-    isString(entry.tradeoff),
+    entry.alternatives.every((alternative) =>
+      isBoundedString(alternative, MAX_SEMANTIC_FIELD_CHARS)) &&
+    isBoundedString(entry.tradeoff, MAX_SEMANTIC_FIELD_CHARS),
   );
   requireCandidateEntries(input.reuseCandidates, "reuseCandidates", (entry) =>
-    isNonEmptyString(entry.id) && isString(entry.summary),
+    isNonEmptyString(entry.id) && isBoundedString(entry.summary, MAX_SEMANTIC_FIELD_CHARS),
   );
   requireCandidateEntries(input.contextFragments, "contextFragments", (entry) =>
     isNonEmptyString(entry.id) &&
-    isString(entry.summary) &&
+    isBoundedString(entry.summary, MAX_SEMANTIC_FIELD_CHARS) &&
     (entry.protected === undefined || typeof entry.protected === "boolean"),
   );
 
@@ -155,10 +185,11 @@ export function precheck(input: RouterInput): PrecheckedInput {
   return { ...input, forcedSkillIds, protectedContextIds };
 }
 
-const fallback = (reason: FallbackReason, forcedSkillIds: readonly string[]): RouterDecision => ({
+const fallback = (reason: FallbackReason, input: PrecheckedInput): RouterDecision => ({
   status: "fallback",
   reason,
-  forcedSkillIds,
+  forcedSkillIds: input.forcedSkillIds,
+  protectedContextIds: input.protectedContextIds,
 });
 
 export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): RouterDecision {
@@ -166,6 +197,7 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
 
   if (
     !isRecord(semantic) ||
+    ADVISORY_SIGNAL_KEYS.some((key) => !Object.hasOwn(semantic, key)) ||
     !isString(semantic.taskType) ||
     !TASK_TYPES.has(semantic.taskType) ||
     !Array.isArray(semantic.skillCandidates) ||
@@ -176,12 +208,12 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     semantic.contextRelevance.some(
       (entry) => !isRecord(entry) || !isString(entry.id) || !isProbability(entry.probability),
     ) ||
-    (semantic.criticalGap != null && !hasStringId(semantic.criticalGap)) ||
-    (semantic.architectureFork != null && !hasStringId(semantic.architectureFork)) ||
-    (semantic.reuseCandidate != null && !isString(semantic.reuseCandidate)) ||
+    !(semantic.criticalGap === null || hasStringId(semantic.criticalGap)) ||
+    !(semantic.architectureFork === null || hasStringId(semantic.architectureFork)) ||
+    !(semantic.reuseCandidate === null || isString(semantic.reuseCandidate)) ||
     !isRecord(semantic.echo)
   ) {
-    return fallback("malformed-response", forcedSkillIds);
+    return fallback("malformed-response", input);
   }
 
   if (
@@ -190,18 +222,22 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     semantic.echo.policyVersion !== input.policyVersion ||
     semantic.echo.catalogHash !== input.catalogHash
   ) {
-    return fallback("stale-decision", forcedSkillIds);
+    return fallback("stale-decision", input);
   }
 
   const catalogIds = new Set(input.skills.map((skill) => skill.id));
   if (semantic.skillCandidates.some((id) => !catalogIds.has(id))) {
-    return fallback("unknown-id", forcedSkillIds);
+    return fallback("unknown-id", input);
   }
 
   const gapById = new Map((input.criticalGapCandidates ?? []).map((c) => [c.id, c]));
   const forkById = new Map((input.architectureForkCandidates ?? []).map((c) => [c.id, c]));
   const reuseById = new Map((input.reuseCandidates ?? []).map((c) => [c.id, c]));
-  const fragmentById = new Map((input.contextFragments ?? []).map((c) => [c.id, c]));
+  const fragmentById = new Map(
+    (input.contextFragments ?? [])
+      .filter((fragment) => fragment.protected !== true)
+      .map((fragment) => [fragment.id, fragment]),
+  );
 
   if (
     (semantic.criticalGap != null && !gapById.has(semantic.criticalGap.id)) ||
@@ -209,7 +245,7 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     (semantic.reuseCandidate != null && !reuseById.has(semantic.reuseCandidate)) ||
     semantic.contextRelevance.some((entry) => !fragmentById.has(entry.id))
   ) {
-    return fallback("unknown-id", forcedSkillIds);
+    return fallback("unknown-id", input);
   }
 
   if (
@@ -217,13 +253,13 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     new Set(semantic.contextRelevance.map((entry) => entry.id)).size !==
       semantic.contextRelevance.length
   ) {
-    return fallback("malformed-response", forcedSkillIds);
+    return fallback("malformed-response", input);
   }
 
   const forced = new Set(forcedSkillIds);
   const optionalSkillIds = semantic.skillCandidates.filter((id) => !forced.has(id));
   if (optionalSkillIds.length > MAX_OPTIONAL_SKILL_CANDIDATES) {
-    return fallback("malformed-response", forcedSkillIds);
+    return fallback("malformed-response", input);
   }
 
   const criticalGap =
@@ -252,5 +288,10 @@ export function postcheck(input: PrecheckedInput, semantic: SemanticResponse): R
     })),
   };
 
-  return { status: "ok", signals, forcedSkillIds };
+  return {
+    status: "ok",
+    signals,
+    forcedSkillIds,
+    protectedContextIds: input.protectedContextIds,
+  };
 }

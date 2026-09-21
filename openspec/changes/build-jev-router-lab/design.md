@@ -37,7 +37,8 @@ closed sets, validated at the boundary. `AdvisorySignals` is the seven-signal
 payload. `RouterInput` carries the task, policy/catalogue versions, explicit
 and required skill IDs, the allowlisted skill catalogue, and optional
 candidate lists (critical gaps, forks, reuse, context fragments with an
-optional `protected` flag).
+optional `protected` flag). Both `RouterDecision` variants preserve the
+deterministically derived protected-context IDs.
 
 ### 2. Echo envelope for staleness
 
@@ -53,10 +54,13 @@ typed contract and works with any client.
 `precheck(input): PrecheckedInput` validates input shape (non-empty version
 fields, positive integer `taskRevision`, unique candidate IDs, every
 explicit/required skill ID present in the catalogue allowlist) and throws a
-typed `PolicyError` carrying `reason: "invalid-input"` on violation. It
-computes `forcedSkillIds` — the order-preserving deduplicated union of
-explicit then required skills, uncapped — and `protectedContextIds` from
-fragments marked `protected`. Throwing keeps the success signature clean;
+typed `PolicyError` carrying `reason: "invalid-input"` on violation. Task text
+is limited to 8,000 UTF-16 code units; every other Jev-facing description,
+excerpt, summary, fact, blocked-decision field, alternative, and trade-off is
+limited to 4,000. It computes `forcedSkillIds` — the order-preserving
+deduplicated union of explicit then required skills, uncapped — and
+`protectedContextIds` from fragments marked `protected`. Throwing keeps the
+success signature clean;
 the router (later task) converts the error into the `fallback` decision.
 Alternative considered: returning a result union — rejected, it forces every
 caller to unwrap and blurs the difference between untrusted input (a bug at
@@ -75,7 +79,8 @@ Deterministic order, first failure wins:
    `[0, 1]` → `malformed-response`.
 2. Echo equality → `stale-decision`.
 3. Allowlist membership for every referenced ID (skills, gap, fork, reuse,
-   fragments) → `unknown-id`.
+   non-protected fragments) → `unknown-id`. Protected fragment IDs are not
+   part of the semantic allowlist.
 4. Duplicate IDs in `skillCandidates` or `contextRelevance` →
    `malformed-response`.
 5. Optional skills (candidates not in `forcedSkillIds`) > 3 →
@@ -106,7 +111,9 @@ untrustworthy for the rest of the payload.
 
 Pass 1 batches narrow judgments producing all seven signals plus a skill
 shortlist. Pass 2 verifies the shortlisted skills against full descriptions
-and bounded excerpts, yielding zero to three verified optional skills.
+and excerpts within the fixed 4,000-code-unit field bound, yielding zero to
+three verified optional skills. Protected fragment IDs and bodies are absent
+from both passes.
 Retries are bounded; timeout/service failure → `fallback`
 (`service-error`); per-signal confidence below configured threshold →
 `low-confidence`. Thresholds are experiment configuration.

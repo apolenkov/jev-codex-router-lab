@@ -11,10 +11,18 @@ Codex installation and only accepts public, synthetic, or anonymized input.
   and optional allowlisted candidates (critical gaps, architecture forks,
   reuse candidates, context fragments).
 - Output: a typed `RouterDecision` — `ok` with seven advisory signals, or
-  `fallback` with a machine-readable reason and the preserved mandatory
-  (explicit + required) skills.
+  `fallback` with a machine-readable reason. Both preserve mandatory
+  (explicit + required) skills and deterministic protected-context IDs.
 - Mandatory skills are uncapped and always preserved; optional Jev
   recommendations are capped at three and must reference allowlisted IDs.
+- Pass 1 sends the permitted task text (at most 8,000 UTF-16 code units) plus
+  skill IDs/descriptions; pass 2 sends the same task text plus only the
+  shortlisted skills' descriptions and excerpts. Every other Jev-facing
+  free-text field is limited to 4,000 UTF-16 code units. Protected-context
+  IDs remain in the decision, while their IDs and bodies and all
+  non-shortlisted excerpts are excluded from Jev. Therefore live use is
+  limited to public, synthetic, or explicitly anonymized task text and
+  catalogue content.
 - The semantic layer never gains authority: no permissions, no commands, no
   execution, no private or corporate data.
 
@@ -38,6 +46,29 @@ Codex installation and only accepts public, synthetic, or anonymized input.
 - `npm run check` — lint + typecheck + tests + strict OpenSpec validation.
 - `npm run route -- --input <json-file> [--report <json-file>]` — build and
   run one routing decision.
+
+## Smoke workflow
+
+Run the local gate twice before any live smoke:
+
+```bash
+npm ci
+npm run check
+git diff --check
+```
+
+Check only whether the credential is present; never print it. After the owner
+authorizes a live run and the check reports `TYPESAFE_API_KEY=present`, run:
+
+```bash
+test -n "${TYPESAFE_API_KEY:-}" && \
+  printf "TYPESAFE_API_KEY=present\n" && \
+  npm run route -- --input fixtures/smoke-input.json --report artifacts/smoke-report.json
+```
+
+The smoke report is create-once. Re-running with the same report path fails
+instead of replacing evidence; inspect and deliberately remove an incomplete
+report, or choose a new path, before another authorized run.
 
 ## CLI contract
 

@@ -278,8 +278,13 @@ const writeReport = async (
   }
 };
 
-const serviceFallback = (forcedSkillIds: readonly string[]): RouteExecution => ({
-  decision: { status: "fallback", reason: "service-error", forcedSkillIds },
+const serviceFallback = (checked: ReturnType<typeof precheck>): RouteExecution => ({
+  decision: {
+    status: "fallback",
+    reason: "service-error",
+    forcedSkillIds: checked.forcedSkillIds,
+    protectedContextIds: checked.protectedContextIds,
+  },
   telemetry: { passes: [], totalLatencyMs: 0 },
 });
 
@@ -366,7 +371,7 @@ export async function runCli(
       const gateway = (options.createGateway ?? createTypeSafeGateway)();
       execution = await routeWithTelemetry(parsed as RouterInput, gateway);
     } catch {
-      execution = serviceFallback(checked.forcedSkillIds);
+      execution = serviceFallback(checked);
     }
 
     if (openedReport !== undefined) {

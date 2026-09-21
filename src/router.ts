@@ -55,7 +55,8 @@ const elapsed = (started: number): number =>
 const fallback = (
   reason: FallbackReason,
   forcedSkillIds: readonly string[],
-): RouterDecision => ({ status: "fallback", reason, forcedSkillIds });
+  protectedContextIds: readonly string[],
+): RouterDecision => ({ status: "fallback", reason, forcedSkillIds, protectedContextIds });
 
 const forcedSkillsFrom = (input: unknown): readonly string[] => {
   if (!isRecord(input)) {
@@ -68,6 +69,24 @@ const forcedSkillsFrom = (input: unknown): readonly string[] => {
     ? input.requiredSkillIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
     : [];
   return [...new Set([...explicit, ...required])];
+};
+
+const protectedContextsFrom = (input: unknown): readonly string[] => {
+  if (!isRecord(input) || !Array.isArray(input.contextFragments)) {
+    return [];
+  }
+  const ids: string[] = [];
+  for (const fragment of input.contextFragments) {
+    if (
+      isRecord(fragment) &&
+      fragment.protected === true &&
+      typeof fragment.id === "string" &&
+      fragment.id.trim().length > 0
+    ) {
+      ids.push(fragment.id);
+    }
+  }
+  return [...new Set(ids)];
 };
 
 const reasonFrom = (error: unknown): FallbackReason => {
@@ -138,7 +157,11 @@ const callPass = async <T>(
     observations.push(passTelemetry(pass, result));
     return result;
   } catch (error) {
-    observations.push({ pass, latencyMs: elapsed(started) });
+    observations.push(
+      error instanceof SemanticGatewayError && error.metadata !== undefined
+        ? passTelemetry(pass, { metadata: error.metadata })
+        : { pass, latencyMs: elapsed(started) },
+    );
     throw error;
   }
 };
@@ -164,7 +187,11 @@ export async function routeWithTelemetry(
     checked = precheck(input);
   } catch (error) {
     const reason = error instanceof PolicyError ? "invalid-input" : "service-error";
-    return finish(fallback(reason, forcedSkillsFrom(input)), passes, started);
+    return finish(
+      fallback(reason, forcedSkillsFrom(input), protectedContextsFrom(input)),
+      passes,
+      started,
+    );
   }
 
   try {
@@ -191,7 +218,11 @@ export async function routeWithTelemetry(
     });
     return finish(decision, passes, started);
   } catch (error) {
-    return finish(fallback(reasonFrom(error), checked.forcedSkillIds), passes, started);
+    return finish(
+      fallback(reasonFrom(error), checked.forcedSkillIds, checked.protectedContextIds),
+      passes,
+      started,
+    );
   }
 }
 

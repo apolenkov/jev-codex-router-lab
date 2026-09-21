@@ -1,7 +1,13 @@
 dist/
 node_modules/
 .env*
-artifacts/
+artifacts/**
+!artifacts/.gitkeep
+!artifacts/smoke-summary.md
+!artifacts/smoke-report.json
+!artifacts/two-pass-smoke-report.json
+!artifacts/corrected-smoke-report.json
+!artifacts/corrected-smoke-decision.json
 .superpowers/
 .agents/
 .devin/

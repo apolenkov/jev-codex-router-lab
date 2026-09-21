@@ -3,6 +3,8 @@ export type RiskDimension = "security" | "data-loss" | "public-contract" | "migr
 export type FallbackReason = "invalid-input" | "service-error" | "malformed-response" | "stale-decision" | "unknown-id" | "low-confidence";
 
 export const MAX_OPTIONAL_SKILL_CANDIDATES = 3;
+export const MAX_TASK_TEXT_CHARS = 8_000;
+export const MAX_SEMANTIC_FIELD_CHARS = 4_000;
 
 export interface RouterInput {
   taskId: string;
@@ -46,5 +48,15 @@ export interface PrecheckedInput extends RouterInput {
 }
 
 export type RouterDecision =
-  | { status: "ok"; signals: AdvisorySignals; forcedSkillIds: readonly string[] }
-  | { status: "fallback"; reason: FallbackReason; forcedSkillIds: readonly string[] };
+  | {
+      status: "ok";
+      signals: AdvisorySignals;
+      forcedSkillIds: readonly string[];
+      protectedContextIds: readonly string[];
+    }
+  | {
+      status: "fallback";
+      reason: FallbackReason;
+      forcedSkillIds: readonly string[];
+      protectedContextIds: readonly string[];
+    };

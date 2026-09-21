@@ -53,7 +53,7 @@ const validSemantic: SemanticResponse = {
     migration: 0.0,
     "user-behavior": 0.1,
   },
-  contextRelevance: [{ id: "ctx-1", probability: 0.9 }],
+  contextRelevance: [{ id: "ctx-2", probability: 0.9 }],
 };
 
 test("precheck deduplicates explicit and required skills without dropping them", () => {
@@ -66,6 +66,42 @@ test("precheck preserves more than three mandatory skills", () => {
   assert.deepEqual(result.forcedSkillIds, ["a", "b", "c", "d"]);
 });
 
+test("precheck rejects semantic text above the documented character limits", () => {
+  const oversizedTask = "t".repeat(8_001);
+  const oversizedField = "x".repeat(4_001);
+  const cases: readonly RouterInput[] = [
+    { ...validInput, taskText: oversizedTask },
+    {
+      ...validInput,
+      skills: [{ ...validInput.skills[0]!, description: oversizedField }, ...validInput.skills.slice(1)],
+    },
+    {
+      ...validInput,
+      skills: [{ ...validInput.skills[0]!, excerpt: oversizedField }, ...validInput.skills.slice(1)],
+    },
+    {
+      ...validInput,
+      criticalGapCandidates: [{ id: "gap-1", fact: oversizedField, blocks: "bounded" }],
+    },
+    {
+      ...validInput,
+      architectureForkCandidates: [{ id: "fork-1", alternatives: [oversizedField], tradeoff: "bounded" }],
+    },
+    {
+      ...validInput,
+      reuseCandidates: [{ id: "reuse-1", summary: oversizedField }],
+    },
+    {
+      ...validInput,
+      contextFragments: [{ id: "ctx-2", summary: oversizedField }],
+    },
+  ];
+
+  for (const candidate of cases) {
+    assert.throws(() => precheck(candidate), PolicyError);
+  }
+});
+
 test("postcheck rejects semantic identifiers outside the allowlist", () => {
   const decision = postcheck(prechecked, { ...validSemantic, skillCandidates: ["unknown"] });
   if (decision.status !== "fallback") {
@@ -73,6 +109,20 @@ test("postcheck rejects semantic identifiers outside the allowlist", () => {
   }
   assert.equal(decision.reason, "unknown-id");
   assert.deepEqual(decision.forcedSkillIds, prechecked.forcedSkillIds);
+});
+
+test("postcheck keeps protected context deterministic and rejects it as a semantic ID", () => {
+  const decision = postcheck(prechecked, {
+    ...validSemantic,
+    contextRelevance: [{ id: "ctx-1", probability: 0.9 }],
+  });
+
+  assert.deepEqual(decision, {
+    status: "fallback",
+    reason: "unknown-id",
+    forcedSkillIds: [],
+    protectedContextIds: ["ctx-1"],
+  });
 });
 
 test("precheck reports invalid-input for shape-invalid JSON input", () => {
@@ -121,16 +171,69 @@ test("postcheck reports malformed-response for non-string semantic ids", () => {
   }
 });
 
+test("postcheck rejects every missing advisory signal property", () => {
+  const requiredSignalKeys = [
+    "reuseCandidate",
+    "criticalGap",
+    "architectureFork",
+    "taskType",
+    "skillCandidates",
+    "riskDimensions",
+    "contextRelevance",
+  ] as const;
+
+  for (const key of requiredSignalKeys) {
+    const missing = { ...validSemantic } as unknown as Record<string, unknown>;
+    Reflect.deleteProperty(missing, key);
+    const decision = postcheck(prechecked, missing as unknown as SemanticResponse);
+    assert.equal(decision.status, "fallback", `missing ${key}`);
+    if (decision.status !== "fallback") {
+      assert.fail(`expected fallback when ${key} is absent`);
+    }
+    assert.equal(decision.reason, "malformed-response", `missing ${key}`);
+  }
+});
+
+test("postcheck rejects undefined nullable signal properties", () => {
+  for (const key of ["criticalGap", "reuseCandidate", "architectureFork"] as const) {
+    const decision = postcheck(prechecked, {
+      ...validSemantic,
+      [key]: undefined,
+    } as unknown as SemanticResponse);
+    assert.equal(decision.status, "fallback", `undefined ${key}`);
+    if (decision.status !== "fallback") {
+      assert.fail(`expected fallback when ${key} is undefined`);
+    }
+    assert.equal(decision.reason, "malformed-response", `undefined ${key}`);
+  }
+});
+
+test("postcheck accepts explicitly null nullable signal properties", () => {
+  const decision = postcheck(prechecked, {
+    ...validSemantic,
+    criticalGap: null,
+    reuseCandidate: null,
+    architectureFork: null,
+  });
+
+  if (decision.status !== "ok") {
+    assert.fail("expected explicit null signal properties to remain valid");
+  }
+  assert.equal(decision.signals.criticalGap, null);
+  assert.equal(decision.signals.reuseCandidate, null);
+  assert.equal(decision.signals.architectureFork, null);
+});
+
 test("postcheck re-derives closed signal objects without model-added fields", () => {
   const decision = postcheck(prechecked, {
     ...validSemantic,
     riskDimensions: { ...validSemantic.riskDimensions, confidence: 1 },
-    contextRelevance: [{ id: "ctx-1", probability: 0.9, note: "model-added" }],
+    contextRelevance: [{ id: "ctx-2", probability: 0.9, note: "model-added" }],
   } as unknown as SemanticResponse);
   if (decision.status !== "ok") {
     assert.fail("expected ok decision");
   }
-  assert.deepEqual(decision.signals.contextRelevance, [{ id: "ctx-1", probability: 0.9 }]);
+  assert.deepEqual(decision.signals.contextRelevance, [{ id: "ctx-2", probability: 0.9 }]);
   assert.deepEqual(
     Object.keys(decision.signals.riskDimensions).sort(),
     ["data-loss", "migration", "public-contract", "security", "user-behavior"],

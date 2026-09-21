@@ -127,8 +127,59 @@ test("CLI keeps service fallback on exit 0 and never exposes the exception", asy
     status: "fallback",
     reason: "service-error",
     forcedSkillIds: ["brainstorming"],
+    protectedContextIds: [],
   });
   assert.equal(JSON.stringify(result).includes("DO-NOT-LOG"), false);
+});
+
+test("synthetic smoke fixture keeps the required skill and metadata report body-free on fallback", async (t) => {
+  const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+  const fixturePath = join(repositoryRoot, "fixtures/smoke-input.json");
+  const fixture = JSON.parse(await readFile(fixturePath, "utf8")) as RouterInput;
+  const root = await mkdtemp(join(tmpdir(), "jev-smoke-fixture-test-"));
+  t.after(async () => rm(root, { recursive: true, force: true }));
+  const input: RouterInput = {
+    ...fixture,
+    contextFragments: [
+      { id: "synthetic-context-001", summary: "Synthetic context body must stay out of metadata." },
+    ],
+  };
+  const inputPath = join(root, "input.json");
+  await writeFile(inputPath, JSON.stringify(input), "utf8");
+
+  const result = await runCli(
+    ["--input", inputPath, "--report", "report.json"],
+    {
+      cwd: root,
+      repositoryRoot: root,
+      createGateway: () => ({
+        pass1: async () => { throw new Error("synthetic service failure"); },
+        pass2: async () => { assert.fail("pass2 must not be called"); },
+      }),
+      env: {},
+    },
+  );
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.decision, {
+    status: "fallback",
+    reason: "service-error",
+    forcedSkillIds: ["systematic-debugging"],
+    protectedContextIds: [],
+  });
+
+  const rawReport = await readFile(join(root, "report.json"), "utf8");
+  const report = JSON.parse(rawReport) as Record<string, unknown>;
+  assert.equal(report.status, "fallback");
+  assert.equal(report.callCount, 1);
+  assert.equal(rawReport.includes(input.taskText), false);
+  for (const skill of input.skills) {
+    assert.equal(rawReport.includes(skill.description), false);
+    assert.equal(rawReport.includes(skill.excerpt), false);
+  }
+  for (const context of input.contextFragments ?? []) {
+    assert.equal(rawReport.includes(context.summary), false);
+  }
 });
 
 test("CLI rejects usage, invalid JSON, and invalid input before constructing a client", async (t) => {
@@ -516,6 +567,7 @@ test("compiled CLI prints exactly one fallback decision JSON and exits 0 without
     status: "fallback",
     reason: "service-error",
     forcedSkillIds: ["brainstorming"],
+    protectedContextIds: [],
   });
   assert.equal(result.stderr, "");
 });

@@ -13,16 +13,16 @@ import { TypeSafeGateway } from "../src/typesafe-gateway.js";
 const routerInput: RouterInput = {
   taskId: "synthetic-task-002",
   taskRevision: 2,
-  taskText: "Diagnose secret-value at /Users/wrk/private without exposing it.",
+  taskText: "Diagnose a synthetic queue retry regression.",
   policyVersion: "policy-2026-09-21.2",
   catalogHash: "sha256:synthetic-catalog-v2",
   explicitSkillIds: [],
   requiredSkillIds: [],
   skills: [
-    { id: "a", description: "Diagnoses a synthetic service.", excerpt: "secret-value excerpt a" },
-    { id: "b", description: "Reviews a synthetic change.", excerpt: "secret-value excerpt b" },
-    { id: "c", description: "Plans a synthetic migration.", excerpt: "secret-value excerpt c" },
-    { id: "d", description: "Explains a synthetic contract.", excerpt: "secret-value excerpt d" },
+    { id: "a", description: "Diagnoses a synthetic service.", excerpt: "Synthetic diagnostic steps A." },
+    { id: "b", description: "Reviews a synthetic change.", excerpt: "Synthetic review checklist B." },
+    { id: "c", description: "Plans a synthetic migration.", excerpt: "Synthetic migration notes C." },
+    { id: "d", description: "Explains a synthetic contract.", excerpt: "secret-value at /Users/wrk/private" },
   ],
   criticalGapCandidates: [
     { id: "gap-1", fact: "Synthetic retry ownership is unknown.", blocks: "A bounded retry decision." },
@@ -32,7 +32,7 @@ const routerInput: RouterInput = {
   ],
   reuseCandidates: [{ id: "reuse-1", summary: "Existing synthetic retry helper." }],
   contextFragments: [
-    { id: "ctx-protected", summary: "secret-value protected context", protected: true },
+    { id: "ctx-protected", summary: "secret-value at /Users/wrk/protected", protected: true },
     { id: "ctx-public", summary: "Public synthetic retry note." },
   ],
 };
@@ -139,7 +139,7 @@ const assertGatewayReason = async (
   });
 };
 
-test("pass1 batches the exact seven signal groups and omits unrestricted fields", async () => {
+test("pass1 sends bounded task evidence and omits excerpts and protected context", async () => {
   const client = new RecordingSystemOneClient(pass1Response());
   const result = await new TypeSafeGateway(client).pass1(input);
 
@@ -161,7 +161,12 @@ test("pass1 batches the exact seven signal groups and omits unrestricted fields"
     "skill_candidates",
     "task_type",
   ]);
-  const serialized = JSON.stringify(client.requests[0]);
+  const request = client.requests[0]!;
+  const state = request.state as Record<string, unknown>;
+  const serialized = JSON.stringify(request);
+  assert.equal(state.taskText, routerInput.taskText);
+  assert.equal(serialized.includes(routerInput.taskText), true);
+  assert.equal(JSON.stringify(request.questions).includes("state.taskText"), true);
   assert.equal(serialized.includes("secret-value"), false);
   assert.equal(serialized.includes("/Users/wrk/private"), false);
   assert.equal(serialized.includes("ctx-protected"), false);
@@ -239,7 +244,93 @@ test("pass2 can reject every shortlisted skill", async () => {
     "skill_fit_2",
     "skill_ranking",
   ]);
-  assert.equal(JSON.stringify(client.requests[0]).includes("secret-value"), false);
+  const request = client.requests[0]!;
+  const state = request.state as Record<string, unknown>;
+  const serialized = JSON.stringify(request);
+  assert.equal(state.taskText, routerInput.taskText);
+  assert.deepEqual(state.skills, routerInput.skills.slice(0, 3).map(
+    ({ id, description, excerpt }) => ({ id, description, excerpt }),
+  ));
+  assert.equal(JSON.stringify(request.questions).includes("state.taskText"), true);
+  assert.equal(JSON.stringify(request.questions).includes("state.skills"), true);
+  assert.equal(serialized.includes("secret-value"), false);
+  assert.equal(serialized.includes("/Users/wrk/private"), false);
+  assert.equal(serialized.includes("ctx-protected"), false);
+});
+
+test("changing taskText changes the semantic state in both passes", async () => {
+  const changedInput = precheck({
+    ...routerInput,
+    taskText: "Plan a synthetic queue retry migration.",
+  });
+  const originalClient = new RecordingSystemOneClient(pass1Response(), pass2Response());
+  const changedClient = new RecordingSystemOneClient(pass1Response(), pass2Response());
+  const originalGateway = new TypeSafeGateway(originalClient);
+  const changedGateway = new TypeSafeGateway(changedClient);
+
+  await originalGateway.pass1(input);
+  await originalGateway.pass2(input, ["a", "b", "c"]);
+  await changedGateway.pass1(changedInput);
+  await changedGateway.pass2(changedInput, ["a", "b", "c"]);
+
+  for (const index of [0, 1]) {
+    const originalState = originalClient.requests[index]!.state as Record<string, unknown>;
+    const changedState = changedClient.requests[index]!.state as Record<string, unknown>;
+    assert.equal(originalState.taskText, routerInput.taskText);
+    assert.equal(changedState.taskText, changedInput.taskText);
+    assert.notDeepEqual(changedState, originalState);
+  }
+});
+
+test("changing a shortlisted excerpt changes only the pass2 shortlisted evidence", async () => {
+  const changedExcerpt = "Updated synthetic diagnostic steps A.";
+  const changedInput = precheck({
+    ...routerInput,
+    skills: routerInput.skills.map((skill) =>
+      skill.id === "a" ? { ...skill, excerpt: changedExcerpt } : skill),
+  });
+  const originalClient = new RecordingSystemOneClient(pass2Response());
+  const changedClient = new RecordingSystemOneClient(pass2Response());
+
+  await new TypeSafeGateway(originalClient).pass2(input, ["a", "b", "c"]);
+  await new TypeSafeGateway(changedClient).pass2(changedInput, ["a", "b", "c"]);
+
+  const original = JSON.stringify(originalClient.requests[0]!.state);
+  const changed = JSON.stringify(changedClient.requests[0]!.state);
+  assert.equal(original.includes(routerInput.skills[0]!.excerpt), true);
+  assert.equal(changed.includes(changedExcerpt), true);
+  assert.notEqual(changed, original);
+  assert.equal(changed.includes("secret-value"), false);
+  assert.equal(changed.includes("/Users/wrk/private"), false);
+  assert.equal(changed.includes("ctx-protected"), false);
+});
+
+test("pass requests preserve semantic text at the documented bounds", async () => {
+  const boundedInput = precheck({
+    ...routerInput,
+    taskText: "t".repeat(8_000),
+    skills: routerInput.skills.map((skill, index) =>
+      index === 0 ? { ...skill, description: "d".repeat(4_000), excerpt: "e".repeat(4_000) } : skill),
+  });
+  const client = new RecordingSystemOneClient(pass1Response(), pass2Response());
+  const gateway = new TypeSafeGateway(client);
+
+  await gateway.pass1(boundedInput);
+  await gateway.pass2(boundedInput, ["a", "b", "c"]);
+
+  const pass1State = client.requests[0]!.state as {
+    taskText: string;
+    skills: readonly { id: string; description: string }[];
+  };
+  const pass2State = client.requests[1]!.state as {
+    taskText: string;
+    skills: readonly { id: string; description: string; excerpt: string }[];
+  };
+  assert.equal(pass1State.taskText.length, 8_000);
+  assert.equal(pass2State.taskText.length, 8_000);
+  assert.equal(pass1State.skills[0]!.description.length, 4_000);
+  assert.equal(pass2State.skills[0]!.description.length, 4_000);
+  assert.equal(pass2State.skills[0]!.excerpt.length, 4_000);
 });
 
 test("pass2 reranks confident fits and drops confident non-fits", async () => {

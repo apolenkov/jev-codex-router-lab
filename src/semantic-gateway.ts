@@ -35,7 +35,10 @@ export interface SemanticGateway {
 }
 
 export class SemanticGatewayError extends Error {
-  constructor(readonly reason: FallbackReason) {
+  constructor(
+    readonly reason: FallbackReason,
+    readonly metadata?: PassMetadata,
+  ) {
     super(reason);
     this.name = "SemanticGatewayError";
   }

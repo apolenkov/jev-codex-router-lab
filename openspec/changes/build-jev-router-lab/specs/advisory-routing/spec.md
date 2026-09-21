@@ -16,7 +16,9 @@ explicit and required skill identifier without a cap and MUST deduplicate the
 union while preserving first-seen order. The system MUST reject input whose
 task identifier, task text, policy version, or catalogue hash is empty, whose
 task revision is not a positive integer, or whose skill references are not in
-the supplied allowlisted catalogue.
+the supplied allowlisted catalogue. The system MUST reject task text longer
+than 8,000 UTF-16 code units and any other Jev-facing free-text field longer
+than 4,000 UTF-16 code units before any semantic call.
 
 #### Scenario: Mandatory skills survive in full
 
@@ -26,6 +28,11 @@ the supplied allowlisted catalogue.
 #### Scenario: Invalid input rejected before any semantic call
 
 - **WHEN** input has an empty policy version or a non-positive task revision
+- **THEN** the input is rejected as `invalid-input` and no semantic call is made
+
+#### Scenario: Oversized semantic text rejected before any semantic call
+
+- **WHEN** task text or a skill excerpt exceeds its fixed character bound
 - **THEN** the input is rejected as `invalid-input` and no semantic call is made
 
 ### Requirement: Jev-facing identifiers are allowlisted
@@ -96,19 +103,32 @@ task revision, policy version, and catalogue hash. Any mismatch MUST produce a
 The system SHALL return a typed decision that is either `ok` or `fallback`.
 An `ok` decision MUST contain all seven advisory signals — task type, skill
 candidates, critical gap, reuse candidate, architecture fork, risk
-dimensions, and context relevance — plus the preserved mandatory skills. A
-`fallback` decision MUST contain a machine-readable reason and the preserved
-mandatory skills, and MUST NOT contain unverified optional recommendations.
+dimensions, and context relevance — plus the preserved mandatory skills and
+protected-context IDs. A `fallback` decision MUST contain a machine-readable
+reason, the preserved mandatory skills, and the protected-context IDs, and
+MUST NOT contain unverified optional recommendations.
 
 #### Scenario: Valid response produces ok decision
 
 - **WHEN** the semantic response passes all postcheck rules
 - **THEN** the decision is `ok` and carries all seven typed signals
 
-#### Scenario: Fallback preserves mandatory skills only
+#### Scenario: Fallback preserves deterministic requirements
 
 - **WHEN** any postcheck rule fails
-- **THEN** the decision is `fallback`, carries a machine-readable reason, and preserves exactly the mandatory skill set
+- **THEN** the decision is `fallback`, carries a machine-readable reason, and preserves the mandatory skill set plus deterministic protected-context IDs
+
+### Requirement: Protected context remains deterministic
+
+The system SHALL derive protected-context IDs before the semantic call and
+preserve them in every `ok` and `fallback` decision. Protected-context IDs
+and bodies MUST NOT be sent to Jev or accepted from a semantic response as
+context-relevance candidates.
+
+#### Scenario: Protected context survives a semantic failure
+
+- **WHEN** input contains a protected context fragment and the semantic call fails
+- **THEN** the fallback decision contains its ID, while no protected ID or body was sent to Jev
 
 ### Requirement: Optional signals are absent without candidates
 

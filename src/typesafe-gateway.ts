@@ -208,6 +208,17 @@ const assertNoReservedChoiceValues = (input: PrecheckedInput): void => {
   }
 };
 
+const mapWithMetadata = <T>(metadata: PassMetadata, operation: () => T): T => {
+  try {
+    return operation();
+  } catch (error) {
+    if (error instanceof SemanticGatewayError) {
+      throw new SemanticGatewayError(error.reason, metadata);
+    }
+    throw error;
+  }
+};
+
 export class TypeSafeGateway implements SemanticGateway {
   constructor(private readonly client: SystemOneClientPort) {}
 
@@ -215,66 +226,68 @@ export class TypeSafeGateway implements SemanticGateway {
     assertNoReservedChoiceValues(input);
     const request = buildPass1Request(input);
     const { answers, metadata } = await this.call(request);
-    const echo = parseEchoes(answers, input);
-    const taskType = parseChoice(
-      answers.task_type,
-      TASK_TYPES,
-      "malformed-response",
-    ).choice as TaskType;
-    const forced = new Set(input.forcedSkillIds);
-    const optionalSkillIds = input.skills
-      .map(({ id }) => id)
-      .filter((id) => !forced.has(id));
-    const skillCandidates = optionalSkillIds.length === 0
-      ? []
-      : this.selectedRanking(
-        answers.skill_candidates,
-        optionalSkillIds,
-        MAX_OPTIONAL_SKILL_CANDIDATES,
+    return mapWithMetadata(metadata, () => {
+      const echo = parseEchoes(answers, input);
+      const taskType = parseChoice(
+        answers.task_type,
+        TASK_TYPES,
+        "malformed-response",
+      ).choice as TaskType;
+      const forced = new Set(input.forcedSkillIds);
+      const optionalSkillIds = input.skills
+        .map(({ id }) => id)
+        .filter((id) => !forced.has(id));
+      const skillCandidates = optionalSkillIds.length === 0
+        ? []
+        : this.selectedRanking(
+          answers.skill_candidates,
+          optionalSkillIds,
+          MAX_OPTIONAL_SKILL_CANDIDATES,
+        );
+      const criticalGap = this.selectedObject(
+        answers.critical_gap,
+        input.criticalGapCandidates ?? [],
       );
-    const criticalGap = this.selectedObject(
-      answers.critical_gap,
-      input.criticalGapCandidates ?? [],
-    );
-    const reuseCandidate = this.selectedId(
-      answers.reuse_candidate,
-      (input.reuseCandidates ?? []).map(({ id }) => id),
-    );
-    const architectureFork = this.selectedObject(
-      answers.architecture_fork,
-      input.architectureForkCandidates ?? [],
-    );
-    const riskDimensions = {
-      security: parseNoul(answers[RISK_QUESTIONS.security]),
-      "data-loss": parseNoul(answers[RISK_QUESTIONS["data-loss"]]),
-      "public-contract": parseNoul(answers[RISK_QUESTIONS["public-contract"]]),
-      migration: parseNoul(answers[RISK_QUESTIONS.migration]),
-      "user-behavior": parseNoul(answers[RISK_QUESTIONS["user-behavior"]]),
-    };
-    const publicContextIds = (input.contextFragments ?? [])
-      .filter((fragment) => fragment.protected !== true)
-      .map(({ id }) => id);
-    const contextAnswer = publicContextIds.length === 0
-      ? null
-      : parseChoice(answers.context_relevance, [...publicContextIds, NONE]);
-    const contextRelevance = contextAnswer === null || contextAnswer.choice === NONE
-      ? []
-      : rankedIds(contextAnswer, publicContextIds).map((id) => ({
-        id,
-        probability: contextAnswer.probabilities[id]!,
-      }));
+      const reuseCandidate = this.selectedId(
+        answers.reuse_candidate,
+        (input.reuseCandidates ?? []).map(({ id }) => id),
+      );
+      const architectureFork = this.selectedObject(
+        answers.architecture_fork,
+        input.architectureForkCandidates ?? [],
+      );
+      const riskDimensions = {
+        security: parseNoul(answers[RISK_QUESTIONS.security]),
+        "data-loss": parseNoul(answers[RISK_QUESTIONS["data-loss"]]),
+        "public-contract": parseNoul(answers[RISK_QUESTIONS["public-contract"]]),
+        migration: parseNoul(answers[RISK_QUESTIONS.migration]),
+        "user-behavior": parseNoul(answers[RISK_QUESTIONS["user-behavior"]]),
+      };
+      const publicContextIds = (input.contextFragments ?? [])
+        .filter((fragment) => fragment.protected !== true)
+        .map(({ id }) => id);
+      const contextAnswer = publicContextIds.length === 0
+        ? null
+        : parseChoice(answers.context_relevance, [...publicContextIds, NONE]);
+      const contextRelevance = contextAnswer === null || contextAnswer.choice === NONE
+        ? []
+        : rankedIds(contextAnswer, publicContextIds).map((id) => ({
+          id,
+          probability: contextAnswer.probabilities[id]!,
+        }));
 
-    return {
-      echo,
-      taskType,
-      skillCandidates,
-      criticalGap,
-      reuseCandidate,
-      architectureFork,
-      riskDimensions,
-      contextRelevance,
-      metadata,
-    };
+      return {
+        echo,
+        taskType,
+        skillCandidates,
+        criticalGap,
+        reuseCandidate,
+        architectureFork,
+        riskDimensions,
+        contextRelevance,
+        metadata,
+      };
+    });
   }
 
   async pass2(input: PrecheckedInput, shortlist: readonly string[]): Promise<Pass2Result> {
@@ -300,27 +313,29 @@ export class TypeSafeGateway implements SemanticGateway {
 
     const request = buildPass2Request(input, shortlist);
     const { answers, metadata } = await this.call(request);
-    parseEchoes(answers, input);
-    const ranking = parseChoice(answers.skill_ranking, [...shortlist, NONE]);
-    if (ranking.confidence < 0.5) {
-      throw new SemanticGatewayError("low-confidence");
-    }
+    return mapWithMetadata(metadata, () => {
+      parseEchoes(answers, input);
+      const ranking = parseChoice(answers.skill_ranking, [...shortlist, NONE]);
+      if (ranking.confidence < 0.5) {
+        throw new SemanticGatewayError("low-confidence");
+      }
 
-    const fits = shortlist.map((_, index) => parseNoul(answers[`skill_fit_${index}`]));
-    if (fits.some((probability) => probability >= 0.4 && probability <= 0.6)) {
-      throw new SemanticGatewayError("low-confidence");
-    }
-    if (ranking.choice === NONE) {
-      return { skillCandidates: [], metadata };
-    }
+      const fits = shortlist.map((_, index) => parseNoul(answers[`skill_fit_${index}`]));
+      if (fits.some((probability) => probability >= 0.4 && probability <= 0.6)) {
+        throw new SemanticGatewayError("low-confidence");
+      }
+      if (ranking.choice === NONE) {
+        return { skillCandidates: [], metadata };
+      }
 
-    const accepted = new Set(
-      shortlist.filter((_, index) => fits[index]! > 0.6),
-    );
-    return {
-      skillCandidates: rankedIds(ranking, shortlist).filter((id) => accepted.has(id)),
-      metadata,
-    };
+      const accepted = new Set(
+        shortlist.filter((_, index) => fits[index]! > 0.6),
+      );
+      return {
+        skillCandidates: rankedIds(ranking, shortlist).filter((id) => accepted.has(id)),
+        metadata,
+      };
+    });
   }
 
   private async call(request: SystemOneRequest): Promise<ParsedEnvelope> {
