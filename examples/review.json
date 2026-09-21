@@ -1,0 +1,16 @@
+{
+  "taskId": "synthetic-review-001",
+  "taskRevision": 1,
+  "taskText": "Review a synthetic change for correctness and regression risk.",
+  "policyVersion": "example-v1",
+  "catalogHash": "sha256:synthetic-catalog",
+  "explicitSkillIds": [],
+  "requiredSkillIds": ["requesting-code-review"],
+  "skills": [
+    {
+      "id": "requesting-code-review",
+      "description": "Check the candidate against its requirements.",
+      "excerpt": "Report evidence-backed findings."
+    }
+  ]
+}

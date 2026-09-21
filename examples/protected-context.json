@@ -1,0 +1,23 @@
+{
+  "taskId": "synthetic-protected-context-001",
+  "taskRevision": 1,
+  "taskText": "Route a synthetic task while preserving protected context locally.",
+  "policyVersion": "example-v1",
+  "catalogHash": "sha256:synthetic-catalog",
+  "explicitSkillIds": [],
+  "requiredSkillIds": ["systematic-debugging"],
+  "skills": [
+    {
+      "id": "systematic-debugging",
+      "description": "Find the root cause before changing code.",
+      "excerpt": "Reproduce, isolate, and verify."
+    }
+  ],
+  "contextFragments": [
+    {
+      "id": "synthetic-protected-context",
+      "summary": "SYNTHETIC-PRIVATE-BODY",
+      "protected": true
+    }
+  ]
+}
