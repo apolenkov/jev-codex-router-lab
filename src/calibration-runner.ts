@@ -578,6 +578,7 @@ export const createAtomicCalibrationReportWriter = (
     if (!claimed) {
       const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
       let published = false;
+      let pathIdentityValid = true;
       try {
         await (options.writeTemporary ?? writeTemporarySynced)(
           temporaryPath,
@@ -585,24 +586,26 @@ export const createAtomicCalibrationReportWriter = (
         );
         await link(temporaryPath, path);
         published = true;
-        await options.beforeWrite?.();
+        try {
+          await options.beforeWrite?.();
+        } catch (error) {
+          pathIdentityValid = false;
+          throw error;
+        }
         await syncParent(path);
       } catch (error) {
-        if (published) await unlink(path).catch(() => undefined);
+        if (pathIdentityValid && published) await unlink(path).catch(() => undefined);
         throw error;
       } finally {
-        await unlink(temporaryPath).catch(() => undefined);
+        // Once identity is lost, pathname cleanup could delete unrelated outside data.
+        // Preserve the moved-directory evidence for deliberate manual recovery instead.
+        if (pathIdentityValid) await unlink(temporaryPath).catch(() => undefined);
       }
       claimed = true;
       return;
     }
     await writeJsonAtomic(path, report);
-    try {
-      await options.beforeWrite?.();
-    } catch (error) {
-      await unlink(path).catch(() => undefined);
-      throw error;
-    }
+    await options.beforeWrite?.();
   };
 };
 

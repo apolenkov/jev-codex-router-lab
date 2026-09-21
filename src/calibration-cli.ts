@@ -1,5 +1,5 @@
 import { constants, type Stats } from "node:fs";
-import { lstat, open, realpath, unlink, type FileHandle } from "node:fs/promises";
+import { lstat, open, realpath, type FileHandle } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Fetch } from "@typesafe-ai/sdk";
@@ -224,23 +224,14 @@ export const runCalibrationCli = async (
       claim: async (value: Parameters<typeof checkpoint.claim>[0]) => {
         await assertEvidencePath();
         const claimed = await checkpoint.claim(value);
-        try {
-          await assertEvidencePath();
-        } catch (error) {
-          if (claimed) await unlink(paths.checkpoint).catch(() => undefined);
-          throw error;
-        }
+        // Never clean up by pathname after identity failure: it may now target outside data.
+        await assertEvidencePath();
         return claimed;
       },
       write: async (value: Parameters<typeof checkpoint.write>[0]) => {
         await assertEvidencePath();
         await checkpoint.write(value);
-        try {
-          await assertEvidencePath();
-        } catch (error) {
-          await unlink(paths.checkpoint).catch(() => undefined);
-          throw error;
-        }
+        await assertEvidencePath();
       },
     };
     const transport = await (options.createTransport ?? createCalibrationTransport)({

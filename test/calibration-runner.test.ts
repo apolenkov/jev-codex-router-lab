@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Fetch } from "@typesafe-ai/sdk";
@@ -787,6 +796,39 @@ test("atomic report writer never claims or overwrites prior evidence", async (t)
   await assert.rejects(write({ schemaVersion: 1 } as CalibrationReport));
 
   assert.equal(await readFile(path, "utf8"), "prior evidence");
+});
+
+test("atomic report writer preserves paths after evidence directory identity fails", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "jev-calibration-report-swap-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const artifacts = join(root, "artifacts");
+  const movedArtifacts = join(root, "artifacts-moved");
+  const outside = join(root, "outside");
+  await mkdir(artifacts);
+  await mkdir(outside);
+  const sentinel = "outside evidence must survive";
+  await writeFile(join(outside, "report.json"), sentinel, "utf8");
+  let guardCalls = 0;
+  const write = createAtomicCalibrationReportWriter(join(artifacts, "report.json"), {
+    beforeWrite: async () => {
+      guardCalls += 1;
+      if (guardCalls !== 2) return;
+      await rename(artifacts, movedArtifacts);
+      await symlink(outside, artifacts);
+      throw new Error("evidence path changed");
+    },
+  });
+
+  await assert.rejects(
+    write({ schemaVersion: 1, phase: "calibration-records" } as CalibrationReport),
+    { message: "evidence path changed" },
+  );
+
+  assert.equal(await readFile(join(outside, "report.json"), "utf8"), sentinel);
+  assert.deepEqual(await readdir(outside), ["report.json"]);
+  const residue = await readdir(movedArtifacts);
+  assert.equal(residue.includes("report.json"), true);
+  assert.equal(residue.some((name) => name.endsWith(".tmp")), true);
 });
 
 test("failed initial report temp write leaves no final and terminalizes checkpoint", async (t) => {
