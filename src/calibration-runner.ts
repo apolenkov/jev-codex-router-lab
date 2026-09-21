@@ -421,7 +421,7 @@ export type ClosedAnswerEvidence =
     }
   | { readonly type: "noul"; readonly noul: number };
 
-interface CalibrationPassEvidence {
+export interface CalibrationPassEvidence {
   readonly metadata: PassMetadata;
   readonly costUsd: number;
 }
@@ -455,6 +455,20 @@ export interface CalibrationEvidenceCase {
   readonly pass1Decision: ClosedDecisionEvidence;
   readonly finalDecision?: ClosedDecisionEvidence;
   readonly pass?: boolean;
+}
+
+export type CalibrationDiagnosticReason =
+  | "invalid-provider-evidence"
+  | "invalid-pass1-decision"
+  | "pass1-label-mismatch";
+
+export interface CalibrationFailureEvidence {
+  readonly caseId: string;
+  readonly stage: "pass1" | "pass2";
+  readonly reason: CalibrationDiagnosticReason;
+  readonly pass1: CalibrationPass1Evidence | null;
+  readonly pass1Decision: ClosedDecisionEvidence | null;
+  readonly currentTransport: CalibrationPassEvidence | null;
 }
 
 export interface CalibrationTupleEvaluation extends TupleEvaluation {
@@ -512,6 +526,7 @@ export interface CalibrationReport {
   readonly calibration: {
     readonly denominator: 6;
     readonly cases: readonly CalibrationEvidenceCase[];
+    readonly failure: CalibrationFailureEvidence | null;
     readonly evaluations: readonly CalibrationTupleEvaluation[] | null;
     readonly pass: boolean | null;
   };
@@ -992,17 +1007,82 @@ interface CollectedCase {
   readonly evidence: CalibrationEvidenceCase;
 }
 
+class CaseCollectionError extends CalibrationError {
+  constructor(
+    reason: CalibrationDiagnosticReason,
+    readonly evidence: CalibrationFailureEvidence,
+  ) {
+    super(reason);
+  }
+}
+
+const transportEvidence = (
+  result: CalibrationTransportResult,
+): CalibrationPassEvidence => ({
+  metadata: { ...result.metadata },
+  costUsd: result.costUsd,
+});
+
+const collectionFailure = (
+  caseId: string,
+  stage: "pass1" | "pass2",
+  reason: CalibrationDiagnosticReason,
+  pass1: CalibrationPass1Evidence | null,
+  pass1Decision: ClosedDecisionEvidence | null,
+  currentTransport: CalibrationPassEvidence | null,
+): CaseCollectionError => new CaseCollectionError(reason, {
+  caseId,
+  stage,
+  reason,
+  pass1,
+  pass1Decision,
+  currentTransport,
+});
+
 const collectCase = async (
   corpusCase: CalibrationCorpusCase,
   systemOne: CalibrationTransport["systemOne"],
 ): Promise<CollectedCase> => {
   const checked = precheck(corpusCase.input);
-  const pass1Transport = await systemOne(buildPass1Request(checked));
-  const pass1 = await validatePass1(checked, pass1Transport);
-  const preliminary = postcheck(checked, semanticFromPass1(pass1));
+  let pass1Transport: CalibrationTransportResult;
+  try {
+    pass1Transport = await systemOne(buildPass1Request(checked));
+  } catch {
+    throw collectionFailure(
+      corpusCase.id, "pass1", "invalid-provider-evidence", null, null, null,
+    );
+  }
+  let pass1: Pass1Result;
+  try {
+    pass1 = await validatePass1(checked, pass1Transport);
+  } catch {
+    throw collectionFailure(
+      corpusCase.id,
+      "pass1",
+      "invalid-provider-evidence",
+      null,
+      null,
+      transportEvidence(pass1Transport),
+    );
+  }
+  const pass1Evidence: CalibrationPass1Evidence = {
+    answers: closedAnswers(pass1Transport.answers),
+    metadata: { ...pass1Transport.metadata },
+    costUsd: pass1Transport.costUsd,
+  };
+  let preliminary: RouterDecision;
+  try {
+    preliminary = postcheck(checked, semanticFromPass1(pass1));
+  } catch {
+    throw collectionFailure(
+      corpusCase.id, "pass1", "invalid-pass1-decision", pass1Evidence, null, null,
+    );
+  }
   const pass1Decision = decisionEvidence(preliminary);
   if (pass1Decision === null) {
-    throw new CalibrationError("invalid-pass1-decision");
+    throw collectionFailure(
+      corpusCase.id, "pass1", "invalid-pass1-decision", pass1Evidence, null, null,
+    );
   }
   const expectedWithoutSkills: ExpectedCalibrationSignals = {
     ...corpusCase.expected,
@@ -1013,12 +1093,31 @@ const collectCase = async (
     !corpusCase.expected.skillCandidates.every((id) => pass1Decision.skillCandidates.includes(id)) ||
     pass1Decision.skillCandidates.length === 0
   ) {
-    throw new CalibrationError("pass1-label-mismatch");
+    throw collectionFailure(
+      corpusCase.id,
+      "pass1",
+      "pass1-label-mismatch",
+      pass1Evidence,
+      pass1Decision,
+      null,
+    );
   }
 
-  const pass2Transport = await systemOne(
-    buildPass2Request(checked, pass1Decision.skillCandidates),
-  );
+  let pass2Transport: CalibrationTransportResult;
+  try {
+    pass2Transport = await systemOne(
+      buildPass2Request(checked, pass1Decision.skillCandidates),
+    );
+  } catch {
+    throw collectionFailure(
+      corpusCase.id,
+      "pass2",
+      "invalid-provider-evidence",
+      pass1Evidence,
+      pass1Decision,
+      null,
+    );
+  }
   let record: ParsedPass2;
   try {
     record = parsePass2Record(
@@ -1027,7 +1126,14 @@ const collectCase = async (
       pass1Decision.skillCandidates,
     );
   } catch {
-    throw new CalibrationError("invalid-provider-evidence");
+    throw collectionFailure(
+      corpusCase.id,
+      "pass2",
+      "invalid-provider-evidence",
+      pass1Evidence,
+      pass1Decision,
+      transportEvidence(pass2Transport),
+    );
   }
 
   return {
@@ -1037,11 +1143,7 @@ const collectCase = async (
       caseId: corpusCase.id,
       set: corpusCase.set,
       expected: structuredClone(corpusCase.expected),
-      pass1: {
-        answers: closedAnswers(pass1Transport.answers),
-        metadata: { ...pass1Transport.metadata },
-        costUsd: pass1Transport.costUsd,
-      },
+      pass1: pass1Evidence,
       pass2: {
         record: structuredClone(record),
         metadata: { ...pass2Transport.metadata },
@@ -1113,6 +1215,7 @@ const baseReport = (
   fingerprint: string,
   cases: readonly CalibrationEvidenceCase[],
   accounting: CalibrationAccounting,
+  failure: CalibrationFailureEvidence | null = null,
 ): CalibrationReport => ({
   schemaVersion: 1,
   phase,
@@ -1130,6 +1233,7 @@ const baseReport = (
   calibration: {
     denominator: 6,
     cases,
+    failure,
     evaluations: null,
     pass: null,
   },
@@ -1230,7 +1334,35 @@ export const runCalibrationExperiment = async (
 
     const collectedCalibration: CollectedCase[] = [];
     for (const corpusCase of calibrationCases) {
-      collectedCalibration.push(await collectCase(corpusCase, systemOne));
+      try {
+        collectedCalibration.push(await collectCase(corpusCase, systemOne));
+      } catch (error) {
+        await terminalizeFailure(error);
+        const failure = error instanceof CaseCollectionError
+          ? error.evidence
+          : collectionFailure(
+            corpusCase.id,
+            "pass1",
+            "invalid-provider-evidence",
+            null,
+            null,
+            null,
+          ).evidence;
+        await writeReport(baseReport(
+          "calibration-records",
+          fingerprint,
+          collectedCalibration.map(({ evidence }) => evidence),
+          options.transport.accounting(),
+          failure,
+        ));
+        throw error;
+      }
+      await writeReport(baseReport(
+        "calibration-records",
+        fingerprint,
+        collectedCalibration.map(({ evidence }) => evidence),
+        options.transport.accounting(),
+      ));
     }
     const recordReport = baseReport(
       "calibration-records",
@@ -1238,8 +1370,6 @@ export const runCalibrationExperiment = async (
       collectedCalibration.map(({ evidence }) => evidence),
       options.transport.accounting(),
     );
-    await writeReport(recordReport);
-
     const selectorCases = collectedCalibration.map(({ evidence }) => ({
       caseId: evidence.caseId,
       record: evidence.pass2.record,

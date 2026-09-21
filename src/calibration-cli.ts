@@ -256,7 +256,11 @@ export const runCalibrationCli = async (
       return { exitCode: 2, error: "evidence path unavailable" };
     }
     return {
-      exitCode: report.smoke?.status === "failed" ? 2 : 0,
+      exitCode: report.phase === "smoke-completed" &&
+          report.smoke?.status === "completed" &&
+          report.smoke.decision.status === "ok"
+        ? 0
+        : 2,
       summary: summaryOf(report),
     };
   } catch {

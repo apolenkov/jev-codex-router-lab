@@ -39,6 +39,75 @@ const copyFixtures = async (root: string): Promise<void> => {
   }
 };
 
+const calibrationFetch = (
+  corpus: ReturnType<typeof loadCalibrationCorpus>,
+): Fetch => async (_input, init) => {
+  const body = JSON.parse(String(init?.body)) as {
+    state: { echo: { taskId: string }; skills: { id: string }[] };
+    questions: Record<string, { type: string; criteria?: Record<string, unknown> }>;
+  };
+  const corpusCase = corpus.cases.find(({ id }) => id === body.state.echo.taskId);
+  const expected = corpusCase?.expected ?? {
+    taskType: "diagnose" as const,
+    skillCandidates: ["test-driven-development"],
+    criticalGapId: null,
+    reuseCandidateId: null,
+    architectureForkId: null,
+    riskDimensions: Object.fromEntries([
+      "security", "data-loss", "public-contract", "migration", "user-behavior",
+    ].map((id) => [id, { min: 0.1, max: 0.1 }])) as Record<
+      "security" | "data-loss" | "public-contract" | "migration" | "user-behavior",
+      { min: number; max: number }
+    >,
+    contextRelevance: [],
+  };
+  const answers: Record<string, unknown> = {};
+  for (const [id, question] of Object.entries(body.questions)) {
+    if (question.type === "noul") {
+      if (id.startsWith("risk_")) {
+        const dimension = id.slice(5).replaceAll("_", "-") as
+          keyof typeof expected.riskDimensions;
+        const range = expected.riskDimensions[dimension];
+        answers[id] = { type: "noul", noul: (range.min + range.max) / 2 };
+      } else {
+        const skill = body.state.skills[Number(id.slice("skill_fit_".length))]!.id;
+        answers[id] = {
+          type: "noul",
+          noul: expected.skillCandidates.includes(skill) ? 0.9 : 0.1,
+        };
+      }
+      continue;
+    }
+    const options = Object.keys(question.criteria ?? {});
+    const selected = id.startsWith("echo_") ? options[0]!
+      : id === "task_type" ? expected.taskType
+        : id === "skill_candidates"
+          ? expected.skillCandidates[0] ?? options.find((option) => option !== "none")!
+          : id === "skill_ranking"
+            ? expected.skillCandidates[0] ?? "none"
+          : id === "critical_gap" ? expected.criticalGapId ?? "none"
+            : id === "reuse_candidate" ? expected.reuseCandidateId ?? "none"
+              : id === "architecture_fork" ? expected.architectureForkId ?? "none"
+                : id === "context_relevance"
+                  ? expected.contextRelevance[0]?.id ?? "none"
+                  : "none";
+    answers[id] = {
+      type: "choice",
+      choice: selected,
+      confidence: 0.9,
+      probabilities: Object.fromEntries(options.map((option) => [
+        option,
+        option === selected ? 0.9 : 0.1 / Math.max(1, options.length - 1),
+      ])),
+    };
+  }
+  return new Response(JSON.stringify({
+    model: CALIBRATION_MODEL,
+    usage: { input_tokens: 100, output_tokens: 10 },
+    answers,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+};
+
 const guardedOptions = (root: string) => {
   let factoryCalls = 0;
   let fetchCalls = 0;
@@ -178,72 +247,7 @@ test("calibration CLI runs the fixed public transaction and returns summary only
   const smoke = JSON.parse(
     await readFile(join(root, "fixtures/two-pass-smoke-input.json"), "utf8"),
   ) as RouterInput;
-  const fetch: Fetch = async (_input, init) => {
-    const body = JSON.parse(String(init?.body)) as {
-      state: { echo: { taskId: string }; skills: { id: string }[] };
-      questions: Record<string, { type: string; criteria?: Record<string, unknown> }>;
-    };
-    const corpusCase = corpus.cases.find(({ id }) => id === body.state.echo.taskId);
-    const expected = corpusCase?.expected ?? {
-      taskType: "diagnose" as const,
-      skillCandidates: ["test-driven-development"],
-      criticalGapId: null,
-      reuseCandidateId: null,
-      architectureForkId: null,
-      riskDimensions: Object.fromEntries([
-        "security", "data-loss", "public-contract", "migration", "user-behavior",
-      ].map((id) => [id, { min: 0.1, max: 0.1 }])) as Record<
-        "security" | "data-loss" | "public-contract" | "migration" | "user-behavior",
-        { min: number; max: number }
-      >,
-      contextRelevance: [],
-    };
-    const answers: Record<string, unknown> = {};
-    for (const [id, question] of Object.entries(body.questions)) {
-      if (question.type === "noul") {
-        if (id.startsWith("risk_")) {
-          const dimension = id.slice(5).replaceAll("_", "-") as
-            keyof typeof expected.riskDimensions;
-          const range = expected.riskDimensions[dimension];
-          answers[id] = { type: "noul", noul: (range.min + range.max) / 2 };
-        } else {
-          const skill = body.state.skills[Number(id.slice("skill_fit_".length))]!.id;
-          answers[id] = {
-            type: "noul",
-            noul: expected.skillCandidates.includes(skill) ? 0.9 : 0.1,
-          };
-        }
-        continue;
-      }
-      const options = Object.keys(question.criteria ?? {});
-      const selected = id.startsWith("echo_") ? options[0]!
-        : id === "task_type" ? expected.taskType
-          : id === "skill_candidates"
-            ? expected.skillCandidates[0] ?? options.find((option) => option !== "none")!
-            : id === "skill_ranking"
-              ? expected.skillCandidates[0] ?? "none"
-            : id === "critical_gap" ? expected.criticalGapId ?? "none"
-              : id === "reuse_candidate" ? expected.reuseCandidateId ?? "none"
-                : id === "architecture_fork" ? expected.architectureForkId ?? "none"
-                  : id === "context_relevance"
-                    ? expected.contextRelevance[0]?.id ?? "none"
-                    : "none";
-      answers[id] = {
-        type: "choice",
-        choice: selected,
-        confidence: 0.9,
-        probabilities: Object.fromEntries(options.map((option) => [
-          option,
-          option === selected ? 0.9 : 0.1 / Math.max(1, options.length - 1),
-        ])),
-      };
-    }
-    return new Response(JSON.stringify({
-      model: CALIBRATION_MODEL,
-      usage: { input_tokens: 100, output_tokens: 10 },
-      answers,
-    }), { status: 200, headers: { "content-type": "application/json" } });
-  };
+  const fetch = calibrationFetch(corpus);
 
   const result = await runCalibrationCli([], {
     repositoryRoot: root,
@@ -266,4 +270,39 @@ test("calibration CLI runs the fixed public transaction and returns summary only
   assert.equal(report.includes(smoke.taskText), false);
   assert.equal(report.includes("DO-NOT-LOG-KEY"), false);
   assert.equal(JSON.parse(checkpoint).phase, "complete");
+});
+
+test("calibration CLI exits nonzero for a completed negative holdout result", async (t) => {
+  const root = await setupRoot(t);
+  await copyFixtures(root);
+  const corpus = loadCalibrationCorpus(join(root, "fixtures/calibration-corpus.json"));
+  const validFetch = calibrationFetch(corpus);
+  const fetch: Fetch = async (input, init) => {
+    const request = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+      questions: Record<string, unknown>;
+    };
+    const response = await validFetch(input, init);
+    if (request.state.echo.taskId !== "H1" || !("task_type" in request.questions)) {
+      return response;
+    }
+    const body = await response.json() as {
+      answers: { task_type: { choice: string } };
+    };
+    body.answers.task_type.choice = "review";
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  const result = await runCalibrationCli([], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" },
+    fetch,
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.summary?.holdoutPass, false);
+  assert.equal(result.summary?.smokeStatus, "skipped");
 });

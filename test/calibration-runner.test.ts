@@ -517,11 +517,19 @@ test("runner persists closed calibration records and selected tuple before untou
 
   assert.deepEqual(persisted.map(({ phase }) => phase), [
     "calibration-records",
+    "calibration-records",
+    "calibration-records",
+    "calibration-records",
+    "calibration-records",
+    "calibration-records",
     "tuple-selected",
     "holdout-complete",
     "smoke-completed",
   ]);
-  assert.equal(persisted[0]!.calibration.cases.length, 6);
+  assert.deepEqual(
+    persisted.slice(0, 6).map(({ calibration }) => calibration.cases.length),
+    [1, 2, 3, 4, 5, 6],
+  );
   assert.equal(persisted[0]!.selectedTuple, null);
   assert.equal(report.holdout?.pass, true);
   assert.equal(report.accounting.terminal, true);
@@ -559,6 +567,67 @@ test("runner persists closed calibration records and selected tuple before untou
     assert.equal(serialized.includes(skill.description), false);
     assert.equal(serialized.includes(skill.excerpt), false);
   }
+});
+
+test("runner atomically retains prior cases and closed current metadata on label failure", async (t) => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const validFetch = experimentFetch(corpus);
+  let calls = 0;
+  const fetch: Fetch = async (input, init) => {
+    const response = await validFetch(input, init);
+    calls += 1;
+    if (calls !== 3) return response;
+    const body = await response.json() as {
+      answers: { task_type: { choice: string } };
+    };
+    body.answers.task_type.choice = "review";
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const transport = await createTestTransport({ apiKey: "test-key", corpus, fetch });
+  const directory = await mkdtemp(join(tmpdir(), "jev-calibration-partial-report-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const reportPath = join(directory, "report.json");
+  const writeReport = createAtomicCalibrationReportWriter(reportPath);
+
+  await assert.rejects(
+    runCalibrationExperiment({
+      corpus,
+      smokeInput: await loadSmokeInput(),
+      transport,
+      writeReport,
+    }),
+    calibrationReason("pass1-label-mismatch"),
+  );
+
+  const terminal = JSON.parse(await readFile(reportPath, "utf8")) as CalibrationReport;
+  assert.equal(calls, 3);
+  assert.equal(terminal.phase, "calibration-records");
+  assert.deepEqual(terminal.calibration.cases.map(({ caseId }) => caseId), ["C1"]);
+  assert.equal(terminal.calibration.failure?.caseId, "C2");
+  assert.equal(terminal.calibration.failure?.stage, "pass1");
+  assert.equal(terminal.calibration.failure?.reason, "pass1-label-mismatch");
+  assert.deepEqual(Object.keys(terminal.calibration.failure ?? {}).sort(), [
+    "caseId",
+    "currentTransport",
+    "pass1",
+    "pass1Decision",
+    "reason",
+    "stage",
+  ]);
+  assert.equal(terminal.calibration.failure?.pass1?.metadata.model, CALIBRATION_MODEL);
+  assert.ok(Object.hasOwn(terminal.calibration.failure?.pass1?.answers ?? {}, "task_type"));
+  assert.notEqual(terminal.calibration.failure?.pass1Decision, null);
+  assert.equal(terminal.calibration.failure?.currentTransport, null);
+  assert.equal(terminal.accounting.attempts, 3);
+  assert.equal(terminal.accounting.spentUsd > 0, true);
+  assert.equal(terminal.accounting.terminal, true);
+  const serialized = JSON.stringify(terminal);
+  assert.equal(serialized.includes(corpus.cases[0]!.input.taskText), false);
+  assert.equal(serialized.includes(corpus.cases[1]!.input.taskText), false);
+  assert.equal(serialized.includes("raw provider"), false);
 });
 
 test("a holdout label failure persists smoke-skipped and makes no smoke call", async () => {
