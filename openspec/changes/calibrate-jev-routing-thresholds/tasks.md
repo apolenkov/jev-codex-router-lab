@@ -14,7 +14,7 @@
 ## 3. Local preflight
 
 - [x] 3.1 Run the complete local gate (`npm ci`, lint, strict typecheck, all tests, strict OpenSpec, diff checks) and record exact results; repeat relevant gates after any change
-- [ ] 3.2 Obtain independent plan/security review of the frozen corpus, labels, caps, no-retry transport, evidence schema, and executable candidate; fix important findings and repeat targeted gates
+- [x] 3.2 Obtain independent plan/security review of the frozen corpus, labels, caps, no-retry transport, evidence schema, and executable candidate; fix important findings and repeat targeted gates
 
 ## 4. Bounded live experiment
 

@@ -8,6 +8,8 @@ artifacts/**
 !artifacts/two-pass-smoke-report.json
 !artifacts/corrected-smoke-report.json
 !artifacts/corrected-smoke-decision.json
+!artifacts/calibration-checkpoint.json
+!artifacts/calibration-summary.md
 .superpowers/
 .agents/
 .devin/
