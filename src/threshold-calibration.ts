@@ -97,8 +97,12 @@ const scoreCase = (
   const actual = new Set(candidates);
   const falsePositives = candidates.filter((id) => !expected.has(id));
   const shortlist = new Set(calibrationCase.record.shortlist);
+  const ranked = new Set(calibrationCase.record.ranked);
   const invariantsHold =
     calibrationCase.record.fits.length === calibrationCase.record.shortlist.length &&
+    calibrationCase.record.ranked.length === calibrationCase.record.shortlist.length &&
+    ranked.size === calibrationCase.record.ranked.length &&
+    calibrationCase.record.ranked.every((id) => shortlist.has(id)) &&
     candidates.every((id) => shortlist.has(id)) &&
     actual.size === candidates.length;
   return {
@@ -122,10 +126,12 @@ export function evaluateThresholdGrid(
     const results = cases.map((calibrationCase) => scoreCase(thresholds, calibrationCase));
     return {
       thresholds,
-      qualifies: results.every(
-        (result) =>
-          result.exactMatch && result.falsePositives.length === 0 && result.invariantsHold,
-      ),
+      qualifies:
+        results.length > 0 &&
+        results.every(
+          (result) =>
+            result.exactMatch && result.falsePositives.length === 0 && result.invariantsHold,
+        ),
       cases: results,
     };
   });

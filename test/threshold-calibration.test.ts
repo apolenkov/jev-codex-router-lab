@@ -326,7 +326,34 @@ test("selection preserves the provider shortlist and deterministic invariants", 
   }
 });
 
+test("a corrupted ranked order never qualifies any tuple", () => {
+  const fits = [0.9, 0.1, 0.1];
+  const corrupted = [
+    record({ ranked: ["a", "b"], fits }),
+    record({ ranked: ["a", "b", "c", "x"], fits }),
+    record({ ranked: ["a", "b", "b"], fits }),
+    record({ ranked: ["a", "b", "x"], fits }),
+  ];
+
+  for (const rec of corrupted) {
+    const cases = [calibrationCase("C1", rec, ["a"])];
+    const evaluations = evaluateThresholdGrid(cases);
+
+    assert.ok(evaluations.every((evaluation) => !evaluation.qualifies));
+    assert.ok(
+      evaluations.every((evaluation) =>
+        evaluation.cases.every((result) => result.invariantsHold === false)),
+    );
+    assert.equal(selectThreshold(cases), null);
+  }
+});
+
 test("selection fails closed when no calibration records are provided", () => {
+  const evaluations = evaluateThresholdGrid([]);
+
+  assert.equal(evaluations.length, PASS2_THRESHOLD_GRID.length);
+  assert.ok(evaluations.every((evaluation) => evaluation.qualifies === false));
+  assert.ok(evaluations.every((evaluation) => evaluation.cases.length === 0));
   assert.equal(selectThreshold([]), null);
 });
 
