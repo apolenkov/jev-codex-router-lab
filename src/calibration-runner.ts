@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { rename, unlink, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { link, open, rename, unlink, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import {
   APITimeoutError,
   TypeSafeClient,
@@ -298,10 +298,10 @@ const parseCorpusCase = (
   };
 };
 
-export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
+export const parseCalibrationCorpus = (serialized: string): CalibrationCorpus => {
   let value: unknown;
   try {
-    value = JSON.parse(readFileSync(path, "utf8"));
+    value = JSON.parse(serialized);
   } catch {
     throw new CalibrationError("invalid-corpus-json");
   }
@@ -323,6 +323,15 @@ export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
     cases: ids.map((id, index) =>
       parseCorpusCase(cases[index], id, id.startsWith("C") ? "calibration" : "holdout")),
   };
+};
+
+export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
+  try {
+    return parseCalibrationCorpus(readFileSync(path, "utf8"));
+  } catch (error) {
+    if (error instanceof CalibrationError) throw error;
+    throw new CalibrationError("invalid-corpus-json");
+  }
 };
 
 const canonicalJson = (value: unknown): string => {
@@ -516,15 +525,34 @@ export interface CalibrationReport {
   readonly accounting: CalibrationAccounting;
 }
 
+const writeTemporarySynced = async (path: string, contents: string): Promise<void> => {
+  const handle = await open(path, "wx", 0o600);
+  try {
+    await handle.writeFile(contents, "utf8");
+    await handle.sync();
+  } finally {
+    await handle.close();
+  }
+};
+
+const syncParent = async (path: string): Promise<void> => {
+  let handle: Awaited<ReturnType<typeof open>> | undefined;
+  try {
+    handle = await open(dirname(path), "r");
+    await handle.sync();
+  } catch {
+    // Directory fsync is not supported on every platform/filesystem.
+  } finally {
+    await handle?.close().catch(() => undefined);
+  }
+};
+
 const writeJsonAtomic = async (path: string, value: unknown): Promise<void> => {
   const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
-      encoding: "utf8",
-      flag: "wx",
-      mode: 0o600,
-    });
+    await writeTemporarySynced(temporaryPath, `${JSON.stringify(value, null, 2)}\n`);
     await rename(temporaryPath, path);
+    await syncParent(path);
   } catch (error) {
     try {
       await unlink(temporaryPath);
@@ -535,19 +563,46 @@ const writeJsonAtomic = async (path: string, value: unknown): Promise<void> => {
   }
 };
 
-export const createAtomicCalibrationReportWriter = (path: string) => {
+export interface CalibrationReportWriterOptions {
+  readonly writeTemporary?: (path: string, contents: string) => Promise<void>;
+  readonly beforeWrite?: () => Promise<void>;
+}
+
+export const createAtomicCalibrationReportWriter = (
+  path: string,
+  options: CalibrationReportWriterOptions = {},
+) => {
   let claimed = false;
   return async (report: CalibrationReport): Promise<void> => {
+    await options.beforeWrite?.();
     if (!claimed) {
-      await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, {
-        encoding: "utf8",
-        flag: "wx",
-        mode: 0o600,
-      });
+      const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+      let published = false;
+      try {
+        await (options.writeTemporary ?? writeTemporarySynced)(
+          temporaryPath,
+          `${JSON.stringify(report, null, 2)}\n`,
+        );
+        await link(temporaryPath, path);
+        published = true;
+        await options.beforeWrite?.();
+        await syncParent(path);
+      } catch (error) {
+        if (published) await unlink(path).catch(() => undefined);
+        throw error;
+      } finally {
+        await unlink(temporaryPath).catch(() => undefined);
+      }
       claimed = true;
       return;
     }
     await writeJsonAtomic(path, report);
+    try {
+      await options.beforeWrite?.();
+    } catch (error) {
+      await unlink(path).catch(() => undefined);
+      throw error;
+    }
   };
 };
 

@@ -789,6 +789,48 @@ test("atomic report writer never claims or overwrites prior evidence", async (t)
   assert.equal(await readFile(path, "utf8"), "prior evidence");
 });
 
+test("failed initial report temp write leaves no final and terminalizes checkpoint", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-calibration-report-failure-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const reportPath = join(directory, "report.json");
+  const checkpointPath = join(directory, "checkpoint.json");
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const checkpoint = createAtomicCalibrationCheckpointStore(checkpointPath);
+  const transport = await createCalibrationTransport({
+    apiKey: "test-key",
+    corpus,
+    checkpoint,
+    fetch: experimentFetch(corpus),
+  });
+  const writeReport = createAtomicCalibrationReportWriter(reportPath, {
+    writeTemporary: async (path: string, contents: string) => {
+      await writeFile(path, contents.slice(0, 8), "utf8");
+      throw new Error("simulated partial write");
+    },
+  });
+
+  await assert.rejects(runCalibrationExperiment({
+    corpus,
+    smokeInput,
+    transport,
+    writeReport,
+  }));
+
+  assert.deepEqual(await readdir(directory), ["checkpoint.json"]);
+  const persisted = JSON.parse(await readFile(checkpointPath, "utf8")) as CalibrationCheckpoint;
+  assert.equal(persisted.phase, "terminal");
+  await assert.rejects(
+    createCalibrationTransport({
+      apiKey: "test-key",
+      corpus,
+      checkpoint,
+      fetch: experimentFetch(corpus),
+    }),
+    calibrationReason("checkpoint-exists"),
+  );
+});
+
 test("atomic checkpoint store claims once and replaces accounting", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jev-calibration-checkpoint-"));
   t.after(() => rm(directory, { recursive: true, force: true }));

@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
@@ -17,6 +26,17 @@ const setupRoot = async (t: test.TestContext): Promise<string> => {
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(join(root, "artifacts"));
   return root;
+};
+
+const copyFixtures = async (root: string): Promise<void> => {
+  await mkdir(join(root, "fixtures"));
+  for (const name of ["calibration-corpus.json", "two-pass-smoke-input.json"]) {
+    await writeFile(
+      join(root, "fixtures", name),
+      await readFile(resolve("fixtures", name), "utf8"),
+      "utf8",
+    );
+  }
 };
 
 const guardedOptions = (root: string) => {
@@ -79,16 +99,81 @@ test("calibration CLI refuses a symlinked artifacts parent before client", async
   assert.deepEqual(guarded.calls(), { factoryCalls: 0, fetchCalls: 0 });
 });
 
+test("calibration CLI rejects symlinked or drifted frozen fixtures before client", async (t) => {
+  const sentinel = "PRIVATE-SENTINEL-MUST-NOT-LEAVE-FIXTURE";
+
+  const symlinkRoot = await setupRoot(t);
+  await copyFixtures(symlinkRoot);
+  const outside = await mkdtemp(join(tmpdir(), "jev-private-fixture-"));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  const driftedCorpus = JSON.parse(
+    await readFile(resolve("fixtures/calibration-corpus.json"), "utf8"),
+  ) as { cases: { input: { taskText: string } }[] };
+  driftedCorpus.cases[0]!.input.taskText = sentinel;
+  const outsideCorpus = join(outside, "calibration-corpus.json");
+  await writeFile(outsideCorpus, JSON.stringify(driftedCorpus), "utf8");
+  await rm(join(symlinkRoot, "fixtures/calibration-corpus.json"));
+  await symlink(outsideCorpus, join(symlinkRoot, "fixtures/calibration-corpus.json"));
+  const symlinked = guardedOptions(symlinkRoot);
+
+  const symlinkResult = await runCalibrationCli([], symlinked.options);
+
+  assert.equal(symlinkResult.exitCode, 2);
+  assert.equal(JSON.stringify(symlinkResult).includes(sentinel), false);
+  assert.deepEqual(symlinked.calls(), { factoryCalls: 0, fetchCalls: 0 });
+
+  const driftRoot = await setupRoot(t);
+  await copyFixtures(driftRoot);
+  const driftedSmoke = JSON.parse(
+    await readFile(resolve("fixtures/two-pass-smoke-input.json"), "utf8"),
+  ) as { taskText: string };
+  driftedSmoke.taskText = sentinel;
+  await writeFile(
+    join(driftRoot, "fixtures/two-pass-smoke-input.json"),
+    JSON.stringify(driftedSmoke),
+    "utf8",
+  );
+  const drifted = guardedOptions(driftRoot);
+
+  const driftResult = await runCalibrationCli([], drifted.options);
+
+  assert.equal(driftResult.exitCode, 2);
+  assert.equal(JSON.stringify(driftResult).includes(sentinel), false);
+  assert.deepEqual(drifted.calls(), { factoryCalls: 0, fetchCalls: 0 });
+});
+
+test("calibration CLI anchors evidence when artifacts path is swapped in factory", async (t) => {
+  const root = await setupRoot(t);
+  await copyFixtures(root);
+  const outside = await mkdtemp(join(tmpdir(), "jev-artifacts-outside-"));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  let factoryCalls = 0;
+  let fetchCalls = 0;
+
+  const result = await runCalibrationCli([], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" },
+    fetch: async () => {
+      fetchCalls += 1;
+      throw new Error("network must not be reached");
+    },
+    createTransport: async (transportOptions) => {
+      factoryCalls += 1;
+      await rename(join(root, "artifacts"), join(root, "artifacts-owned"));
+      await symlink(outside, join(root, "artifacts"));
+      return createCalibrationTransport(transportOptions);
+    },
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(factoryCalls, 1);
+  assert.equal(fetchCalls, 0);
+  assert.deepEqual(await readdir(outside), []);
+});
+
 test("calibration CLI runs the fixed public transaction and returns summary only", async (t) => {
   const root = await setupRoot(t);
-  await mkdir(join(root, "fixtures"));
-  for (const name of ["calibration-corpus.json", "two-pass-smoke-input.json"]) {
-    await writeFile(
-      join(root, "fixtures", name),
-      await readFile(resolve("fixtures", name), "utf8"),
-      "utf8",
-    );
-  }
+  await copyFixtures(root);
   const corpus = loadCalibrationCorpus(join(root, "fixtures/calibration-corpus.json"));
   const smoke = JSON.parse(
     await readFile(join(root, "fixtures/two-pass-smoke-input.json"), "utf8"),

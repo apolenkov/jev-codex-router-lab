@@ -1,4 +1,5 @@
-import { lstat, readFile, realpath } from "node:fs/promises";
+import { constants, type Stats } from "node:fs";
+import { lstat, open, realpath, unlink, type FileHandle } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Fetch } from "@typesafe-ai/sdk";
@@ -8,16 +9,20 @@ import {
   createAtomicCalibrationCheckpointStore,
   createAtomicCalibrationReportWriter,
   createCalibrationTransport,
-  loadCalibrationCorpus,
+  canonicalFingerprint,
+  parseCalibrationCorpus,
   runCalibrationExperiment,
+  type CalibrationCorpus,
   type CalibrationReport,
 } from "./calibration-runner.js";
 
 const DEFAULT_REPOSITORY_ROOT = fileURLToPath(new URL("../..", import.meta.url));
-const REPORT_PATH = "artifacts/calibration-report.json";
-const CHECKPOINT_PATH = "artifacts/calibration-checkpoint.json";
+const REPORT_NAME = "calibration-report.json";
+const CHECKPOINT_NAME = "calibration-checkpoint.json";
 const CORPUS_PATH = "fixtures/calibration-corpus.json";
 const SMOKE_PATH = "fixtures/two-pass-smoke-input.json";
+const CORPUS_FINGERPRINT = "85fdb0f1183f8fb42332d14f6396bc4a5fd32c079ea968f40a998975f7eb9fa3";
+const SMOKE_FINGERPRINT = "fa506bb74e22abff184bbd643f4b175cc8198abeaa7a184357d037e4ff06e4af";
 
 export interface CalibrationCliOptions {
   readonly repositoryRoot?: string;
@@ -55,9 +60,53 @@ const isWithin = (root: string, candidate: string): boolean => {
   );
 };
 
+const sameIdentity = (left: Stats, right: Stats): boolean =>
+  left.dev === right.dev && left.ino === right.ino;
+
+const readPinnedFixture = async <T>(
+  root: string,
+  relativePath: string,
+  expectedFingerprint: string,
+  parse: (serialized: string) => T,
+): Promise<T> => {
+  const path = join(root, relativePath);
+  if (await realpath(path) !== path || !(await lstat(path)).isFile()) {
+    throw new Error("invalid fixture path");
+  }
+  const handle = await open(
+    path,
+    constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+  );
+  try {
+    const opened = await handle.stat();
+    if (!opened.isFile()) throw new Error("invalid fixture");
+    const serialized = await handle.readFile({ encoding: "utf8" });
+    const current = await lstat(path);
+    if (!current.isFile() || !sameIdentity(opened, current)) {
+      throw new Error("fixture path changed");
+    }
+    const parsed = parse(serialized);
+    if (canonicalFingerprint(parsed) !== expectedFingerprint) {
+      throw new Error("fixture fingerprint mismatch");
+    }
+    return parsed;
+  } finally {
+    await handle.close();
+  }
+};
+
+interface EvidencePaths {
+  readonly handle: FileHandle;
+  readonly requestedDirectory: string;
+  readonly identity: Stats;
+  readonly report: string;
+  readonly checkpoint: string;
+}
+
 const evidencePaths = async (
   repositoryRoot: string,
-): Promise<{ report: string; checkpoint: string } | null> => {
+): Promise<EvidencePaths | null> => {
+  let handle: FileHandle | undefined;
   try {
     const root = await realpath(repositoryRoot);
     const artifacts = join(root, "artifacts");
@@ -66,8 +115,15 @@ const evidencePaths = async (
     const canonicalArtifacts = await realpath(artifacts);
     if (!isWithin(root, canonicalArtifacts)) return null;
 
-    const report = join(root, REPORT_PATH);
-    const checkpoint = join(root, CHECKPOINT_PATH);
+    handle = await open(
+      artifacts,
+      constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW,
+    );
+    const identity = await handle.stat();
+    if (!identity.isDirectory() || !sameIdentity(identity, artifactsStat)) return null;
+
+    const report = join(canonicalArtifacts, REPORT_NAME);
+    const checkpoint = join(canonicalArtifacts, CHECKPOINT_NAME);
     for (const path of [report, checkpoint]) {
       try {
         await lstat(path);
@@ -76,9 +132,28 @@ const evidencePaths = async (
         if (!hasErrorCode(error, "ENOENT")) return null;
       }
     }
-    return { report, checkpoint };
+    const result = {
+      handle,
+      requestedDirectory: artifacts,
+      identity,
+      report,
+      checkpoint,
+    };
+    handle = undefined;
+    return result;
   } catch {
     return null;
+  } finally {
+    await handle?.close().catch(() => undefined);
+  }
+};
+
+const evidencePathUnchanged = async (paths: EvidencePaths): Promise<boolean> => {
+  try {
+    const current = await lstat(paths.requestedDirectory);
+    return current.isDirectory() && sameIdentity(paths.identity, current);
+  } catch {
+    return false;
   }
 };
 
@@ -107,43 +182,96 @@ export const runCalibrationCli = async (
     return { exitCode: 2, error: "missing TYPESAFE_API_KEY" };
   }
 
-  const repositoryRoot = resolve(options.repositoryRoot ?? DEFAULT_REPOSITORY_ROOT);
+  let repositoryRoot: string;
+  try {
+    repositoryRoot = await realpath(resolve(options.repositoryRoot ?? DEFAULT_REPOSITORY_ROOT));
+  } catch {
+    return { exitCode: 2, error: "evidence path unavailable" };
+  }
   const paths = await evidencePaths(repositoryRoot);
   if (paths === null) {
     return { exitCode: 2, error: "evidence path unavailable" };
   }
 
-  let corpus: ReturnType<typeof loadCalibrationCorpus>;
-  let smokeInput: RouterInput;
   try {
-    corpus = loadCalibrationCorpus(join(repositoryRoot, CORPUS_PATH));
-    smokeInput = JSON.parse(
-      await readFile(join(repositoryRoot, SMOKE_PATH), "utf8"),
-    ) as RouterInput;
-    precheck(smokeInput);
-  } catch {
-    return { exitCode: 2, error: "invalid frozen input" };
-  }
+    let corpus: CalibrationCorpus;
+    let smokeInput: RouterInput;
+    try {
+      corpus = await readPinnedFixture(
+        repositoryRoot,
+        CORPUS_PATH,
+        CORPUS_FINGERPRINT,
+        parseCalibrationCorpus,
+      );
+      smokeInput = await readPinnedFixture(
+        repositoryRoot,
+        SMOKE_PATH,
+        SMOKE_FINGERPRINT,
+        (serialized) => JSON.parse(serialized) as RouterInput,
+      );
+      precheck(smokeInput);
+    } catch {
+      return { exitCode: 2, error: "invalid frozen input" };
+    }
 
-  try {
+    const checkpoint = createAtomicCalibrationCheckpointStore(paths.checkpoint);
+    const assertEvidencePath = async (): Promise<void> => {
+      if (!await evidencePathUnchanged(paths)) {
+        throw new Error("evidence path changed");
+      }
+    };
+    const guardedCheckpoint = {
+      claim: async (value: Parameters<typeof checkpoint.claim>[0]) => {
+        await assertEvidencePath();
+        const claimed = await checkpoint.claim(value);
+        try {
+          await assertEvidencePath();
+        } catch (error) {
+          if (claimed) await unlink(paths.checkpoint).catch(() => undefined);
+          throw error;
+        }
+        return claimed;
+      },
+      write: async (value: Parameters<typeof checkpoint.write>[0]) => {
+        await assertEvidencePath();
+        await checkpoint.write(value);
+        try {
+          await assertEvidencePath();
+        } catch (error) {
+          await unlink(paths.checkpoint).catch(() => undefined);
+          throw error;
+        }
+      },
+    };
     const transport = await (options.createTransport ?? createCalibrationTransport)({
       apiKey,
       corpus,
       fetch: options.fetch ?? globalThis.fetch,
-      checkpoint: createAtomicCalibrationCheckpointStore(paths.checkpoint),
+      checkpoint: guardedCheckpoint,
     });
+    if (!await evidencePathUnchanged(paths)) {
+      await transport.terminalize("post-transport-validation");
+      return { exitCode: 2, error: "evidence path unavailable" };
+    }
     const report = await runCalibrationExperiment({
       corpus,
       smokeInput,
       transport,
-      writeReport: createAtomicCalibrationReportWriter(paths.report),
+      writeReport: createAtomicCalibrationReportWriter(paths.report, {
+        beforeWrite: assertEvidencePath,
+      }),
     });
+    if (!await evidencePathUnchanged(paths)) {
+      return { exitCode: 2, error: "evidence path unavailable" };
+    }
     return {
       exitCode: report.smoke?.status === "failed" ? 2 : 0,
       summary: summaryOf(report),
     };
   } catch {
     return { exitCode: 2, error: "calibration failed" };
+  } finally {
+    await paths.handle.close().catch(() => undefined);
   }
 };
 
