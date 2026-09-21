@@ -15,7 +15,7 @@ test("package metadata describes the private Apache-2.0 public project", () => {
   assert.equal(packageJson.license, "Apache-2.0");
   assert.equal(packageJson.description, "Experimental TypeScript lab for deterministic, two-pass Jev skill routing.");
   assert.deepEqual(packageJson.keywords, ["jev", "routing", "skills", "typesafe-ai", "typescript"]);
-  assert.deepEqual(packageJson.engines, { node: ">=20" });
+  assert.deepEqual(packageJson.engines, { node: ">=20.19.0" });
   assert.deepEqual(packageJson.repository, {
     type: "git",
     url: "git+https://github.com/apolenkov/jev-codex-router-lab.git",
