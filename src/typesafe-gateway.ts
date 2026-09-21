@@ -44,7 +44,7 @@ const RISK_QUESTIONS: Readonly<Record<RiskDimension, string>> = {
   "user-behavior": "risk_user_behavior",
 };
 
-interface ParsedEnvelope {
+export interface ParsedTypeSafeEnvelope {
   answers: Record<string, unknown>;
   metadata: PassMetadata;
 }
@@ -70,11 +70,11 @@ const exactKeys = (value: Record<string, unknown>, expected: readonly string[]):
   return actual.length === expected.length && expected.every((key) => Object.hasOwn(value, key));
 };
 
-const parseEnvelope = (
+export const parseTypeSafeEnvelope = (
   value: unknown,
   expectedAnswers: readonly string[],
   latencyMs: number,
-): ParsedEnvelope => {
+): ParsedTypeSafeEnvelope => {
   if (
     !isRecord(value) ||
     typeof value.model !== "string" ||
@@ -358,7 +358,7 @@ export class TypeSafeGateway implements SemanticGateway {
     });
   }
 
-  private async call(request: SystemOneRequest): Promise<ParsedEnvelope> {
+  private async call(request: SystemOneRequest): Promise<ParsedTypeSafeEnvelope> {
     const started = performance.now();
     let response: unknown;
     try {
@@ -366,7 +366,11 @@ export class TypeSafeGateway implements SemanticGateway {
     } catch {
       throw new SemanticGatewayError("service-error");
     }
-    return parseEnvelope(response, Object.keys(request.questions), performance.now() - started);
+    return parseTypeSafeEnvelope(
+      response,
+      Object.keys(request.questions),
+      performance.now() - started,
+    );
   }
 
   private selectedRanking(

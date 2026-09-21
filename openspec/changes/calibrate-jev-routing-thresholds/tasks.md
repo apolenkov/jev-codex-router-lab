@@ -7,9 +7,9 @@
 
 ## 2. Frozen corpus and evidence boundary
 
-- [ ] 2.1 Add one canonical eight-case synthetic corpus with complete seven-signal labels/ranges and verify its deterministic SHA-256 fingerprint
-- [ ] 2.2 Write failing tests through the real SDK with a stub transport for corpus mutation, closed confidence evidence, protected-data exclusion, attempt counting, zero retries, redirect rejection, 429/500/timeout, unknown accounting, request 19, and USD 0.002688 reservation against the USD 0.05 hard cap
-- [ ] 2.3 Implement the calibration runner and report schema without changing the normal router report; verify all focused tests pass
+- [x] 2.1 Add one canonical eight-case synthetic corpus with complete seven-signal labels/ranges and verify its deterministic SHA-256 fingerprint
+- [x] 2.2 Write failing tests through the real SDK with a stub transport for corpus mutation, closed confidence evidence, protected-data exclusion, attempt counting, zero retries, redirect rejection, 429/500/timeout, unknown accounting, request 19, and USD 0.002688 reservation against the USD 0.05 hard cap
+- [x] 2.3 Implement the calibration runner and report schema without changing the normal router report; verify all focused tests pass
 
 ## 3. Local preflight
 
