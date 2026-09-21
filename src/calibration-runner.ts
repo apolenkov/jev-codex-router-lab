@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { rename, unlink, writeFile } from "node:fs/promises";
+import { readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   APITimeoutError,
@@ -96,6 +96,11 @@ const RISK_DIMENSIONS: readonly RiskDimension[] = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+const exactKeys = (value: Record<string, unknown>, expected: readonly string[]): boolean => {
+  const actual = Object.keys(value);
+  return actual.length === expected.length && expected.every((key) => Object.hasOwn(value, key));
+};
+
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((entry) => typeof entry === "string");
 
@@ -126,6 +131,7 @@ const parseCorpusCase = (
 ): CalibrationCorpusCase => {
   if (
     !isRecord(value) ||
+    !exactKeys(value, ["id", "set", "input", "expected"]) ||
     value.id !== expectedId ||
     value.set !== expectedSet ||
     !isRecord(value.input) ||
@@ -137,6 +143,20 @@ const parseCorpusCase = (
   const input = value.input as unknown as RouterInput;
   const checked = precheck(input);
   if (
+    !exactKeys(value.input, [
+      "taskId",
+      "taskRevision",
+      "taskText",
+      "policyVersion",
+      "catalogHash",
+      "explicitSkillIds",
+      "requiredSkillIds",
+      "skills",
+      "criticalGapCandidates",
+      "architectureForkCandidates",
+      "reuseCandidates",
+      "contextFragments",
+    ]) ||
     input.taskId !== expectedId ||
     !Array.isArray(input.criticalGapCandidates) ||
     !Array.isArray(input.reuseCandidates) ||
@@ -145,10 +165,38 @@ const parseCorpusCase = (
   ) {
     throw new CalibrationError("incomplete-corpus-input");
   }
+  if (
+    input.skills.some((entry) =>
+      !isRecord(entry) || !exactKeys(entry, ["id", "description", "excerpt"])) ||
+    input.criticalGapCandidates.some((entry) =>
+      !isRecord(entry) || !exactKeys(entry, ["id", "fact", "blocks"])) ||
+    input.architectureForkCandidates.some((entry) =>
+      !isRecord(entry) || !exactKeys(entry, ["id", "alternatives", "tradeoff"])) ||
+    input.reuseCandidates.some((entry) =>
+      !isRecord(entry) || !exactKeys(entry, ["id", "summary"])) ||
+    input.contextFragments.some((entry) =>
+      !isRecord(entry) || !exactKeys(
+        entry,
+        entry.protected === undefined ? ["id", "summary"] : ["id", "summary", "protected"],
+      ))
+  ) {
+    throw new CalibrationError("invalid-corpus-input");
+  }
 
   const expected = value.expected;
   const riskDimensions = expected.riskDimensions;
   if (
+    !exactKeys(expected, [
+      "taskType",
+      "skillCandidates",
+      "criticalGapId",
+      "reuseCandidateId",
+      "architectureForkId",
+      "riskDimensions",
+      "contextRelevance",
+      "forcedSkillIds",
+      "protectedContextIds",
+    ]) ||
     typeof expected.taskType !== "string" ||
     !TASK_TYPES.has(expected.taskType) ||
     !isStringArray(expected.skillCandidates) ||
@@ -162,7 +210,10 @@ const parseCorpusCase = (
     !RISK_DIMENSIONS.every((dimension) => isRange(riskDimensions[dimension])) ||
     Object.keys(riskDimensions).length !== RISK_DIMENSIONS.length ||
     !expected.contextRelevance.every((entry) =>
-      isRecord(entry) && typeof entry.id === "string" && isRange(entry.probability))
+      isRecord(entry) &&
+      exactKeys(entry, ["id", "probability"]) &&
+      typeof entry.id === "string" &&
+      isRange(entry.probability))
   ) {
     throw new CalibrationError("invalid-corpus-label");
   }
@@ -198,7 +249,53 @@ const parseCorpusCase = (
     throw new CalibrationError("invalid-corpus-label");
   }
 
-  return value as unknown as CalibrationCorpusCase;
+  return {
+    id: expectedId,
+    set: expectedSet,
+    input: {
+      taskId: input.taskId,
+      taskRevision: input.taskRevision,
+      taskText: input.taskText,
+      policyVersion: input.policyVersion,
+      catalogHash: input.catalogHash,
+      explicitSkillIds: [...input.explicitSkillIds],
+      requiredSkillIds: [...input.requiredSkillIds],
+      skills: input.skills.map(({ id, description, excerpt }) => ({ id, description, excerpt })),
+      criticalGapCandidates: input.criticalGapCandidates.map(({ id, fact, blocks }) => ({
+        id,
+        fact,
+        blocks,
+      })),
+      architectureForkCandidates: input.architectureForkCandidates.map(
+        ({ id, alternatives, tradeoff }) => ({ id, alternatives: [...alternatives], tradeoff }),
+      ),
+      reuseCandidates: input.reuseCandidates.map(({ id, summary }) => ({ id, summary })),
+      contextFragments: input.contextFragments.map(({ id, summary, protected: isProtected }) => ({
+        id,
+        summary,
+        ...(isProtected === undefined ? {} : { protected: isProtected }),
+      })),
+    },
+    expected: {
+      taskType: expected.taskType as TaskType,
+      skillCandidates: [...expected.skillCandidates],
+      criticalGapId: expected.criticalGapId,
+      reuseCandidateId: expected.reuseCandidateId,
+      architectureForkId: expected.architectureForkId,
+      riskDimensions: Object.fromEntries(
+        RISK_DIMENSIONS.map((dimension) => {
+          const range = riskDimensions[dimension] as unknown as InclusiveRange;
+          return [dimension, { min: range.min, max: range.max }];
+        }),
+      ) as Readonly<Record<RiskDimension, InclusiveRange>>,
+      contextRelevance: expected.contextRelevance.map((entry) => ({
+        id: entry.id as string,
+        probability: { ...(entry.probability as unknown as InclusiveRange) },
+      })),
+      forcedSkillIds: [...expected.forcedSkillIds],
+      protectedContextIds: [...expected.protectedContextIds],
+    },
+  };
 };
 
 export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
@@ -208,7 +305,12 @@ export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
   } catch {
     throw new CalibrationError("invalid-corpus-json");
   }
-  if (!isRecord(value) || value.schemaVersion !== 1 || !Array.isArray(value.cases)) {
+  if (
+    !isRecord(value) ||
+    !exactKeys(value, ["schemaVersion", "cases"]) ||
+    value.schemaVersion !== 1 ||
+    !Array.isArray(value.cases)
+  ) {
     throw new CalibrationError("invalid-corpus");
   }
   const cases = value.cases;
@@ -262,6 +364,37 @@ export interface CalibrationAccounting {
   readonly spentUsd: number;
   readonly reservedUsd: number;
   readonly terminal: boolean;
+}
+
+const CHECKPOINT_FAILURES = [
+  "attempt-cap",
+  "concurrent-dispatch",
+  "corpus-mutated",
+  "post-transport-validation",
+  "provider-error",
+  "redirect",
+  "runtime-override",
+  "spend-cap",
+  "timeout",
+  "unknown-accounting",
+] as const;
+
+export type CalibrationCheckpointFailure = (typeof CHECKPOINT_FAILURES)[number];
+
+const isCheckpointFailure = (value: unknown): value is CalibrationCheckpointFailure =>
+  typeof value === "string" && (CHECKPOINT_FAILURES as readonly string[]).includes(value);
+
+export interface CalibrationCheckpoint {
+  readonly schemaVersion: 1;
+  readonly corpusFingerprint: string;
+  readonly phase: "active" | "reserved" | "terminal" | "complete";
+  readonly accounting: CalibrationAccounting;
+  readonly failureReason: CalibrationCheckpointFailure | null;
+}
+
+export interface CalibrationCheckpointStore {
+  load(): Promise<CalibrationCheckpoint | null>;
+  write(checkpoint: CalibrationCheckpoint): Promise<void>;
 }
 
 export interface CalibrationTransportResult {
@@ -361,30 +494,106 @@ export interface CalibrationReport {
   readonly accounting: CalibrationAccounting;
 }
 
-export const createAtomicCalibrationReportWriter = (path: string) =>
-  async (report: CalibrationReport): Promise<void> => {
-    const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+const writeJsonAtomic = async (path: string, value: unknown): Promise<void> => {
+  const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+      mode: 0o600,
+    });
+    await rename(temporaryPath, path);
+  } catch (error) {
     try {
-      await writeFile(temporaryPath, `${JSON.stringify(report, null, 2)}\n`, {
-        encoding: "utf8",
-        flag: "wx",
-        mode: 0o600,
-      });
-      await rename(temporaryPath, path);
+      await unlink(temporaryPath);
+    } catch {
+      // The temporary path may not exist or may already have been renamed.
+    }
+    throw error;
+  }
+};
+
+export const createAtomicCalibrationReportWriter = (path: string) =>
+  async (report: CalibrationReport): Promise<void> => writeJsonAtomic(path, report);
+
+const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
+  if (
+    !isRecord(value) ||
+    !exactKeys(value, [
+      "schemaVersion",
+      "corpusFingerprint",
+      "phase",
+      "accounting",
+      "failureReason",
+    ]) ||
+    value.schemaVersion !== 1 ||
+    typeof value.corpusFingerprint !== "string" ||
+    !/^[a-f0-9]{64}$/.test(value.corpusFingerprint) ||
+    !["active", "reserved", "terminal", "complete"].includes(
+      value.phase as string,
+    ) ||
+    !isRecord(value.accounting) ||
+    !exactKeys(value.accounting, ["attempts", "spentUsd", "reservedUsd", "terminal"]) ||
+    !Number.isInteger(value.accounting.attempts) ||
+    (value.accounting.attempts as number) < 0 ||
+    (value.accounting.attempts as number) > CALIBRATION_MAX_ATTEMPTS ||
+    typeof value.accounting.spentUsd !== "number" ||
+    !Number.isFinite(value.accounting.spentUsd) ||
+    value.accounting.spentUsd < 0 ||
+    value.accounting.spentUsd > CALIBRATION_SPEND_CAP_USD ||
+    typeof value.accounting.reservedUsd !== "number" ||
+    ![0, CALIBRATION_REQUEST_RESERVE_USD].includes(value.accounting.reservedUsd) ||
+    typeof value.accounting.terminal !== "boolean" ||
+    !(value.failureReason === null || isCheckpointFailure(value.failureReason))
+  ) {
+    throw new CalibrationError("invalid-checkpoint");
+  }
+  const phase = value.phase as CalibrationCheckpoint["phase"];
+  const failureReason = value.failureReason as CalibrationCheckpointFailure | null;
+  if (
+    (phase === "reserved" &&
+      value.accounting.reservedUsd !== CALIBRATION_REQUEST_RESERVE_USD) ||
+    (["active", "complete"].includes(phase) &&
+      value.accounting.reservedUsd !== 0) ||
+    (["active", "reserved"].includes(phase) && value.accounting.terminal) ||
+    (["terminal", "complete"].includes(phase) && !value.accounting.terminal) ||
+    ((phase === "terminal") !== (failureReason !== null))
+  ) {
+    throw new CalibrationError("invalid-checkpoint");
+  }
+  return structuredClone(value) as unknown as CalibrationCheckpoint;
+};
+
+export const createAtomicCalibrationCheckpointStore = (
+  path: string,
+): CalibrationCheckpointStore => ({
+  load: async () => {
+    let serialized: string;
+    try {
+      serialized = await readFile(path, "utf8");
     } catch (error) {
-      try {
-        await unlink(temporaryPath);
-      } catch {
-        // The temporary path may not exist or may already have been renamed.
+      if (isRecord(error) && error.code === "ENOENT") {
+        return null;
       }
       throw error;
     }
-  };
+    try {
+      return parseCheckpoint(JSON.parse(serialized));
+    } catch (error) {
+      if (error instanceof CalibrationError) {
+        throw error;
+      }
+      throw new CalibrationError("invalid-checkpoint");
+    }
+  },
+  write: async (checkpoint) => writeJsonAtomic(path, parseCheckpoint(checkpoint)),
+});
 
 interface CalibrationTransportOptions {
   readonly apiKey: string;
   readonly corpus: CalibrationCorpus;
   readonly fetch: Fetch;
+  readonly checkpoint: CalibrationCheckpointStore;
   readonly timeoutMs?: number;
   readonly accounting?: {
     readonly attempts: number;
@@ -409,7 +618,7 @@ const hasRuntimeOverride = (request: SystemOneRequest): boolean => {
     .some((key) => Object.hasOwn(value, key));
 };
 
-export const createCalibrationTransport = (options: CalibrationTransportOptions) => {
+export const createCalibrationTransport = async (options: CalibrationTransportOptions) => {
   if (options.apiKey.trim().length === 0) {
     throw new CalibrationError("missing-api-key");
   }
@@ -431,28 +640,65 @@ export const createCalibrationTransport = (options: CalibrationTransportOptions)
   let reservedUsd = 0;
   let terminal = false;
 
+  if (await options.checkpoint.load() !== null) {
+    throw new CalibrationError("checkpoint-exists");
+  }
+
+  const accounting = (): CalibrationAccounting => ({
+    attempts,
+    spentUsd,
+    reservedUsd,
+    terminal,
+  });
+  const persistCheckpoint = async (
+    phase: CalibrationCheckpoint["phase"],
+    failureReason: CalibrationCheckpointFailure | null,
+  ): Promise<void> => {
+    try {
+      await options.checkpoint.write({
+        schemaVersion: 1,
+        corpusFingerprint: guard.fingerprint,
+        phase,
+        accounting: accounting(),
+        failureReason,
+      });
+    } catch {
+      terminal = true;
+      throw new CalibrationError("checkpoint-failed");
+    }
+  };
+  const terminalize = async (reason: CalibrationCheckpointFailure): Promise<void> => {
+    terminal = true;
+    await persistCheckpoint("terminal", reason);
+  };
+  const fail = async (reason: CalibrationCheckpointFailure): Promise<never> => {
+    await terminalize(reason);
+    throw new CalibrationError(reason);
+  };
+
+  await persistCheckpoint("active", null);
+
   const guardedFetch: Fetch = async (input, init) => {
     guard.assertUnchanged();
     if (terminal) {
       throw new CalibrationError("terminal");
     }
     if (reservedUsd !== 0) {
-      terminal = true;
       throw new CalibrationError("concurrent-dispatch");
     }
     if (attempts >= CALIBRATION_MAX_ATTEMPTS) {
-      terminal = true;
       throw new CalibrationError("attempt-cap");
     }
     if (spentUsd + CALIBRATION_REQUEST_RESERVE_USD > CALIBRATION_SPEND_CAP_USD) {
-      terminal = true;
       throw new CalibrationError("spend-cap");
     }
     attempts += 1;
     reservedUsd = CALIBRATION_REQUEST_RESERVE_USD;
+    await persistCheckpoint("reserved", null);
+    guard.assertUnchanged();
     const response = await options.fetch(input, { ...init, redirect: "manual" });
+    guard.assertUnchanged();
     if (response.status >= 300 && response.status < 400) {
-      terminal = true;
       throw new CalibrationError("redirect");
     }
     return response;
@@ -472,7 +718,7 @@ export const createCalibrationTransport = (options: CalibrationTransportOptions)
       throw new CalibrationError("terminal");
     }
     if (hasRuntimeOverride(request)) {
-      throw new CalibrationError("runtime-override");
+      return fail("runtime-override");
     }
     const started = performance.now();
     let response: unknown;
@@ -483,16 +729,23 @@ export const createCalibrationTransport = (options: CalibrationTransportOptions)
         model: CALIBRATION_MODEL,
       });
     } catch (error) {
-      terminal = true;
       const calibrationError = calibrationErrorFrom(error);
-      if (calibrationError !== null) {
+      if (calibrationError?.reason === "checkpoint-failed") {
         throw calibrationError;
       }
-      throw new CalibrationError(
-        error instanceof APITimeoutError ? "timeout" : "provider-error",
-      );
+      const reason = calibrationError !== null && isCheckpointFailure(calibrationError.reason)
+        ? calibrationError.reason
+        : error instanceof APITimeoutError
+          ? "timeout"
+          : "provider-error";
+      return fail(reason);
     }
 
+    try {
+      guard.assertUnchanged();
+    } catch {
+      return fail("corpus-mutated");
+    }
     let envelope: ReturnType<typeof parseTypeSafeEnvelope>;
     try {
       envelope = parseTypeSafeEnvelope(
@@ -501,15 +754,13 @@ export const createCalibrationTransport = (options: CalibrationTransportOptions)
         performance.now() - started,
       );
     } catch {
-      terminal = true;
-      throw new CalibrationError("unknown-accounting");
+      return fail("unknown-accounting");
     }
     if (
       envelope.metadata.model !== CALIBRATION_MODEL ||
       envelope.metadata.inputTokens > CALIBRATION_MAX_INPUT_TOKENS
     ) {
-      terminal = true;
-      throw new CalibrationError("unknown-accounting");
+      return fail("unknown-accounting");
     }
     const costUsd =
       envelope.metadata.inputTokens * CALIBRATION_INPUT_USD_PER_MILLION / 1_000_000 +
@@ -520,22 +771,33 @@ export const createCalibrationTransport = (options: CalibrationTransportOptions)
       costUsd > reservedUsd ||
       spentUsd + costUsd > CALIBRATION_SPEND_CAP_USD
     ) {
-      terminal = true;
-      throw new CalibrationError("unknown-accounting");
+      return fail("unknown-accounting");
     }
     reservedUsd = 0;
     spentUsd += costUsd;
+    await persistCheckpoint("active", null);
     return { ...envelope, costUsd };
+  };
+
+  const complete = async (): Promise<void> => {
+    guard.assertUnchanged();
+    if (terminal || reservedUsd !== 0) {
+      throw new CalibrationError("terminal");
+    }
+    terminal = true;
+    await persistCheckpoint("complete", null);
   };
 
   return {
     fingerprint: guard.fingerprint,
     systemOne,
-    accounting: (): CalibrationAccounting => ({ attempts, spentUsd, reservedUsd, terminal }),
+    accounting,
+    terminalize,
+    complete,
   };
 };
 
-type CalibrationTransport = ReturnType<typeof createCalibrationTransport>;
+type CalibrationTransport = Awaited<ReturnType<typeof createCalibrationTransport>>;
 
 interface RunCalibrationExperimentOptions {
   readonly corpus: CalibrationCorpus;
@@ -631,10 +893,10 @@ interface CollectedCase {
 
 const collectCase = async (
   corpusCase: CalibrationCorpusCase,
-  transport: CalibrationTransport,
+  systemOne: CalibrationTransport["systemOne"],
 ): Promise<CollectedCase> => {
   const checked = precheck(corpusCase.input);
-  const pass1Transport = await transport.systemOne(buildPass1Request(checked));
+  const pass1Transport = await systemOne(buildPass1Request(checked));
   const pass1 = await validatePass1(checked, pass1Transport);
   const preliminary = postcheck(checked, semanticFromPass1(pass1));
   const pass1Decision = decisionEvidence(preliminary);
@@ -653,7 +915,7 @@ const collectCase = async (
     throw new CalibrationError("pass1-label-mismatch");
   }
 
-  const pass2Transport = await transport.systemOne(
+  const pass2Transport = await systemOne(
     buildPass2Request(checked, pass1Decision.skillCandidates),
   );
   let record: ParsedPass2;
@@ -757,87 +1019,121 @@ const reportEvaluation = (
 export const runCalibrationExperiment = async (
   options: RunCalibrationExperimentOptions,
 ): Promise<CalibrationReport> => {
-  const fingerprint = canonicalFingerprint(options.corpus);
-  if (options.transport.fingerprint !== fingerprint) {
-    throw new CalibrationError("corpus-fingerprint-mismatch");
-  }
-  const calibrationCases = options.corpus.cases.filter(({ set }) => set === "calibration");
-  const holdoutCases = options.corpus.cases.filter(({ set }) => set === "holdout");
-  if (calibrationCases.length !== 6 || holdoutCases.length !== 2) {
-    throw new CalibrationError("invalid-corpus-size");
-  }
+  const guard = createCorpusGuard(options.corpus);
+  const corpus = structuredClone(options.corpus);
+  const fingerprint = guard.fingerprint;
+  const systemOne: CalibrationTransport["systemOne"] = async (request) => {
+    guard.assertUnchanged();
+    const result = await options.transport.systemOne(request);
+    guard.assertUnchanged();
+    return result;
+  };
+  const writeReport = async (report: CalibrationReport): Promise<void> => {
+    guard.assertUnchanged();
+    await options.writeReport(report);
+    guard.assertUnchanged();
+  };
+  const finish = async (report: CalibrationReport): Promise<CalibrationReport> => {
+    guard.assertUnchanged();
+    await options.transport.complete();
+    guard.assertUnchanged();
+    return report;
+  };
 
-  const collectedCalibration: CollectedCase[] = [];
-  for (const corpusCase of calibrationCases) {
-    collectedCalibration.push(await collectCase(corpusCase, options.transport));
-  }
-  const recordReport = baseReport(
-    "calibration-records",
-    fingerprint,
-    collectedCalibration.map(({ evidence }) => evidence),
-    options.transport.accounting(),
-  );
-  await options.writeReport(recordReport);
+  try {
+    guard.assertUnchanged();
+    if (
+      canonicalFingerprint(corpus) !== fingerprint ||
+      options.transport.fingerprint !== fingerprint
+    ) {
+      throw new CalibrationError("corpus-fingerprint-mismatch");
+    }
+    const calibrationCases = corpus.cases.filter(({ set }) => set === "calibration");
+    const holdoutCases = corpus.cases.filter(({ set }) => set === "holdout");
+    if (calibrationCases.length !== 6 || holdoutCases.length !== 2) {
+      throw new CalibrationError("invalid-corpus-size");
+    }
 
-  const selectorCases = collectedCalibration.map(({ evidence }) => ({
-    caseId: evidence.caseId,
-    record: evidence.pass2.record,
-    expectedSkillIds: evidence.expected.skillCandidates,
-  }));
-  const evaluations = evaluateThresholdGrid(selectorCases)
-    .map((evaluation) => reportEvaluation(evaluation, selectorCases));
-  const selected = selectThreshold(selectorCases);
-  if (selected === null) {
-    const failed: CalibrationReport = {
+    const collectedCalibration: CollectedCase[] = [];
+    for (const corpusCase of calibrationCases) {
+      collectedCalibration.push(await collectCase(corpusCase, systemOne));
+    }
+    const recordReport = baseReport(
+      "calibration-records",
+      fingerprint,
+      collectedCalibration.map(({ evidence }) => evidence),
+      options.transport.accounting(),
+    );
+    await writeReport(recordReport);
+
+    const selectorCases = collectedCalibration.map(({ evidence }) => ({
+      caseId: evidence.caseId,
+      record: evidence.pass2.record,
+      expectedSkillIds: evidence.expected.skillCandidates,
+    }));
+    const evaluations = evaluateThresholdGrid(selectorCases)
+      .map((evaluation) => reportEvaluation(evaluation, selectorCases));
+    const selected = selectThreshold(selectorCases);
+    if (selected === null) {
+      const failed: CalibrationReport = {
+        ...recordReport,
+        phase: "calibration-failed",
+        calibration: { ...recordReport.calibration, evaluations, pass: false },
+        accounting: options.transport.accounting(),
+      };
+      await writeReport(failed);
+      return await finish(failed);
+    }
+
+    const selectedTuple: Pass2Thresholds = Object.freeze({ ...selected.thresholds });
+    const tupleReport: CalibrationReport = {
       ...recordReport,
-      phase: "calibration-failed",
-      calibration: { ...recordReport.calibration, evaluations, pass: false },
+      phase: "tuple-selected",
+      calibration: { ...recordReport.calibration, evaluations, pass: true },
+      selectedTuple,
       accounting: options.transport.accounting(),
     };
-    await options.writeReport(failed);
-    return failed;
-  }
+    await writeReport(tupleReport);
 
-  const selectedTuple: Pass2Thresholds = Object.freeze({ ...selected.thresholds });
-  const tupleReport: CalibrationReport = {
-    ...recordReport,
-    phase: "tuple-selected",
-    calibration: { ...recordReport.calibration, evaluations, pass: true },
-    selectedTuple,
-    accounting: options.transport.accounting(),
-  };
-  await options.writeReport(tupleReport);
-
-  const collectedHoldout: CalibrationEvidenceCase[] = [];
-  for (const corpusCase of holdoutCases) {
-    const collected = await collectCase(corpusCase, options.transport);
-    const evaluation = evaluatePass2(collected.evidence.pass2.record, selectedTuple);
-    const final = evaluation.status === "ok"
-      ? postcheck(collected.checked, {
-        ...semanticFromPass1(collected.pass1),
-        skillCandidates: evaluation.skillCandidates,
-      })
-      : null;
-    const finalDecision = final === null ? null : decisionEvidence(final);
-    const pass = finalDecision !== null && matchesExpected(finalDecision, corpusCase.expected);
-    collectedHoldout.push({
-      ...collected.evidence,
-      ...(finalDecision === null ? {} : { finalDecision }),
-      pass,
-    });
-    if (!pass) {
-      break;
+    const collectedHoldout: CalibrationEvidenceCase[] = [];
+    for (const corpusCase of holdoutCases) {
+      const collected = await collectCase(corpusCase, systemOne);
+      const evaluation = evaluatePass2(collected.evidence.pass2.record, selectedTuple);
+      const final = evaluation.status === "ok"
+        ? postcheck(collected.checked, {
+          ...semanticFromPass1(collected.pass1),
+          skillCandidates: evaluation.skillCandidates,
+        })
+        : null;
+      const finalDecision = final === null ? null : decisionEvidence(final);
+      const pass = finalDecision !== null && matchesExpected(finalDecision, corpusCase.expected);
+      collectedHoldout.push({
+        ...collected.evidence,
+        ...(finalDecision === null ? {} : { finalDecision }),
+        pass,
+      });
+      if (!pass) {
+        break;
+      }
     }
-  }
 
-  const holdoutPass =
-    collectedHoldout.length === 2 && collectedHoldout.every(({ pass }) => pass === true);
-  const finalReport: CalibrationReport = {
-    ...tupleReport,
-    phase: "holdout-complete",
-    holdout: { denominator: 2, cases: collectedHoldout, pass: holdoutPass },
-    accounting: options.transport.accounting(),
-  };
-  await options.writeReport(finalReport);
-  return finalReport;
+    const holdoutPass =
+      collectedHoldout.length === 2 && collectedHoldout.every(({ pass }) => pass === true);
+    const finalReport: CalibrationReport = {
+      ...tupleReport,
+      phase: "holdout-complete",
+      holdout: { denominator: 2, cases: collectedHoldout, pass: holdoutPass },
+      accounting: options.transport.accounting(),
+    };
+    await writeReport(finalReport);
+    return await finish(finalReport);
+  } catch (error) {
+    if (!options.transport.accounting().terminal) {
+      const reason = calibrationErrorFrom(error)?.reason === "corpus-mutated"
+        ? "corpus-mutated"
+        : "post-transport-validation";
+      await options.transport.terminalize(reason);
+    }
+    throw error;
+  }
 };
