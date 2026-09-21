@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { rename, unlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   APITimeoutError,
@@ -393,7 +393,7 @@ export interface CalibrationCheckpoint {
 }
 
 export interface CalibrationCheckpointStore {
-  load(): Promise<CalibrationCheckpoint | null>;
+  claim(checkpoint: CalibrationCheckpoint): Promise<boolean>;
   write(checkpoint: CalibrationCheckpoint): Promise<void>;
 }
 
@@ -567,23 +567,19 @@ const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
 export const createAtomicCalibrationCheckpointStore = (
   path: string,
 ): CalibrationCheckpointStore => ({
-  load: async () => {
-    let serialized: string;
+  claim: async (checkpoint) => {
     try {
-      serialized = await readFile(path, "utf8");
+      await writeFile(path, `${JSON.stringify(parseCheckpoint(checkpoint), null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      return true;
     } catch (error) {
-      if (isRecord(error) && error.code === "ENOENT") {
-        return null;
+      if (isRecord(error) && error.code === "EEXIST") {
+        return false;
       }
       throw error;
-    }
-    try {
-      return parseCheckpoint(JSON.parse(serialized));
-    } catch (error) {
-      if (error instanceof CalibrationError) {
-        throw error;
-      }
-      throw new CalibrationError("invalid-checkpoint");
     }
   },
   write: async (checkpoint) => writeJsonAtomic(path, parseCheckpoint(checkpoint)),
@@ -640,10 +636,6 @@ export const createCalibrationTransport = async (options: CalibrationTransportOp
   let reservedUsd = 0;
   let terminal = false;
 
-  if (await options.checkpoint.load() !== null) {
-    throw new CalibrationError("checkpoint-exists");
-  }
-
   const accounting = (): CalibrationAccounting => ({
     attempts,
     spentUsd,
@@ -676,7 +668,22 @@ export const createCalibrationTransport = async (options: CalibrationTransportOp
     throw new CalibrationError(reason);
   };
 
-  await persistCheckpoint("active", null);
+  let claimed: boolean;
+  try {
+    claimed = await options.checkpoint.claim({
+      schemaVersion: 1,
+      corpusFingerprint: guard.fingerprint,
+      phase: "active",
+      accounting: accounting(),
+      failureReason: null,
+    });
+  } catch {
+    terminal = true;
+    throw new CalibrationError("checkpoint-failed");
+  }
+  if (!claimed) {
+    throw new CalibrationError("checkpoint-exists");
+  }
 
   const guardedFetch: Fetch = async (input, init) => {
     guard.assertUnchanged();
@@ -1037,7 +1044,9 @@ export const runCalibrationExperiment = async (
     guard.assertUnchanged();
     await options.transport.complete();
     guard.assertUnchanged();
-    return report;
+    const completed = { ...report, accounting: options.transport.accounting() };
+    await writeReport(completed);
+    return completed;
   };
 
   try {
@@ -1081,7 +1090,6 @@ export const runCalibrationExperiment = async (
         calibration: { ...recordReport.calibration, evaluations, pass: false },
         accounting: options.transport.accounting(),
       };
-      await writeReport(failed);
       return await finish(failed);
     }
 
@@ -1125,7 +1133,6 @@ export const runCalibrationExperiment = async (
       holdout: { denominator: 2, cases: collectedHoldout, pass: holdoutPass },
       accounting: options.transport.accounting(),
     };
-    await writeReport(finalReport);
     return await finish(finalReport);
   } catch (error) {
     if (!options.transport.accounting().terminal) {

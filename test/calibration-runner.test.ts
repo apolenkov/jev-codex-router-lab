@@ -139,7 +139,12 @@ const memoryCheckpointStore = (): {
   return {
     snapshots,
     store: {
-      load: async () => current === null ? null : structuredClone(current),
+      claim: async (checkpoint) => {
+        if (current !== null) return false;
+        current = structuredClone(checkpoint);
+        snapshots.push(structuredClone(checkpoint));
+        return true;
+      },
       write: async (checkpoint) => {
         current = structuredClone(checkpoint);
         snapshots.push(structuredClone(checkpoint));
@@ -485,6 +490,9 @@ test("runner persists closed calibration records and selected tuple before untou
   assert.equal(persisted[0]!.calibration.cases.length, 6);
   assert.equal(persisted[0]!.selectedTuple, null);
   assert.equal(report.holdout?.pass, true);
+  assert.equal(report.accounting.terminal, true);
+  assert.equal(persisted.at(-1)?.accounting.terminal, true);
+  assert.deepEqual(persisted.at(-1)?.accounting, report.accounting);
   assert.equal(report.holdout?.cases.length, 2);
   assert.equal(report.accounting.attempts, 16);
   assert.equal(report.calibration.denominator, 6);
@@ -615,7 +623,7 @@ test("atomic report writer replaces a prior phase without leaving temporary file
   assert.deepEqual(await readdir(directory), ["report.json"]);
 });
 
-test("atomic checkpoint store replaces a phase and reads the closed checkpoint", async (t) => {
+test("atomic checkpoint store claims once and replaces accounting", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jev-calibration-checkpoint-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const path = join(directory, "checkpoint.json");
@@ -632,10 +640,50 @@ test("atomic checkpoint store replaces a phase and reads the closed checkpoint",
     accounting: { attempts: 1, spentUsd: 0.0000042, reservedUsd: 0, terminal: false },
   };
 
-  assert.equal(await store.load(), null);
-  await store.write(active);
+  assert.equal(await store.claim(active), true);
+  assert.equal(await store.claim(active), false);
   await store.write(accounted);
 
-  assert.deepEqual(await store.load(), accounted);
+  assert.deepEqual(JSON.parse(await readFile(path, "utf8")), accounted);
   assert.deepEqual(await readdir(directory), ["checkpoint.json"]);
+});
+
+test("atomic checkpoint claim permits only one concurrent transport and dispatch", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-calibration-claim-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const path = join(directory, "checkpoint.json");
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  let calls = 0;
+  const fetch: Fetch = async () => {
+    calls += 1;
+    return successResponse();
+  };
+
+  const results = await Promise.allSettled([
+    createCalibrationTransport({
+      apiKey: "test-key",
+      corpus,
+      fetch,
+      checkpoint: createAtomicCalibrationCheckpointStore(path),
+    }),
+    createCalibrationTransport({
+      apiKey: "test-key",
+      corpus,
+      fetch,
+      checkpoint: createAtomicCalibrationCheckpointStore(path),
+    }),
+  ]);
+  const transports = results.flatMap((result) =>
+    result.status === "fulfilled" ? [result.value] : []);
+  const failures = results.flatMap((result) =>
+    result.status === "rejected" ? [result.reason] : []);
+
+  await Promise.all(transports.map((transport) => transport.systemOne(oneQuestion)));
+  assert.equal(transports.length, 1);
+  assert.equal(failures.length, 1);
+  assert.equal(calibrationReason("checkpoint-exists")(failures[0]), true);
+  assert.equal(calls, 1);
+  const persisted = JSON.parse(await readFile(path, "utf8")) as CalibrationCheckpoint;
+  assert.equal(persisted.accounting.attempts, 1);
+  assert.equal(persisted.accounting.reservedUsd, 0);
 });
