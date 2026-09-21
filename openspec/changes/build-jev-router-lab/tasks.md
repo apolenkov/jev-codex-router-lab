@@ -14,8 +14,8 @@
 
 ## 3. Router and CLI
 
-- [ ] 3.1 Implement `route(input, gateway)` composing precheck → gateway → postcheck, converting `invalid-input` and gateway failures to `fallback`; verify tests prove mandatory skills survive every outcome
-- [ ] 3.2 Implement `src/cli.ts` reading a JSON input file and printing the typed decision plus structured metadata (no task text, secrets, or bodies); verify CLI tests and `npm run route` on a synthetic fixture
+- [x] 3.1 Implement `route(input, gateway)` composing precheck → gateway → postcheck, converting `invalid-input` and gateway failures to `fallback`; verify tests prove mandatory skills survive every outcome
+- [x] 3.2 Implement `src/cli.ts` reading a JSON input file and printing the typed decision plus structured metadata (no task text, secrets, or bodies); verify CLI tests and `npm run route` on a synthetic fixture
 
 ## 4. Smoke evidence
 

@@ -22,6 +22,9 @@ Codex installation and only accepts public, synthetic, or anonymized input.
 
 - `src/contracts.ts` — closed types for the routing boundary.
 - `src/policy.ts` — deterministic `precheck` / `postcheck`.
+- `src/router.ts` — safe two-pass orchestration and typed fallback.
+- `src/telemetry.ts` — metadata-only usage, latency, and cost reporting.
+- `src/cli.ts` — strict local JSON-file CLI.
 - `test/` — `node:test` suites over compiled `dist/` output.
 - `openspec/changes/build-jev-router-lab/` — proposal, design, spec delta,
   and task ledger for this change.
@@ -33,5 +36,41 @@ Codex installation and only accepts public, synthetic, or anonymized input.
 - `npm run lint` — ESLint recommended + typescript-eslint recommended.
 - `npm test` — build, then run `node --test dist/test/*.test.js`.
 - `npm run check` — lint + typecheck + tests + strict OpenSpec validation.
-- `npm run route` — build and run the CLI on a JSON input file (lands with
-  the router task).
+- `npm run route -- --input <json-file> [--report <json-file>]` — build and
+  run one routing decision.
+
+## CLI contract
+
+The CLI accepts exactly one `--input` JSON file and an optional `--report`
+path. The report must be inside this repository, its parent directory must
+already exist, and the target must not already exist as any file type. Reports
+are create-once: the CLI never overwrites them. The input is opened once and
+both identified and read through that descriptor; the input and report must
+not resolve to the same path or inode. On macOS and Linux, the final report is
+created before routing with `O_CREAT | O_EXCL | O_NOFOLLOW`, retained open, and
+written and synced only through that descriptor. Renaming an ancestor after
+open cannot redirect the write. Other platforms are rejected explicitly
+rather than using a weaker path. Unknown, missing, or repeated flags are
+invalid; there is no API-key flag. `TYPESAFE_API_KEY` is read only by the live
+SDK factory after the JSON parses and passes deterministic precheck, including
+the reserved `none` ID rule, and after any requested report is safely opened.
+
+If a failure occurs after a new report has been created, the CLI closes its
+descriptor but deliberately does not remove or rename the path. The new file
+may therefore be empty or partial and require manual inspection and removal;
+the fixed diagnostic says so. Existing data is never replaced by this path.
+
+A valid run prints exactly one `RouterDecision` JSON object. Both `ok` and safe
+service/model `fallback` decisions exit 0. Invalid CLI usage, unreadable or
+invalid local JSON, `invalid-input`, and report-path/write failures exit 2.
+
+Optional reports contain accounting metadata only: decision status, logical
+call count, per-pass and total latency, model, token usage, observable retry
+counts, and `cacheStatus: "not-used"`. They exclude task text, skill bodies,
+context bodies, request/response payloads, and exception messages. Cost is
+calculated only when at least one pass has observable usage and both
+`TYPESAFE_INPUT_USD_PER_MILLION` and
+`TYPESAFE_OUTPUT_USD_PER_MILLION` are finite non-negative numbers. Missing or
+invalid prices produce `price-not-configured`; zero or incomplete observed
+pass usage produces `usage-not-observable`; a non-finite calculation produces
+`cost-overflow`. All three cases keep `costUsd: null`.
