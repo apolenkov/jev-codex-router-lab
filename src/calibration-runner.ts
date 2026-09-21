@@ -461,9 +461,30 @@ export interface CalibrationTupleEvaluation extends TupleEvaluation {
 
 export type CalibrationReportPhase =
   | "calibration-records"
-  | "calibration-failed"
   | "tuple-selected"
-  | "holdout-complete";
+  | "holdout-complete"
+  | "smoke-completed"
+  | "smoke-skipped"
+  | "smoke-failed";
+
+export type CalibrationSmokeResult =
+  | {
+      readonly status: "completed";
+      readonly inputFingerprint: string;
+      readonly pass1: CalibrationPass1Evidence;
+      readonly pass2: CalibrationPass2Evidence;
+      readonly decision: RouterDecision;
+    }
+  | {
+      readonly status: "skipped";
+      readonly inputFingerprint: string;
+      readonly reason: "calibration-failed" | "holdout-failed" | "budget-insufficient";
+    }
+  | {
+      readonly status: "failed";
+      readonly inputFingerprint: string;
+      readonly reason: "provider-failure" | "invalid-evidence";
+    };
 
 export interface CalibrationReport {
   readonly schemaVersion: 1;
@@ -491,6 +512,7 @@ export interface CalibrationReport {
     readonly cases: readonly CalibrationEvidenceCase[];
     readonly pass: boolean;
   };
+  readonly smoke: CalibrationSmokeResult | null;
   readonly accounting: CalibrationAccounting;
 }
 
@@ -513,8 +535,21 @@ const writeJsonAtomic = async (path: string, value: unknown): Promise<void> => {
   }
 };
 
-export const createAtomicCalibrationReportWriter = (path: string) =>
-  async (report: CalibrationReport): Promise<void> => writeJsonAtomic(path, report);
+export const createAtomicCalibrationReportWriter = (path: string) => {
+  let claimed = false;
+  return async (report: CalibrationReport): Promise<void> => {
+    if (!claimed) {
+      await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      claimed = true;
+      return;
+    }
+    await writeJsonAtomic(path, report);
+  };
+};
 
 const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
   if (
@@ -808,6 +843,7 @@ type CalibrationTransport = Awaited<ReturnType<typeof createCalibrationTransport
 
 interface RunCalibrationExperimentOptions {
   readonly corpus: CalibrationCorpus;
+  readonly smokeInput: RouterInput;
   readonly transport: CalibrationTransport;
   readonly writeReport: (report: CalibrationReport) => Promise<void>;
 }
@@ -958,6 +994,62 @@ const collectCase = async (
   };
 };
 
+const collectSmoke = async (
+  input: RouterInput,
+  systemOne: CalibrationTransport["systemOne"],
+  thresholds: Pass2Thresholds,
+): Promise<Extract<CalibrationSmokeResult, { status: "completed" }>> => {
+  const checked = precheck(input);
+  const pass1Transport = await systemOne(buildPass1Request(checked));
+  const pass1 = await validatePass1(checked, pass1Transport);
+  const preliminary = postcheck(checked, semanticFromPass1(pass1));
+  if (preliminary.status !== "ok" || preliminary.signals.skillCandidates.length === 0) {
+    throw new CalibrationError("invalid-smoke-evidence");
+  }
+
+  const pass2Transport = await systemOne(
+    buildPass2Request(checked, preliminary.signals.skillCandidates),
+  );
+  let record: ParsedPass2;
+  try {
+    record = parsePass2Record(
+      pass2Transport.answers,
+      checked,
+      preliminary.signals.skillCandidates,
+    );
+  } catch {
+    throw new CalibrationError("invalid-smoke-evidence");
+  }
+  const evaluation = evaluatePass2(record, thresholds);
+  const decision: RouterDecision = evaluation.status === "ok"
+    ? postcheck(checked, {
+      ...semanticFromPass1(pass1),
+      skillCandidates: evaluation.skillCandidates,
+    })
+    : {
+      status: "fallback",
+      reason: "low-confidence",
+      forcedSkillIds: checked.forcedSkillIds,
+      protectedContextIds: checked.protectedContextIds,
+    };
+
+  return {
+    status: "completed",
+    inputFingerprint: canonicalFingerprint(input),
+    pass1: {
+      answers: closedAnswers(pass1Transport.answers),
+      metadata: { ...pass1Transport.metadata },
+      costUsd: pass1Transport.costUsd,
+    },
+    pass2: {
+      record: structuredClone(record),
+      metadata: { ...pass2Transport.metadata },
+      costUsd: pass2Transport.costUsd,
+    },
+    decision: structuredClone(decision),
+  };
+};
+
 const baseReport = (
   phase: CalibrationReportPhase,
   fingerprint: string,
@@ -985,6 +1077,7 @@ const baseReport = (
   },
   selectedTuple: null,
   holdout: null,
+  smoke: null,
   accounting,
 });
 
@@ -1027,32 +1120,46 @@ export const runCalibrationExperiment = async (
   options: RunCalibrationExperimentOptions,
 ): Promise<CalibrationReport> => {
   const guard = createCorpusGuard(options.corpus);
+  const smokeGuard = createCorpusGuard(options.smokeInput);
   const corpus = structuredClone(options.corpus);
+  const smokeInput = structuredClone(options.smokeInput);
   const fingerprint = guard.fingerprint;
+  const assertInputsUnchanged = (): void => {
+    guard.assertUnchanged();
+    smokeGuard.assertUnchanged();
+  };
   const systemOne: CalibrationTransport["systemOne"] = async (request) => {
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     const result = await options.transport.systemOne(request);
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     return result;
   };
   const writeReport = async (report: CalibrationReport): Promise<void> => {
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     await options.writeReport(report);
-    guard.assertUnchanged();
+    assertInputsUnchanged();
   };
   const finish = async (report: CalibrationReport): Promise<CalibrationReport> => {
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     await options.transport.complete();
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     const completed = { ...report, accounting: options.transport.accounting() };
     await writeReport(completed);
     return completed;
   };
+  const terminalizeFailure = async (error: unknown): Promise<void> => {
+    if (options.transport.accounting().terminal) return;
+    const reason = calibrationErrorFrom(error)?.reason === "corpus-mutated"
+      ? "corpus-mutated"
+      : "post-transport-validation";
+    await options.transport.terminalize(reason);
+  };
 
   try {
-    guard.assertUnchanged();
+    assertInputsUnchanged();
     if (
       canonicalFingerprint(corpus) !== fingerprint ||
+      canonicalFingerprint(smokeInput) !== smokeGuard.fingerprint ||
       options.transport.fingerprint !== fingerprint
     ) {
       throw new CalibrationError("corpus-fingerprint-mismatch");
@@ -1086,8 +1193,13 @@ export const runCalibrationExperiment = async (
     if (selected === null) {
       const failed: CalibrationReport = {
         ...recordReport,
-        phase: "calibration-failed",
+        phase: "smoke-skipped",
         calibration: { ...recordReport.calibration, evaluations, pass: false },
+        smoke: {
+          status: "skipped",
+          inputFingerprint: smokeGuard.fingerprint,
+          reason: "calibration-failed",
+        },
         accounting: options.transport.accounting(),
       };
       return await finish(failed);
@@ -1105,7 +1217,25 @@ export const runCalibrationExperiment = async (
 
     const collectedHoldout: CalibrationEvidenceCase[] = [];
     for (const corpusCase of holdoutCases) {
-      const collected = await collectCase(corpusCase, systemOne);
+      let collected: CollectedCase;
+      try {
+        collected = await collectCase(corpusCase, systemOne);
+      } catch (error) {
+        await terminalizeFailure(error);
+        const skipped: CalibrationReport = {
+          ...tupleReport,
+          phase: "smoke-skipped",
+          holdout: { denominator: 2, cases: collectedHoldout, pass: false },
+          smoke: {
+            status: "skipped",
+            inputFingerprint: smokeGuard.fingerprint,
+            reason: "holdout-failed",
+          },
+          accounting: options.transport.accounting(),
+        };
+        await writeReport(skipped);
+        return skipped;
+      }
       const evaluation = evaluatePass2(collected.evidence.pass2.record, selectedTuple);
       const final = evaluation.status === "ok"
         ? postcheck(collected.checked, {
@@ -1127,20 +1257,69 @@ export const runCalibrationExperiment = async (
 
     const holdoutPass =
       collectedHoldout.length === 2 && collectedHoldout.every(({ pass }) => pass === true);
-    const finalReport: CalibrationReport = {
+    const holdoutReport: CalibrationReport = {
       ...tupleReport,
       phase: "holdout-complete",
       holdout: { denominator: 2, cases: collectedHoldout, pass: holdoutPass },
       accounting: options.transport.accounting(),
     };
-    return await finish(finalReport);
-  } catch (error) {
-    if (!options.transport.accounting().terminal) {
-      const reason = calibrationErrorFrom(error)?.reason === "corpus-mutated"
-        ? "corpus-mutated"
-        : "post-transport-validation";
-      await options.transport.terminalize(reason);
+    if (!holdoutPass) {
+      return await finish({
+        ...holdoutReport,
+        phase: "smoke-skipped",
+        smoke: {
+          status: "skipped",
+          inputFingerprint: smokeGuard.fingerprint,
+          reason: "holdout-failed",
+        },
+      });
     }
+    await writeReport(holdoutReport);
+
+    const beforeSmoke = options.transport.accounting();
+    if (
+      beforeSmoke.reservedUsd !== 0 ||
+      beforeSmoke.attempts > CALIBRATION_MAX_ATTEMPTS - 2 ||
+      beforeSmoke.spentUsd + 2 * CALIBRATION_REQUEST_RESERVE_USD >
+        CALIBRATION_SPEND_CAP_USD
+    ) {
+      return await finish({
+        ...holdoutReport,
+        phase: "smoke-skipped",
+        smoke: {
+          status: "skipped",
+          inputFingerprint: smokeGuard.fingerprint,
+          reason: "budget-insufficient",
+        },
+      });
+    }
+
+    try {
+      const smoke = await collectSmoke(smokeInput, systemOne, selectedTuple);
+      return await finish({
+        ...holdoutReport,
+        phase: "smoke-completed",
+        smoke,
+        accounting: options.transport.accounting(),
+      });
+    } catch (error) {
+      const providerFailure = options.transport.accounting().terminal;
+      await terminalizeFailure(error);
+      const failed: CalibrationReport = {
+        ...holdoutReport,
+        phase: "smoke-failed",
+        smoke: {
+          status: "failed",
+          inputFingerprint: smokeGuard.fingerprint,
+          reason: providerFailure ? "provider-failure" : "invalid-evidence",
+        },
+        accounting: options.transport.accounting(),
+      };
+      await writeReport(failed);
+      return failed;
+    }
+  } catch (error) {
+    await terminalizeFailure(error);
     throw error;
   }
 };

@@ -4,6 +4,7 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Fetch } from "@typesafe-ai/sdk";
+import type { RouterInput } from "../src/contracts.js";
 import { precheck } from "../src/policy.js";
 import { buildPass1Request } from "../src/questions.js";
 import {
@@ -393,6 +394,10 @@ const choiceEvidence = (
 
 const midpoint = ({ min, max }: { min: number; max: number }): number => (min + max) / 2;
 
+const loadSmokeInput = async (): Promise<RouterInput> => JSON.parse(
+  await readFile("fixtures/two-pass-smoke-input.json", "utf8"),
+) as RouterInput;
+
 const experimentFetch = (
   corpus: ReturnType<typeof loadCalibrationCorpus>,
   beforeRequest?: (caseId: string) => void,
@@ -402,8 +407,23 @@ const experimentFetch = (
     questions: Record<string, { type: string; criteria?: Record<string, unknown> }>;
   };
   const echo = body.state.echo as { taskId: string };
-  const corpusCase = corpus.cases.find(({ id }) => id === echo.taskId)!;
-  beforeRequest?.(corpusCase.id);
+  const corpusCase = corpus.cases.find(({ id }) => id === echo.taskId);
+  const expected = corpusCase?.expected ?? {
+    taskType: "diagnose" as const,
+    skillCandidates: ["test-driven-development"],
+    criticalGapId: null,
+    reuseCandidateId: null,
+    architectureForkId: null,
+    riskDimensions: {
+      security: { min: 0.1, max: 0.1 },
+      "data-loss": { min: 0.1, max: 0.1 },
+      "public-contract": { min: 0.1, max: 0.1 },
+      migration: { min: 0.1, max: 0.1 },
+      "user-behavior": { min: 0.1, max: 0.1 },
+    },
+    contextRelevance: [],
+  };
+  beforeRequest?.(echo.taskId);
   const answers: Record<string, unknown> = {};
   const skills = body.state.skills as { id: string }[];
 
@@ -411,14 +431,14 @@ const experimentFetch = (
     if (question.type === "noul") {
       if (id.startsWith("risk_")) {
         const dimension = id.slice("risk_".length).replaceAll("_", "-") as
-          keyof typeof corpusCase.expected.riskDimensions;
-        answers[id] = { type: "noul", noul: midpoint(corpusCase.expected.riskDimensions[dimension]) };
+          keyof typeof expected.riskDimensions;
+        answers[id] = { type: "noul", noul: midpoint(expected.riskDimensions[dimension]) };
       } else {
         const index = Number(id.slice("skill_fit_".length));
         const skillId = skills[index]!.id;
         answers[id] = {
           type: "noul",
-          noul: corpusCase.expected.skillCandidates.includes(skillId) ? 0.9 : 0.1,
+          noul: expected.skillCandidates.includes(skillId) ? 0.9 : 0.1,
         };
       }
       continue;
@@ -429,19 +449,19 @@ const experimentFetch = (
     if (id.startsWith("echo_")) {
       selected = options[0]!;
     } else if (id === "task_type") {
-      selected = corpusCase.expected.taskType;
+      selected = expected.taskType;
     } else if (id === "skill_candidates") {
-      selected = corpusCase.expected.skillCandidates[0] ?? options.find((option) => option !== "none")!;
+      selected = expected.skillCandidates[0] ?? options.find((option) => option !== "none")!;
     } else if (id === "skill_ranking") {
-      selected = corpusCase.expected.skillCandidates[0] ?? "none";
+      selected = expected.skillCandidates[0] ?? "none";
     } else if (id === "critical_gap") {
-      selected = corpusCase.expected.criticalGapId ?? "none";
+      selected = expected.criticalGapId ?? "none";
     } else if (id === "reuse_candidate") {
-      selected = corpusCase.expected.reuseCandidateId ?? "none";
+      selected = expected.reuseCandidateId ?? "none";
     } else if (id === "architecture_fork") {
-      selected = corpusCase.expected.architectureForkId ?? "none";
+      selected = expected.architectureForkId ?? "none";
     } else if (id === "context_relevance") {
-      selected = corpusCase.expected.contextRelevance[0]?.id ?? "none";
+      selected = expected.contextRelevance[0]?.id ?? "none";
     } else {
       throw new Error(`unexpected question ${id}`);
     }
@@ -457,6 +477,7 @@ const experimentFetch = (
 
 test("runner persists closed calibration records and selected tuple before untouched holdout", async () => {
   const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
   const persisted: CalibrationReport[] = [];
   let holdoutStarted = false;
   const fetch = experimentFetch(corpus, (caseId) => {
@@ -468,6 +489,8 @@ test("runner persists closed calibration records and selected tuple before untou
         lower: 0.35,
         upper: 0.65,
       });
+    } else if (caseId === smokeInput.taskId) {
+      assert.equal(persisted.at(-1)?.phase, "holdout-complete");
     } else {
       assert.equal(holdoutStarted, false);
     }
@@ -476,6 +499,7 @@ test("runner persists closed calibration records and selected tuple before untou
 
   const report = await runCalibrationExperiment({
     corpus,
+    smokeInput,
     transport,
     writeReport: async (snapshot) => {
       persisted.push(structuredClone(snapshot));
@@ -486,6 +510,7 @@ test("runner persists closed calibration records and selected tuple before untou
     "calibration-records",
     "tuple-selected",
     "holdout-complete",
+    "smoke-completed",
   ]);
   assert.equal(persisted[0]!.calibration.cases.length, 6);
   assert.equal(persisted[0]!.selectedTuple, null);
@@ -494,7 +519,9 @@ test("runner persists closed calibration records and selected tuple before untou
   assert.equal(persisted.at(-1)?.accounting.terminal, true);
   assert.deepEqual(persisted.at(-1)?.accounting, report.accounting);
   assert.equal(report.holdout?.cases.length, 2);
-  assert.equal(report.accounting.attempts, 16);
+  assert.equal(report.accounting.attempts, 18);
+  assert.equal(report.smoke?.status, "completed");
+  assert.equal(report.smoke?.decision.status, "ok");
   assert.equal(report.calibration.denominator, 6);
   assert.equal(report.holdout?.denominator, 2);
   assert.equal(report.calibration.evaluations?.length, 15);
@@ -518,6 +545,126 @@ test("runner persists closed calibration records and selected tuple before untou
   }
   assert.equal(serialized.includes("test-key"), false);
   assert.equal(serialized.includes("raw provider"), false);
+  assert.equal(serialized.includes(smokeInput.taskText), false);
+  for (const skill of smokeInput.skills) {
+    assert.equal(serialized.includes(skill.description), false);
+    assert.equal(serialized.includes(skill.excerpt), false);
+  }
+});
+
+test("a holdout label failure persists smoke-skipped and makes no smoke call", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const validFetch = experimentFetch(corpus);
+  let smokeCalls = 0;
+  const fetch: Fetch = async (input, init) => {
+    const request = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+      questions: Record<string, unknown>;
+    };
+    if (request.state.echo.taskId === smokeInput.taskId) smokeCalls += 1;
+    const response = await validFetch(input, init);
+    if (request.state.echo.taskId !== "H1" || !("task_type" in request.questions)) {
+      return response;
+    }
+    const body = await response.json() as {
+      answers: { task_type: Record<string, unknown> };
+    };
+    body.answers.task_type.choice = "review";
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const transport = await createTestTransport({ apiKey: "test-key", corpus, fetch });
+  const persisted: CalibrationReport[] = [];
+
+  const report = await runCalibrationExperiment({
+    corpus,
+    smokeInput,
+    transport,
+    writeReport: async (snapshot) => { persisted.push(structuredClone(snapshot)); },
+  });
+
+  assert.equal(report.phase, "smoke-skipped");
+  assert.deepEqual(report.smoke, {
+    status: "skipped",
+    inputFingerprint: canonicalFingerprint(smokeInput),
+    reason: "holdout-failed",
+  });
+  assert.equal(report.holdout?.pass, false);
+  assert.equal(report.accounting.terminal, true);
+  assert.equal(persisted.at(-1)?.phase, "smoke-skipped");
+  assert.equal(smokeCalls, 0);
+});
+
+test("insufficient two-request reserve skips smoke after holdout", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  let smokeCalls = 0;
+  const transport = await createTestTransport({
+    apiKey: "test-key",
+    corpus,
+    accounting: { attempts: 0, spentUsd: 0.0447 },
+    fetch: experimentFetch(corpus, (taskId) => {
+      if (taskId === smokeInput.taskId) smokeCalls += 1;
+    }),
+  });
+
+  const report = await runCalibrationExperiment({
+    corpus,
+    smokeInput,
+    transport,
+    writeReport: async () => undefined,
+  });
+
+  assert.equal(report.phase, "smoke-skipped");
+  assert.equal(report.smoke?.status, "skipped");
+  assert.equal(report.smoke?.reason, "budget-insufficient");
+  assert.equal(report.holdout?.pass, true);
+  assert.equal(report.accounting.attempts, 16);
+  assert.equal(report.accounting.terminal, true);
+  assert.equal(smokeCalls, 0);
+});
+
+test("a smoke provider failure persists terminal evidence without retry", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const validFetch = experimentFetch(corpus);
+  const checkpoint = memoryCheckpointStore();
+  let smokeCalls = 0;
+  const fetch: Fetch = async (input, init) => {
+    const request = JSON.parse(String(init?.body)) as { state: { echo: { taskId: string } } };
+    if (request.state.echo.taskId === smokeInput.taskId) {
+      smokeCalls += 1;
+      return new Response("{}", { status: 500 });
+    }
+    return validFetch(input, init);
+  };
+  const transport = await createCalibrationTransport({
+    apiKey: "test-key",
+    corpus,
+    checkpoint: checkpoint.store,
+    fetch,
+  });
+
+  const report = await runCalibrationExperiment({
+    corpus,
+    smokeInput,
+    transport,
+    writeReport: async () => undefined,
+  });
+
+  assert.equal(report.phase, "smoke-failed");
+  assert.deepEqual(report.smoke, {
+    status: "failed",
+    inputFingerprint: canonicalFingerprint(smokeInput),
+    reason: "provider-failure",
+  });
+  assert.equal(report.accounting.attempts, 17);
+  assert.equal(report.accounting.terminal, true);
+  assert.equal(checkpoint.snapshots.at(-1)?.phase, "terminal");
+  assert.equal(smokeCalls, 1);
 });
 
 test("runner rejects a final-response corpus mutation even when transport guards a clone", async () => {
@@ -539,6 +686,7 @@ test("runner rejects a final-response corpus mutation even when transport guards
   await assert.rejects(
     runCalibrationExperiment({
       corpus,
+      smokeInput: await loadSmokeInput(),
       transport,
       writeReport: async (snapshot) => { persisted.push(structuredClone(snapshot)); },
     }),
@@ -573,7 +721,12 @@ test("post-transport label rejection persists a terminal checkpoint", async () =
   });
 
   await assert.rejects(
-    runCalibrationExperiment({ corpus, transport, writeReport: async () => undefined }),
+    runCalibrationExperiment({
+      corpus,
+      smokeInput: await loadSmokeInput(),
+      transport,
+      writeReport: async () => undefined,
+    }),
     calibrationReason("pass1-label-mismatch"),
   );
   assert.deepEqual(checkpoint.snapshots.map(({ phase }) => phase), [
@@ -595,6 +748,7 @@ test("holdout labels and results cannot change the selected tuple", async () => 
     });
     const report = await runCalibrationExperiment({
       corpus,
+      smokeInput: await loadSmokeInput(),
       transport,
       writeReport: async () => undefined,
     });
@@ -621,6 +775,18 @@ test("atomic report writer replaces a prior phase without leaving temporary file
 
   assert.deepEqual(JSON.parse(await readFile(path, "utf8")), second);
   assert.deepEqual(await readdir(directory), ["report.json"]);
+});
+
+test("atomic report writer never claims or overwrites prior evidence", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-calibration-prior-report-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const path = join(directory, "report.json");
+  await writeFile(path, "prior evidence", "utf8");
+  const write = createAtomicCalibrationReportWriter(path);
+
+  await assert.rejects(write({ schemaVersion: 1 } as CalibrationReport));
+
+  assert.equal(await readFile(path, "utf8"), "prior evidence");
 });
 
 test("atomic checkpoint store claims once and replaces accounting", async (t) => {

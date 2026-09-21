@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "test": "npm run build && node --test dist/test/*.test.js",
     "check": "npm run lint && npm run typecheck && npm test && openspec validate build-jev-router-lab --strict --no-interactive",
-    "route": "npm run build --silent && node dist/src/cli.js"
+    "route": "npm run build --silent && node dist/src/cli.js",
+    "calibrate": "npm run build --silent && node dist/src/calibration-cli.js"
   },
   "dependencies": { "@typesafe-ai/sdk": "0.6.0" },
   "devDependencies": {
