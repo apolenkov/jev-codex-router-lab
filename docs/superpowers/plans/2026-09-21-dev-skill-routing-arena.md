@@ -549,4 +549,4 @@ Review the exact final diff and verification output, focusing on the five review
 
 **Step 5: Update backlog and commit final evidence changes**
 
-Record goal, decisions, implementation, exact verification results, and next step in TASK-062 using the backlog CLI. Save any reusable arena operation guide in Documents. Do not put machine-local paths, credentials, or generated temporary files in the public repository.
+Record goal, decisions, implementation, exact verification results, and next step in the linked backlog task using the backlog CLI. Save any reusable arena operation guide in Documents. Do not put machine-local paths, credentials, or generated temporary files in the public repository.
