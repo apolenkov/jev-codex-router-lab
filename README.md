@@ -10,7 +10,7 @@ choose between agents, change permissions, or modify a working Codex setup.
 
 ## Five-minute offline quickstart
 
-Requirements: Node.js 20 or newer and npm.
+Requirements: Node.js 20.19.0 or newer and npm.
 
 ```bash
 git clone https://github.com/apolenkov/jev-codex-router-lab.git

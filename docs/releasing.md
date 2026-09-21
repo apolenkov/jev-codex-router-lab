@@ -5,7 +5,7 @@ remains private, and no GitHub Release or npm publication is part of it.
 
 ## Local candidate gates
 
-Start from a clean committed candidate with Node.js 20 or newer, npm, OpenSpec,
+Start from a clean committed candidate with Node.js 20.19.0 or newer, npm,
 and Gitleaks available:
 
 ```bash

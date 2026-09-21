@@ -5,7 +5,13 @@
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
-  "keywords": ["jev", "routing", "skills", "typesafe-ai", "typescript"],
+  "keywords": [
+    "jev",
+    "routing",
+    "skills",
+    "typesafe-ai",
+    "typescript"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/apolenkov/jev-codex-router-lab.git"
@@ -14,8 +20,17 @@
     "url": "https://github.com/apolenkov/jev-codex-router-lab/issues"
   },
   "homepage": "https://github.com/apolenkov/jev-codex-router-lab#readme",
-  "files": ["CHANGELOG.md", "LICENSE", "README.md", "docs/", "examples/", "src/"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "docs/",
+    "examples/",
+    "src/"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -30,9 +45,12 @@
     "calibrate": "npm run build --silent && node dist/src/calibration-cli.js",
     "example:offline": "npm run build --silent && node dist/src/offline-example.js"
   },
-  "dependencies": { "@typesafe-ai/sdk": "0.6.0" },
+  "dependencies": {
+    "@typesafe-ai/sdk": "0.6.0"
+  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@fission-ai/openspec": "1.13.1",
     "@types/node": "25.5.0",
     "eslint": "10.11.0",
     "typescript": "6.0.3",
