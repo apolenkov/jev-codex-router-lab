@@ -21,6 +21,6 @@
 
 - [x] 4.1 Add the approved public synthetic fixture and regression proving required-skill fallback preservation and metadata-only report output
 - [x] 4.2 Run the complete local gate sequence twice and record the local-only evidence with `TYPESAFE_API_KEY` absent
-- [x] 4.3 Run one owner-authorized corrected live smoke; record its exact outcome, two Jev calls, latency, usage, cost, safe fallback, and that `n=1` proves neither routing quality nor economy
-- [x] 4.4 Obtain the required final review on the exact evidence-bound candidate and resolve every blocking or important finding
-- [x] 4.5 Finalize OpenSpec and backlog closeout evidence and commit the accepted result
+- [ ] 4.3 Run one owner-authorized live smoke; verify `status: ok`, exactly two Jev calls, all seven valid signals, latency/usage records, and state that `n=1` proves operability only
+- [ ] 4.4 Obtain the required final review on the exact live-smoke candidate
+- [ ] 4.5 Finalize OpenSpec and backlog closeout evidence, then commit the accepted evidence
