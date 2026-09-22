@@ -42,6 +42,7 @@
     "check:pack": "npm run build --silent && node --test --test-name-pattern=\"tracked and packed surfaces\" dist/test/public-surface.test.js",
     "check": "npm run lint && npm run typecheck && npm test && npm run check:openspec",
     "route": "npm run build --silent && node dist/src/cli.js",
+    "calib": "npm run build --silent && node dist/arena/done-gate/score.js",
     "calibrate": "npm run build --silent && node dist/src/calibration-cli.js",
     "example:offline": "npm run build --silent && node dist/src/offline-example.js"
   },
