@@ -120,13 +120,27 @@ test("parseArenaCases rejects wrong count, duplicate ids, and bad enums", () => 
   assert.throws(() => parseArenaCases({ cases: badSource }, manifest));
 });
 
-test("parseArenaCases rejects unbalanced language and family language conflicts", () => {
+test("parseArenaCases rejects unbalanced language and case extra keys", () => {
   const unbalanced = casesJson.map((entry) => ({ ...entry }));
   unbalanced[59] = { ...unbalanced[59], language: "ru", familyId: "fam-solo" };
   assert.throws(() => parseArenaCases({ cases: unbalanced }, manifest));
+  const extra = casesJson.map((entry) => ({ ...entry }));
+  extra[0] = { ...extra[0], note: "stray" };
+  assert.throws(() => parseArenaCases({ cases: extra }, manifest), { message: "invalid-arena-case" });
+});
+
+test("parseArenaCases rejects family language disagreement with balanced totals", () => {
   const conflict = casesJson.map((entry) => ({ ...entry }));
   conflict[1] = { ...conflict[1], language: "en" };
-  assert.throws(() => parseArenaCases({ cases: conflict }, manifest));
+  conflict[7] = { ...conflict[7], language: "ru" };
+  assert.throws(() => parseArenaCases({ cases: conflict }, manifest), { message: "invalid-arena-family" });
+});
+
+test("parseArenaCases rejects family stratum disagreement with balanced totals", () => {
+  const conflict = casesJson.map((entry) => ({ ...entry }));
+  conflict[1] = { ...conflict[1], stratum: "plan" };
+  conflict[25] = { ...conflict[25], stratum: "bug" };
+  assert.throws(() => parseArenaCases({ cases: conflict }, manifest), { message: "invalid-arena-family" });
 });
 
 test("parseArenaCases rejects unknown explicit or required skill ids", () => {
@@ -171,10 +185,35 @@ test("parseArenaGold rejects forced ids, oversize, and duplicate accepted routes
   assert.throws(() => parseArenaGold(duplicate, cases, manifest));
 });
 
-test("parseArenaGold rejects zero-skill cases with extra accepted routes", () => {
-  const bad = buildGoldJson(casesJson);
-  bad.records[0] = { ...bad.records[0]!, acceptedRoutes: [[], ["beta"]] };
-  assert.throws(() => parseArenaGold(bad, cases, manifest));
+test("parseArenaGold accepts a mixed empty and non-empty route in a balanced corpus", () => {
+  const mixed = buildGoldJson(casesJson);
+  mixed.records[0] = { ...mixed.records[0]!, acceptedRoutes: [[], ["beta"]] };
+  mixed.records[15] = { ...mixed.records[15]!, acceptedRoutes: [[]] };
+  const gold = parseArenaGold(mixed, cases, manifest);
+  assert.deepEqual(gold.records[0]?.acceptedRoutes, [[], ["beta"]]);
+  assert.deepEqual(gold.records[15]?.acceptedRoutes, [[]]);
+});
+
+test("parseArenaGold rejects record and provenance extra keys", () => {
+  const badRecord = buildGoldJson(casesJson);
+  badRecord.records[0] = { ...badRecord.records[0]!, note: "stray" } as (typeof badRecord.records)[number];
+  assert.throws(() => parseArenaGold(badRecord, cases, manifest), { message: "invalid-arena-gold-record" });
+  const badProvenance = {
+    records: goldJson.records,
+    provenance: { ...goldJson.provenance, annotatedAt: "now" },
+  };
+  assert.throws(() => parseArenaGold(badProvenance, cases, manifest), { message: "invalid-arena-gold-provenance" });
+});
+
+test("parseArenaGold rejects unknown, duplicate, and short record sets", () => {
+  const unknown = buildGoldJson(casesJson);
+  unknown.records[5] = { ...unknown.records[5]!, caseId: "case-999" };
+  assert.throws(() => parseArenaGold(unknown, cases, manifest), { message: "invalid-arena-gold-case-id" });
+  const duplicate = buildGoldJson(casesJson);
+  duplicate.records[1] = { ...duplicate.records[1]!, caseId: "case-001" };
+  assert.throws(() => parseArenaGold(duplicate, cases, manifest), { message: "invalid-arena-gold-case-id" });
+  const short = { records: goldJson.records.slice(0, 59), provenance: goldJson.provenance };
+  assert.throws(() => parseArenaGold(short, cases, manifest), { message: "invalid-arena-gold-records" });
 });
 
 test("parseArenaGold rejects a wrong optional-skill distribution", () => {
@@ -277,6 +316,63 @@ test("normalizeArenaResult converts an ok status without a route to error", () =
   const result = normalizeArenaResult({ contestantId: "jev", status: "ok" }, arenaInput);
   assert.equal(result.status, "error");
   assert.equal(result.reason, "invalid-route");
+});
+
+test("normalizeArenaResult normalizes malformed telemetry to null", () => {
+  const result = normalizeArenaResult(
+    {
+      contestantId: "rules",
+      status: "ok",
+      selectedSkillIds: ["alpha"],
+      inputTokens: -5,
+      outputTokens: 1.5,
+      latencyMs: -0.5,
+      costUsd: -0.01,
+    },
+    arenaInput,
+  );
+  assert.equal(result.status, "ok");
+  assert.equal(result.inputTokens, null);
+  assert.equal(result.outputTokens, null);
+  assert.equal(result.latencyMs, null);
+  assert.equal(result.costUsd, null);
+});
+
+test("normalizeArenaResult keeps zero and fractional non-token telemetry", () => {
+  const result = normalizeArenaResult(
+    {
+      contestantId: "rules",
+      status: "ok",
+      selectedSkillIds: ["alpha"],
+      inputTokens: 0,
+      outputTokens: 4,
+      latencyMs: 12.5,
+      costUsd: 0,
+    },
+    arenaInput,
+  );
+  assert.equal(result.inputTokens, 0);
+  assert.equal(result.outputTokens, 4);
+  assert.equal(result.latencyMs, 12.5);
+  assert.equal(result.costUsd, 0);
+});
+
+test("normalizeArenaResult converts a runtime invalid status to error", () => {
+  const input = { contestantId: "jev", status: "bogus" } as unknown as Parameters<
+    typeof normalizeArenaResult
+  >[0];
+  const result = normalizeArenaResult(input, arenaInput);
+  assert.equal(result.status, "error");
+  assert.equal(result.reason, "invalid-status");
+});
+
+test("normalizeArenaResult supplies unspecified for missing abstain or error reasons", () => {
+  const abstain = normalizeArenaResult({ contestantId: "jev", status: "abstain" }, arenaInput);
+  assert.equal(abstain.status, "abstain");
+  assert.equal(abstain.reason, "unspecified");
+  const error = normalizeArenaResult({ contestantId: "codex", status: "error" }, arenaInput);
+  assert.equal(error.status, "error");
+  assert.equal(error.reason, "unspecified");
 });
 
 test("normalizeArenaResult passes abstain and error reasons through", () => {

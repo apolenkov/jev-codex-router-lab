@@ -304,10 +304,6 @@ export function parseArenaGold(
     ) {
       throw new Error("invalid-arena-mandatory-skills");
     }
-    const largest = Math.max(...acceptedRoutes.map((route) => route.length));
-    if (largest === 0 && acceptedRoutes.length !== 1) {
-      throw new Error("invalid-arena-zero-skill-routes");
-    }
     return {
       caseId: entry.caseId,
       acceptedRoutes,
@@ -326,8 +322,11 @@ export function parseArenaGold(
   return { records, provenance };
 }
 
-const observed = (value: number | null | undefined): number | null =>
-  typeof value === "number" && Number.isFinite(value) ? value : null;
+const observedTokens = (value: number | null | undefined): number | null =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+
+const observedAmount = (value: number | null | undefined): number | null =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
 
 export function normalizeArenaResult(
   input: ArenaContestantResultInput,
@@ -338,10 +337,10 @@ export function normalizeArenaResult(
   const base = {
     caseId: arenaInput.caseId,
     contestantId: input.contestantId,
-    inputTokens: observed(input.inputTokens),
-    outputTokens: observed(input.outputTokens),
-    latencyMs: observed(input.latencyMs),
-    costUsd: observed(input.costUsd),
+    inputTokens: observedTokens(input.inputTokens),
+    outputTokens: observedTokens(input.outputTokens),
+    latencyMs: observedAmount(input.latencyMs),
+    costUsd: observedAmount(input.costUsd),
   };
   const error = (reason: string): ArenaResult => ({
     ...base,
