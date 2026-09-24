@@ -576,6 +576,104 @@ test("resume refuses shrunk accounting and symlinked evidence", async (t) => {
   assert.equal(resumed.summary?.status, "complete");
 });
 
+test("drifted calibration corpus refuses evaluation before evidence creation", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const collect = await runPass1ThresholdCli(
+    ["--split", "calibration"],
+    collectOptions(root),
+  );
+  assert.equal(collect.exitCode, 0, collect.error);
+  const select = await runPass1ThresholdCli(
+    ["--offline-select", "pass1-threshold-evidence-calibration"],
+    collectOptions(root),
+  );
+  assert.equal(select.exitCode, 0, select.error);
+
+  const corpusPath = join(root, "fixtures", "pass1-calibration-cases.json");
+  const original = await readFile(corpusPath, "utf8");
+  await writeFile(corpusPath, original.replace("CAL-001", "CAL-XX1"));
+
+  let fetchCalls = 0;
+  const countingFetch: Fetch = async (input, init) => {
+    fetchCalls += 1;
+    return fakeFetch(input, init);
+  };
+  const evaluation = await runPass1ThresholdCli(["--split", "evaluation"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: countingFetch,
+    delay: async () => {},
+  });
+  assert.equal(evaluation.exitCode, 2);
+  assert.equal(evaluation.error, "invalid frozen input");
+  assert.equal(fetchCalls, 0);
+  assert.deepEqual(
+    (await readdir(join(root, "artifacts"))).sort(),
+    [
+      "pass1-threshold-evidence-calibration",
+      "pass1-threshold-selection.json",
+    ],
+  );
+});
+
+test("resume refuses case files inconsistent with the summary", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const failOnce: Fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+    };
+    if (body.state.echo.taskId === "CAL-004") {
+      return new Response("upstream error", { status: 500 });
+    }
+    return fakeFetch(input, init);
+  };
+  const first = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOnce,
+    delay: async () => {},
+  });
+  assert.equal(first.summary?.status, "incomplete");
+
+  const casePath = join(
+    root,
+    "artifacts",
+    "pass1-threshold-evidence-calibration",
+    "case-CAL-002.json",
+  );
+  const original = await readFile(casePath, "utf8");
+  await rm(casePath);
+
+  const deleted = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(deleted.exitCode, 2);
+  assert.equal(deleted.error, "invalid resume state");
+
+  const renamed = JSON.parse(original) as { caseId: string };
+  renamed.caseId = "CAL-001";
+  await writeFile(casePath, JSON.stringify(renamed));
+  const mismatched = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(mismatched.exitCode, 2);
+  assert.equal(mismatched.error, "invalid resume state");
+
+  await writeFile(casePath, original);
+  const resumed = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.summary?.status, "complete");
+});
+
 test("offline select rejects missing and incomplete evidence", async (t) => {
   const root = await makeTempRoot();
   t.after(() => rm(root, { recursive: true, force: true }));

@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import {
+  mkdtemp,
+  rm,
+  stat,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -937,6 +943,40 @@ test("evidence sink writes create-once files and validates case file names", asy
     (await stat(join(directory, "case-CAL-001.json"))).mode & 0o777,
     0o600,
   );
+});
+
+test("resume sink refuses symlinked and foreign case records", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-threshold-evidence-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const sink = createPass1ThresholdEvidenceSink(directory, undefined, {
+    resume: true,
+  });
+  const record = {
+    schemaVersion: 1,
+    caseId: "CAL-002",
+    outcome: "failed",
+    error: "provider-error",
+    attempts: 1,
+  } as Pass1ThresholdCaseRecord;
+
+  const outside = join(directory, "outside.json");
+  await writeFile(outside, JSON.stringify(record));
+  await symlink(outside, join(directory, "case-CAL-002.json"));
+  await assert.rejects(
+    sink.writeCaseRecord("CAL-002", record),
+    calibrationReason("invalid-evidence-record"),
+  );
+
+  await rm(join(directory, "case-CAL-002.json"));
+  const mismatched = { ...record, caseId: "CAL-001" };
+  await writeFile(join(directory, "case-CAL-002.json"), JSON.stringify(mismatched));
+  await assert.rejects(
+    sink.writeCaseRecord("CAL-002", record),
+    calibrationReason("invalid-evidence-record"),
+  );
+
+  await writeFile(join(directory, "case-CAL-002.json"), JSON.stringify(record));
+  await sink.writeCaseRecord("CAL-002", record);
 });
 
 test("case record parser round-trips collected and failed records", () => {

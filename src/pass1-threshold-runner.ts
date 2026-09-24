@@ -1,5 +1,12 @@
 import { constants } from "node:fs";
-import { open, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import {
+  lstat,
+  open,
+  readFile,
+  rename,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import {
@@ -1229,9 +1236,16 @@ export const createPass1ThresholdEvidenceSink = (
       }
       const path = join(directory, name);
       try {
+        const stat = await lstat(path);
+        if (!stat.isFile() || stat.isSymbolicLink()) {
+          throw new CalibrationError("invalid-evidence-record");
+        }
         const existing = parsePass1ThresholdCaseRecord(
           JSON.parse(await readFile(path, "utf8")),
         );
+        if (existing.caseId !== caseId) {
+          throw new CalibrationError("invalid-evidence-record");
+        }
         if (existing.outcome !== "failed") {
           throw new CalibrationError("evidence-exists");
         }

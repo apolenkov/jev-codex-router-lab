@@ -45,7 +45,10 @@ the manifest MUST record the carried-over accounting and the resume count.
   are spaced by the declared inter-call delay, the checkpoint
   accounting is reconciled against the stored case records
   (attempts and spend cannot shrink below recorded evidence),
-  and every evidence file read refuses symlinks
+  the stored case records are reconciled against the summary
+  (record identity, file name, and outcome must match the
+  declared per-case status exactly), and every evidence file
+  read refuses symlinks
 
 ### Requirement: Threshold selection is offline and pre-registered
 

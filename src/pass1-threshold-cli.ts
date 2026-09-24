@@ -44,6 +44,7 @@ import {
   PASS1_THRESHOLD_LOS,
   selectPass1Threshold,
   type Pass1SelectionInputs,
+  type Pass1ThresholdSelectionArtifact,
 } from "./pass1-threshold-selector.js";
 import { runPass1ThresholdEvaluation } from "./pass1-threshold-evaluator.js";
 
@@ -376,6 +377,23 @@ const loadResumeState = async (
     ) {
       return null;
     }
+    const corpusIds = new Set(corpus.cases.map((entry) => entry.caseId));
+    const expectedStatuses = new Map<string, unknown>();
+    if (!Array.isArray(summary.cases)) return null;
+    for (const entry of summary.cases) {
+      if (!isRecord(entry) || typeof entry.caseId !== "string") return null;
+      const status = entry.status;
+      if (
+        (status !== "collected" && status !== "failed" &&
+          status !== "invalid-response" && status !== "aborted") ||
+        !corpusIds.has(entry.caseId) ||
+        expectedStatuses.has(entry.caseId)
+      ) {
+        return null;
+      }
+      expectedStatuses.set(entry.caseId, status);
+    }
+    if (expectedStatuses.size !== corpusIds.size) return null;
     const priorRecords = new Map<string, Pass1ThresholdCaseRecord>();
     const names = await readdir(directory);
     for (const name of names) {
@@ -383,9 +401,26 @@ const loadResumeState = async (
       const raw = await readRegularFileText(join(directory, name));
       if (raw === null) return null;
       const record = parsePass1ThresholdCaseRecord(JSON.parse(raw));
+      if (
+        name !== `case-${record.caseId}.json` ||
+        !corpusIds.has(record.caseId)
+      ) {
+        return null;
+      }
       priorRecords.set(record.caseId, record);
     }
     if (priorRecords.size === 0) return null;
+    let expectedRecordCount = 0;
+    for (const [caseId, status] of expectedStatuses) {
+      const record = priorRecords.get(caseId);
+      if (status === "aborted") {
+        if (record !== undefined) return null;
+        continue;
+      }
+      if (record === undefined || record.outcome !== status) return null;
+      expectedRecordCount += 1;
+    }
+    if (priorRecords.size !== expectedRecordCount) return null;
     let maxRecordedAttempts = 0;
     let recordedCost = 0;
     for (const record of priorRecords.values()) {
@@ -432,6 +467,86 @@ const runCollection = async (
   const frozen = await loadFrozenInputs(root, split);
   if (frozen === null) {
     return { exitCode: 2, error: "invalid frozen input" };
+  }
+  let frozenSelection: {
+    readonly artifact: Pass1ThresholdSelectionArtifact;
+    readonly sha256: string;
+  } | null = null;
+  if (split === "evaluation") {
+    const artifactFile = await readPinnedText(root, SELECTION_ARTIFACT_PATH);
+    if (artifactFile === null) {
+      return { exitCode: 2, error: "missing selection artifact" };
+    }
+    let artifact: Pass1ThresholdSelectionArtifact;
+    try {
+      artifact = parsePass1SelectionArtifact(artifactFile.contents);
+    } catch {
+      return { exitCode: 2, error: "invalid selection artifact" };
+    }
+    if (
+      artifact.inputs.evaluationCorpusFileSha256 !==
+        frozen.actual.corpusFileSha256 ||
+      artifact.inputs.questionBuilderSha256 !==
+        frozen.actual.questionBuilderSha256
+    ) {
+      return { exitCode: 2, error: "selection artifact fingerprint mismatch" };
+    }
+    const calibrationFrozen = await loadFrozenInputs(root, "calibration");
+    if (calibrationFrozen === null) {
+      return { exitCode: 2, error: "invalid frozen input" };
+    }
+    const canonicalArtifacts = await realpath(join(root, "artifacts")).catch(
+      () => null,
+    );
+    const calibrationEvidence = canonicalArtifacts === null
+      ? null
+      : await loadCalibrationEvidence(
+        canonicalArtifacts,
+        EVIDENCE_DIR.calibration,
+        calibrationFrozen.corpus,
+      );
+    if (calibrationEvidence === null || calibrationEvidence === "invalid") {
+      return { exitCode: 2, error: "calibration evidence unavailable" };
+    }
+    const rederived = selectPass1Threshold(
+      calibrationFrozen.corpus,
+      calibrationEvidence.records,
+    );
+    if (
+      calibrationEvidence.evidenceSha256 !== artifact.inputs.evidenceSha256 ||
+      artifact.inputs.corpusFileSha256 !==
+        calibrationFrozen.actual.corpusFileSha256 ||
+      artifact.inputs.corpusFingerprint !==
+        createCorpusGuard(calibrationFrozen.corpus).fingerprint ||
+      rederived.tuple.floor !== artifact.selected.floor ||
+      rederived.tuple.lo !== artifact.selected.lo ||
+      rederived.tuple.hi !== artifact.selected.hi ||
+      rederived.eligible !== artifact.eligible ||
+      rederived.tieBroken !== artifact.tieBroken ||
+      artifact.tiedTuples.length !== rederived.tiedTuples.length ||
+      artifact.tiedTuples.some(
+        (tuple, index) =>
+          tuple.floor !== rederived.tiedTuples[index]?.floor ||
+          tuple.lo !== rederived.tiedTuples[index]?.lo ||
+          tuple.hi !== rederived.tiedTuples[index]?.hi,
+      ) ||
+      JSON.stringify(artifact.table) !== JSON.stringify(rederived.table) ||
+      artifact.grid.floors.length !== PASS1_THRESHOLD_FLOORS.length ||
+      artifact.grid.floors.some(
+        (floor, index) => floor !== PASS1_THRESHOLD_FLOORS[index],
+      ) ||
+      artifact.grid.los.length !== PASS1_THRESHOLD_LOS.length ||
+      artifact.grid.los.some(
+        (lo, index) => lo !== PASS1_THRESHOLD_LOS[index],
+      ) ||
+      artifact.grid.his.length !== PASS1_THRESHOLD_HIS.length ||
+      artifact.grid.his.some(
+        (hi, index) => hi !== PASS1_THRESHOLD_HIS[index],
+      )
+    ) {
+      return { exitCode: 2, error: "selection artifact not derived" };
+    }
+    frozenSelection = { artifact, sha256: artifactFile.sha256 };
   }
   const directory = await openEvidenceDirectory(
     root,
@@ -526,86 +641,16 @@ const runCollection = async (
       };
     }
 
-    const artifactFile = await readPinnedText(root, SELECTION_ARTIFACT_PATH);
-    if (artifactFile === null) {
-      return { exitCode: 2, error: "missing selection artifact" };
-    }
-    let artifact;
-    try {
-      artifact = parsePass1SelectionArtifact(artifactFile.contents);
-    } catch {
+    if (frozenSelection === null) {
       return { exitCode: 2, error: "invalid selection artifact" };
-    }
-    if (
-      artifact.inputs.evaluationCorpusFileSha256 !==
-        frozen.actual.corpusFileSha256 ||
-      artifact.inputs.questionBuilderSha256 !==
-        frozen.actual.questionBuilderSha256
-    ) {
-      return { exitCode: 2, error: "selection artifact fingerprint mismatch" };
-    }
-    const calibrationFrozen = await loadFrozenInputs(root, "calibration");
-    if (calibrationFrozen === null) {
-      return { exitCode: 2, error: "invalid frozen input" };
-    }
-    const canonicalArtifacts = await realpath(join(root, "artifacts")).catch(
-      () => null,
-    );
-    const calibrationEvidence = canonicalArtifacts === null
-      ? null
-      : await loadCalibrationEvidence(
-        canonicalArtifacts,
-        EVIDENCE_DIR.calibration,
-        calibrationFrozen.corpus,
-      );
-    if (calibrationEvidence === null || calibrationEvidence === "invalid") {
-      return { exitCode: 2, error: "calibration evidence unavailable" };
-    }
-    const rederived = selectPass1Threshold(
-      calibrationFrozen.corpus,
-      calibrationEvidence.records,
-    );
-    if (
-      calibrationEvidence.evidenceSha256 !== artifact.inputs.evidenceSha256 ||
-      artifact.inputs.corpusFileSha256 !==
-        calibrationFrozen.actual.corpusFileSha256 ||
-      artifact.inputs.corpusFingerprint !==
-        createCorpusGuard(calibrationFrozen.corpus).fingerprint ||
-      rederived.tuple.floor !== artifact.selected.floor ||
-      rederived.tuple.lo !== artifact.selected.lo ||
-      rederived.tuple.hi !== artifact.selected.hi ||
-      rederived.eligible !== artifact.eligible ||
-      rederived.tieBroken !== artifact.tieBroken ||
-      artifact.tiedTuples.length !== rederived.tiedTuples.length ||
-      artifact.tiedTuples.some(
-        (tuple, index) =>
-          tuple.floor !== rederived.tiedTuples[index]?.floor ||
-          tuple.lo !== rederived.tiedTuples[index]?.lo ||
-          tuple.hi !== rederived.tiedTuples[index]?.hi,
-      ) ||
-      JSON.stringify(artifact.table) !== JSON.stringify(rederived.table) ||
-      artifact.grid.floors.length !== PASS1_THRESHOLD_FLOORS.length ||
-      artifact.grid.floors.some(
-        (floor, index) => floor !== PASS1_THRESHOLD_FLOORS[index],
-      ) ||
-      artifact.grid.los.length !== PASS1_THRESHOLD_LOS.length ||
-      artifact.grid.los.some(
-        (lo, index) => lo !== PASS1_THRESHOLD_LOS[index],
-      ) ||
-      artifact.grid.his.length !== PASS1_THRESHOLD_HIS.length ||
-      artifact.grid.his.some(
-        (hi, index) => hi !== PASS1_THRESHOLD_HIS[index],
-      )
-    ) {
-      return { exitCode: 2, error: "selection artifact not derived" };
     }
     const reportPath = join(root, EVALUATION_REPORT_PATH);
     if (!isWithin(root, await realpath(join(root, "artifacts")))) {
       return { exitCode: 2, error: "evidence path unavailable" };
     }
     const { result } = await runPass1ThresholdEvaluation({
-      artifact,
-      artifactSha256: artifactFile.sha256,
+      artifact: frozenSelection.artifact,
+      artifactSha256: frozenSelection.sha256,
       corpus: frozen.corpus,
       corpusPath: frozen.corpusPath,
       pins: frozen.pins,
