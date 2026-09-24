@@ -12,6 +12,8 @@ artifacts/**
 !artifacts/calibration-summary.md
 !artifacts/live-smoke-2026-09-24-report.json
 !artifacts/live-smoke-2026-09-24-decision.json
+!artifacts/pass1-threshold-selection.json
+!artifacts/pass1-threshold-evaluation.json
 .superpowers/
 .agents/
 .devin/
