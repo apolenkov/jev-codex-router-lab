@@ -1,0 +1,30 @@
+{
+  "taskId": "synthetic-test-first-bugfix-002",
+  "taskRevision": 1,
+  "taskText": "A TypeScript CLI parser has a regression. Implement the smallest fix test-first: write a failing regression test, change the implementation, and run the tests.",
+  "policyVersion": "v0",
+  "catalogHash": "fixture-v2",
+  "explicitSkillIds": [],
+  "requiredSkillIds": ["systematic-debugging"],
+  "skills": [
+    {
+      "id": "systematic-debugging",
+      "description": "Diagnose bugs before fixing them",
+      "excerpt": "Find the root cause and verify it."
+    },
+    {
+      "id": "test-driven-development",
+      "description": "Implement changes test-first",
+      "excerpt": "Write a failing test before implementation."
+    },
+    {
+      "id": "writing-plans",
+      "description": "Create implementation plans",
+      "excerpt": "Use for multi-step plans before code."
+    }
+  ],
+  "criticalGapCandidates": [],
+  "architectureForkCandidates": [],
+  "reuseCandidates": [],
+  "contextFragments": []
+}

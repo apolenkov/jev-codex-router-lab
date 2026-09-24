@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-09-23
+goal: Specify a reproducible annotation guide and partitioned dataset without
+  using new Jev outputs.

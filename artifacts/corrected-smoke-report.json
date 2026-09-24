@@ -1,0 +1,25 @@
+{
+  "status": "fallback",
+  "callCount": 2,
+  "passes": [
+    {
+      "pass": "pass1",
+      "model": "jev-1.13.0",
+      "inputTokens": 817,
+      "outputTokens": 348,
+      "latencyMs": 850.821125
+    },
+    {
+      "pass": "pass2",
+      "model": "jev-1.13.0",
+      "inputTokens": 675,
+      "outputTokens": 232,
+      "latencyMs": 312.980459
+    }
+  ],
+  "totalLatencyMs": 1164.798417,
+  "inputTokens": 1492,
+  "outputTokens": 580,
+  "cacheStatus": "not-used",
+  "costUsd": 0.000062664
+}

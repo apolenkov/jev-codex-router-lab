@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-09-21
+goal: Compare Jev, a recorded Codex fixture, and deterministic rules on a
+  frozen 60-case development corpus behind one typed, offline contract

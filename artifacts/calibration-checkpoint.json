@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "corpusFingerprint": "85fdb0f1183f8fb42332d14f6396bc4a5fd32c079ea968f40a998975f7eb9fa3",
+  "phase": "terminal",
+  "accounting": {
+    "attempts": 1,
+    "spentUsd": 0.000051240000000000004,
+    "reservedUsd": 0,
+    "terminal": true
+  },
+  "failureReason": "post-transport-validation"
+}

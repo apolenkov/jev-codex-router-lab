@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "C1",
+      "set": "calibration",
+      "input": {
+        "taskId": "C1",
+        "taskRevision": 1,
+        "taskText": "Fix a regression in a synthetic TypeScript parser. Reproduce the failure first, then make the smallest safe correction.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c1",
+        "explicitSkillIds": [],
+        "requiredSkillIds": ["systematic-debugging"],
+        "skills": [
+          { "id": "systematic-debugging", "description": "Diagnose defects from evidence before changing code.", "excerpt": "Reproduce, isolate root cause, then fix." },
+          { "id": "test-driven-development", "description": "Write a failing test before implementation.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "brainstorming", "description": "Clarify a new feature before implementation.", "excerpt": "Explore intent and design choices." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Produce ordered implementation tasks." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-reproduction", "fact": "The minimal failing input is not yet recorded.", "blocks": "A root-cause diagnosis." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-parser", "alternatives": ["patch tokenizer", "patch parser"], "tradeoff": "Choose the layer where the invariant is broken." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-parser-tests", "summary": "Existing parser regression-test helpers." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-parser-contract", "summary": "Public synthetic parser contract and failing example." },
+          { "id": "ctx-private-build-log", "summary": "Protected synthetic build detail not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "diagnose",
+        "skillCandidates": ["test-driven-development"],
+        "criticalGapId": "gap-reproduction",
+        "reuseCandidateId": "reuse-parser-tests",
+        "architectureForkId": null,
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.35 },
+          "data-loss": { "min": 0, "max": 0.35 },
+          "public-contract": { "min": 0.1, "max": 0.6 },
+          "migration": { "min": 0, "max": 0.35 },
+          "user-behavior": { "min": 0.25, "max": 0.8 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-parser-contract", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": ["systematic-debugging"],
+        "protectedContextIds": ["ctx-private-build-log"]
+      }
+    },
+    {
+      "id": "C2",
+      "set": "calibration",
+      "input": {
+        "taskId": "C2",
+        "taskRevision": 1,
+        "taskText": "Add a new export command to a synthetic CLI from already approved requirements, with tests for the observable behavior.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c2",
+        "explicitSkillIds": [],
+        "requiredSkillIds": ["brainstorming"],
+        "skills": [
+          { "id": "brainstorming", "description": "Clarify a new feature before implementation.", "excerpt": "Confirm behavior and constraints." },
+          { "id": "test-driven-development", "description": "Write a failing test before implementation.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "systematic-debugging", "description": "Diagnose defects from evidence.", "excerpt": "Reproduce and isolate a bug." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Produce ordered implementation tasks." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-export-format", "fact": "The output format would be unspecified without the approved requirement.", "blocks": "Stable command behavior." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-export-format", "alternatives": ["JSON", "CSV"], "tradeoff": "Machine readability versus spreadsheet convenience." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-cli-writer", "summary": "Existing synthetic CLI output writer." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-export-requirements", "summary": "Approved public synthetic export-command requirements." },
+          { "id": "ctx-private-customer-sample", "summary": "Protected synthetic customer sample not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "change",
+        "skillCandidates": ["test-driven-development"],
+        "criticalGapId": null,
+        "reuseCandidateId": "reuse-cli-writer",
+        "architectureForkId": null,
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.35 },
+          "data-loss": { "min": 0, "max": 0.4 },
+          "public-contract": { "min": 0.4, "max": 0.95 },
+          "migration": { "min": 0, "max": 0.45 },
+          "user-behavior": { "min": 0.4, "max": 0.95 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-export-requirements", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": ["brainstorming"],
+        "protectedContextIds": ["ctx-private-customer-sample"]
+      }
+    },
+    {
+      "id": "C3",
+      "set": "calibration",
+      "input": {
+        "taskId": "C3",
+        "taskRevision": 1,
+        "taskText": "Produce an implementation plan for a synthetic notification feature. Do not write or modify code.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c3",
+        "explicitSkillIds": [],
+        "requiredSkillIds": [],
+        "skills": [
+          { "id": "writing-plans", "description": "Create a concrete implementation plan.", "excerpt": "Plan file changes, tests, and verification." },
+          { "id": "test-driven-development", "description": "Implement behavior test-first.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "brainstorming", "description": "Clarify a new feature.", "excerpt": "Explore intent and design choices." },
+          { "id": "requesting-code-review", "description": "Request review of completed code.", "excerpt": "Review an implementation candidate." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-notification-channel", "fact": "The selected notification channel is not stated.", "blocks": "A fully executable plan." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-notification-delivery", "alternatives": ["polling", "push"], "tradeoff": "Simplicity versus immediacy." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-plan-template", "summary": "Existing public implementation-plan template." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-notification-scope", "summary": "Public synthetic feature scope and acceptance criteria." },
+          { "id": "ctx-private-roadmap", "summary": "Protected synthetic roadmap note not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "plan",
+        "skillCandidates": ["writing-plans"],
+        "criticalGapId": "gap-notification-channel",
+        "reuseCandidateId": "reuse-plan-template",
+        "architectureForkId": "fork-notification-delivery",
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.35 },
+          "data-loss": { "min": 0, "max": 0.35 },
+          "public-contract": { "min": 0.15, "max": 0.7 },
+          "migration": { "min": 0, "max": 0.4 },
+          "user-behavior": { "min": 0.25, "max": 0.85 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-notification-scope", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": [],
+        "protectedContextIds": ["ctx-private-roadmap"]
+      }
+    },
+    {
+      "id": "C4",
+      "set": "calibration",
+      "input": {
+        "taskId": "C4",
+        "taskRevision": 1,
+        "taskText": "Research whether TypeSafe AI can replace a prompt-and-parse classifier in a synthetic public routing workflow.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c4",
+        "explicitSkillIds": [],
+        "requiredSkillIds": [],
+        "skills": [
+          { "id": "typesafe-ai", "description": "Design and verify TypeSafe System One integrations.", "excerpt": "Use typed judgments and current official docs." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Plan code changes and verification." },
+          { "id": "systematic-debugging", "description": "Diagnose unexpected behavior.", "excerpt": "Reproduce and isolate a defect." },
+          { "id": "requesting-code-review", "description": "Review completed code.", "excerpt": "Request review of an implementation." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-eval-data", "fact": "No representative labeled evaluation set is supplied.", "blocks": "A general replacement claim." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-classifier", "alternatives": ["TypeSafe judgments", "prompt and parse"], "tradeoff": "Typed probability contract versus generative flexibility." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-routing-eval", "summary": "Existing public synthetic routing evaluation method." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-typesafe-docs", "summary": "Public TypeSafe model and SDK documentation references." },
+          { "id": "ctx-private-production-prompts", "summary": "Protected synthetic production prompts not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "research",
+        "skillCandidates": ["typesafe-ai"],
+        "criticalGapId": "gap-eval-data",
+        "reuseCandidateId": "reuse-routing-eval",
+        "architectureForkId": "fork-classifier",
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.4 },
+          "data-loss": { "min": 0, "max": 0.3 },
+          "public-contract": { "min": 0.1, "max": 0.65 },
+          "migration": { "min": 0.1, "max": 0.7 },
+          "user-behavior": { "min": 0, "max": 0.5 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-typesafe-docs", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": [],
+        "protectedContextIds": ["ctx-private-production-prompts"]
+      }
+    },
+    {
+      "id": "C5",
+      "set": "calibration",
+      "input": {
+        "taskId": "C5",
+        "taskRevision": 1,
+        "taskText": "Review a completed synthetic branch against its approved requirements before merge. Do not implement changes.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c5",
+        "explicitSkillIds": [],
+        "requiredSkillIds": [],
+        "skills": [
+          { "id": "requesting-code-review", "description": "Review a completed implementation candidate.", "excerpt": "Verify requirements and evidence before merge." },
+          { "id": "test-driven-development", "description": "Implement behavior test-first.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Plan future code changes." },
+          { "id": "brainstorming", "description": "Clarify a new feature.", "excerpt": "Explore intent and alternatives." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-branch-sha", "fact": "The exact reviewed commit is not identified.", "blocks": "A reproducible review verdict." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-review-depth", "alternatives": ["targeted review", "whole repository review"], "tradeoff": "Speed versus unrelated coverage." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-review-checklist", "summary": "Existing public branch-review checklist." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-review-requirements", "summary": "Approved public synthetic requirements and branch diff." },
+          { "id": "ctx-private-ci-token", "summary": "Protected synthetic CI token metadata not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "review",
+        "skillCandidates": ["requesting-code-review"],
+        "criticalGapId": "gap-branch-sha",
+        "reuseCandidateId": "reuse-review-checklist",
+        "architectureForkId": null,
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.45 },
+          "data-loss": { "min": 0, "max": 0.35 },
+          "public-contract": { "min": 0.2, "max": 0.75 },
+          "migration": { "min": 0, "max": 0.5 },
+          "user-behavior": { "min": 0.1, "max": 0.65 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-review-requirements", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": [],
+        "protectedContextIds": ["ctx-private-ci-token"]
+      }
+    },
+    {
+      "id": "C6",
+      "set": "calibration",
+      "input": {
+        "taskId": "C6",
+        "taskRevision": 1,
+        "taskText": "Resolve a real synthetic architecture fork between an embedded store and a service, with explicit operational trade-offs. Produce a decision, not code.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-c6",
+        "explicitSkillIds": [],
+        "requiredSkillIds": ["grilling"],
+        "skills": [
+          { "id": "grilling", "description": "Stress-test a consequential plan or architecture decision.", "excerpt": "Expose assumptions and trade-offs." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Plan code changes after a decision." },
+          { "id": "brainstorming", "description": "Clarify a new feature.", "excerpt": "Explore broad feature intent." },
+          { "id": "systematic-debugging", "description": "Diagnose a defect.", "excerpt": "Reproduce and isolate failure." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-load-profile", "fact": "The expected load and availability target are missing.", "blocks": "A defensible architecture decision." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-state-store", "alternatives": ["embedded store", "separate service"], "tradeoff": "Operational simplicity versus independent scaling." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-architecture-metrics", "summary": "Existing public synthetic workload measurements." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-architecture-constraints", "summary": "Public synthetic reliability and deployment constraints." },
+          { "id": "ctx-private-capacity-plan", "summary": "Protected synthetic capacity plan not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "plan",
+        "skillCandidates": [],
+        "criticalGapId": "gap-load-profile",
+        "reuseCandidateId": "reuse-architecture-metrics",
+        "architectureForkId": "fork-state-store",
+        "riskDimensions": {
+          "security": { "min": 0.1, "max": 0.7 },
+          "data-loss": { "min": 0.25, "max": 0.9 },
+          "public-contract": { "min": 0.2, "max": 0.8 },
+          "migration": { "min": 0.45, "max": 1 },
+          "user-behavior": { "min": 0.1, "max": 0.65 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-architecture-constraints", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": ["grilling"],
+        "protectedContextIds": ["ctx-private-capacity-plan"]
+      }
+    },
+    {
+      "id": "H1",
+      "set": "holdout",
+      "input": {
+        "taskId": "H1",
+        "taskRevision": 1,
+        "taskText": "Repair a security-sensitive synthetic input-validation bug test-first, preserving the public request contract.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-h1",
+        "explicitSkillIds": [],
+        "requiredSkillIds": ["systematic-debugging"],
+        "skills": [
+          { "id": "systematic-debugging", "description": "Diagnose defects from evidence before changing code.", "excerpt": "Reproduce and isolate the validation flaw." },
+          { "id": "test-driven-development", "description": "Write a failing test before implementation.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "brainstorming", "description": "Clarify a new feature.", "excerpt": "Explore intent for new behavior." },
+          { "id": "requesting-code-review", "description": "Review completed code.", "excerpt": "Verify a final candidate." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-attack-input", "fact": "The minimal malicious input is not captured.", "blocks": "A regression test and root-cause proof." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-validation-layer", "alternatives": ["edge validation", "domain validation"], "tradeoff": "Early rejection versus centralized invariants." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-validation-helper", "summary": "Existing public synthetic validation helper." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-validation-contract", "summary": "Public synthetic validation contract and exploit example." },
+          { "id": "ctx-private-security-log", "summary": "Protected synthetic security log not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "diagnose",
+        "skillCandidates": ["test-driven-development"],
+        "criticalGapId": "gap-attack-input",
+        "reuseCandidateId": "reuse-validation-helper",
+        "architectureForkId": null,
+        "riskDimensions": {
+          "security": { "min": 0.65, "max": 1 },
+          "data-loss": { "min": 0.25, "max": 0.9 },
+          "public-contract": { "min": 0.3, "max": 0.9 },
+          "migration": { "min": 0, "max": 0.5 },
+          "user-behavior": { "min": 0.3, "max": 0.9 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-validation-contract", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": ["systematic-debugging"],
+        "protectedContextIds": ["ctx-private-security-log"]
+      }
+    },
+    {
+      "id": "H2",
+      "set": "holdout",
+      "input": {
+        "taskId": "H2",
+        "taskRevision": 1,
+        "taskText": "Implement an approved synthetic UI redesign brief while preserving accessibility and the existing design system.",
+        "policyVersion": "calibration-2026-09-21.1",
+        "catalogHash": "sha256:calibration-catalog-h2",
+        "explicitSkillIds": [],
+        "requiredSkillIds": ["brainstorming"],
+        "skills": [
+          { "id": "brainstorming", "description": "Clarify a new feature before implementation.", "excerpt": "Confirm the approved redesign behavior." },
+          { "id": "frontend-design", "description": "Build intentional accessible product UI.", "excerpt": "Apply the design system and verify the interface." },
+          { "id": "test-driven-development", "description": "Implement behavior test-first.", "excerpt": "RED, GREEN, then refactor." },
+          { "id": "writing-plans", "description": "Create an implementation plan.", "excerpt": "Plan code changes without building them." }
+        ],
+        "criticalGapCandidates": [
+          { "id": "gap-responsive-state", "fact": "The brief would be incomplete without the mobile state.", "blocks": "A complete responsive implementation." }
+        ],
+        "architectureForkCandidates": [
+          { "id": "fork-ui-primitive", "alternatives": ["existing component", "new component"], "tradeoff": "Consistency versus bespoke behavior." }
+        ],
+        "reuseCandidates": [
+          { "id": "reuse-design-system", "summary": "Existing public synthetic design-system components." }
+        ],
+        "contextFragments": [
+          { "id": "ctx-redesign-brief", "summary": "Approved public synthetic redesign brief with desktop and mobile states." },
+          { "id": "ctx-private-user-recording", "summary": "Protected synthetic user recording not sent to Jev.", "protected": true }
+        ]
+      },
+      "expected": {
+        "taskType": "change",
+        "skillCandidates": ["frontend-design"],
+        "criticalGapId": null,
+        "reuseCandidateId": "reuse-design-system",
+        "architectureForkId": null,
+        "riskDimensions": {
+          "security": { "min": 0, "max": 0.3 },
+          "data-loss": { "min": 0, "max": 0.25 },
+          "public-contract": { "min": 0.2, "max": 0.75 },
+          "migration": { "min": 0, "max": 0.4 },
+          "user-behavior": { "min": 0.65, "max": 1 }
+        },
+        "contextRelevance": [
+          { "id": "ctx-redesign-brief", "probability": { "min": 0.5, "max": 1 } }
+        ],
+        "forcedSkillIds": ["brainstorming"],
+        "protectedContextIds": ["ctx-private-user-recording"]
+      }
+    }
+  ]
+}

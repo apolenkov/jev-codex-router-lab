@@ -1,0 +1,35 @@
+{"case_id":"ar-09","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31414}
+{"case_id":"ar-10","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31195}
+{"case_id":"ar-11","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31291}
+{"case_id":"ar-12","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31301}
+{"case_id":"ar-13","error":"APIConnectionError: Connection error: fetch failed","latency_ms":27128}
+{"case_id":"ar-21","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31352}
+{"case_id":"ar-22","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31332}
+{"case_id":"cmd-01","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31292}
+{"case_id":"cmd-02","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31156}
+{"case_id":"cmd-11","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31394}
+{"case_id":"cmd-12","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31179}
+{"case_id":"cmd-19","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31205}
+{"case_id":"cmd-20","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31360}
+{"case_id":"cfg-01","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31380}
+{"case_id":"cfg-02","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31157}
+{"case_id":"cfg-11","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31297}
+{"case_id":"cfg-12","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31374}
+{"case_id":"cfg-13","error":"APIConnectionError: Connection error: fetch failed","latency_ms":29108}
+{"case_id":"cfg-21","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31417}
+{"case_id":"cfg-22","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31378}
+{"case_id":"gap-04","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31362}
+{"case_id":"gap-05","error":"APIConnectionError: Connection error: fetch failed","latency_ms":30118}
+{"case_id":"gap-14","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31214}
+{"case_id":"gap-15","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31281}
+{"case_id":"gap-16","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31263}
+{"case_id":"gap-17","error":"APIConnectionError: Connection error: fetch failed","latency_ms":25974}
+{"case_id":"ses-e3-06","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31286}
+{"case_id":"ses-e3-07","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31447}
+{"case_id":"ses-e1-03","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31316}
+{"case_id":"cmd-02","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31321}
+{"case_id":"cmd-11","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31453}
+{"case_id":"cfg-13","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31346}
+{"case_id":"cfg-21","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31265}
+{"case_id":"ses-e3-07","error":"APITimeoutError: Request timed out after 10000ms.","latency_ms":31306}
+{"case_id":"ses-e1-03","error":"APIConnectionError: Connection error: fetch failed","latency_ms":29986}

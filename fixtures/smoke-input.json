@@ -1,0 +1,18 @@
+{
+  "taskId": "synthetic-bugfix-001",
+  "taskRevision": 1,
+  "taskText": "A TypeScript CLI rejects a valid JSON input after a schema change. Diagnose the bug, propose the smallest fix, and verify it.",
+  "policyVersion": "v0",
+  "catalogHash": "fixture-v1",
+  "explicitSkillIds": [],
+  "requiredSkillIds": ["systematic-debugging"],
+  "skills": [
+    { "id": "systematic-debugging", "description": "Diagnose bugs before fixing them", "excerpt": "Find the root cause and verify it." },
+    { "id": "test-driven-development", "description": "Implement changes test-first", "excerpt": "Write a failing test before implementation." },
+    { "id": "writing-plans", "description": "Create implementation plans", "excerpt": "Use for multi-step plans before code." }
+  ],
+  "criticalGapCandidates": [],
+  "architectureForkCandidates": [],
+  "reuseCandidates": [],
+  "contextFragments": []
+}
