@@ -68,7 +68,7 @@ test("tracked and packed surfaces exclude local-only files", () => {
   const pack = Array.isArray(report) ? report : Object.values(report);
   const packed = pack[0]?.files.map(({ path }) => path) ?? [];
   const allowedFiles = new Set(["CHANGELOG.md", "LICENSE", "README.md", "package.json"]);
-  const allowedPrefixes = ["docs/", "examples/", "src/"];
+  const allowedPrefixes = ["docs/", "examples/", "fixtures/arena/", "src/"];
   const forbiddenPackage = packed.filter((path) =>
     !allowedFiles.has(path) && !allowedPrefixes.some((prefix) => path.startsWith(prefix))
   );
@@ -147,10 +147,53 @@ test("offline fake-gateway example needs no credential or network", () => {
     fake: true,
     decision: {
       status: "fallback",
-      reason: "service-error",
+      reason: "uncalibrated-thresholds",
       forcedSkillIds: ["systematic-debugging"],
       protectedContextIds: ["synthetic-protected-context"],
     },
   });
   assert.equal(result.stdout.includes("SYNTHETIC-PRIVATE-BODY"), false);
+});
+
+test("arena surface ships the development command, docs, and frozen fixtures", () => {
+  const packageJson = readJson("package.json") as { scripts?: Record<string, string> };
+  assert.equal(packageJson.scripts?.["arena:dev"], "npm run build --silent && node dist/src/arena-cli.js");
+
+  const readme = readFileSync("README.md", "utf8");
+  const arenaSection = readme
+    .slice(readme.indexOf("## Development arena"))
+    .replace(/\s+/g, " ");
+  for (const label of [
+    "development-only",
+    "offline",
+    "fixture-replay",
+    "not evidence for model superiority or production readiness",
+  ]) {
+    assert.ok(arenaSection.includes(label), `README arena section must declare ${label}`);
+  }
+
+  const tracked = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" })
+    .split("\0")
+    .filter((path) => path.length > 0);
+  const report = JSON.parse(
+    execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], {
+      encoding: "utf8",
+    }),
+  ) as { files: { path: string }[] }[] | Record<string, { files: { path: string }[] }>;
+  const pack = Array.isArray(report) ? report : Object.values(report);
+  const packed = pack[0]?.files.map(({ path }) => path) ?? [];
+  for (const path of [
+    "docs/arena-development.md",
+    "fixtures/arena/dev-cases.json",
+    "fixtures/arena/dev-gold.json",
+    "fixtures/arena/skill-manifest.json",
+    "fixtures/arena/rules.json",
+    "fixtures/arena/jev-replay.json",
+    "fixtures/arena/codex-replay.json",
+    "fixtures/arena/fingerprints.json",
+    "fixtures/arena/rubric-v1.md",
+  ]) {
+    assert.ok(tracked.includes(path), `${path} must be tracked`);
+    assert.ok(packed.includes(path), `${path} must be packed`);
+  }
 });

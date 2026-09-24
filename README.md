@@ -128,6 +128,15 @@ process. Security issues belong in a
 [private security advisory](https://github.com/apolenkov/jev-codex-router-lab/security/advisories/new),
 not a public issue.
 
+## Development arena
+
+`npm run arena:dev` replays a frozen 60-case synthetic corpus through three
+contestants — the Jev router behind a recorded-response gateway, a Codex
+fixture, and a deterministic rules baseline — and writes a byte-identical
+scoreboard under `artifacts/arena/`. The arena is development-only, offline,
+and fixture-replay based; it is not evidence for model superiority or
+production readiness. See [docs/arena-development.md](docs/arena-development.md).
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).
