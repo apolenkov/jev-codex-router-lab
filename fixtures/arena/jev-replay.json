@@ -1,0 +1,1740 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "case-001": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 640,
+          "outputTokens": 40,
+          "latencyMs": 210
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 180,
+          "outputTokens": 20,
+          "latencyMs": 80
+        }
+      }
+    },
+    "case-002": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 677,
+          "outputTokens": 57,
+          "latencyMs": 239
+        }
+      }
+    },
+    "case-003": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 714,
+          "outputTokens": 74,
+          "latencyMs": 268
+        }
+      }
+    },
+    "case-004": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging",
+          "brainstorming"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 751,
+          "outputTokens": 91,
+          "latencyMs": 297
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging",
+          "brainstorming"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 249,
+          "outputTokens": 53,
+          "latencyMs": 137
+        }
+      }
+    },
+    "case-005": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 788,
+          "outputTokens": 108,
+          "latencyMs": 326
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 272,
+          "outputTokens": 24,
+          "latencyMs": 156
+        }
+      }
+    },
+    "case-006": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 825,
+          "outputTokens": 125,
+          "latencyMs": 355
+        }
+      }
+    },
+    "case-007": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 862,
+          "outputTokens": 52,
+          "latencyMs": 224
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 198,
+          "outputTokens": 46,
+          "latencyMs": 104
+        }
+      }
+    },
+    "case-008": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.4,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 899,
+          "outputTokens": 69,
+          "latencyMs": 253
+        }
+      }
+    },
+    "case-009": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 936,
+          "outputTokens": 86,
+          "latencyMs": 282
+        }
+      }
+    },
+    "case-010": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 973,
+          "outputTokens": 103,
+          "latencyMs": 311
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 267,
+          "outputTokens": 39,
+          "latencyMs": 161
+        }
+      }
+    },
+    "case-011": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1010,
+          "outputTokens": 120,
+          "latencyMs": 340
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 290,
+          "outputTokens": 50,
+          "latencyMs": 90
+        }
+      }
+    },
+    "case-012": {
+      "pass1": {
+        "taskType": "diagnose",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.2,
+          "public-contract": 0.05,
+          "migration": 0.05,
+          "user-behavior": 0.15
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1047,
+          "outputTokens": 47,
+          "latencyMs": 369
+        }
+      }
+    },
+    "case-013": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1084,
+          "outputTokens": 64,
+          "latencyMs": 238
+        }
+      }
+    },
+    "case-014": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 641,
+          "outputTokens": 81,
+          "latencyMs": 267
+        }
+      }
+    },
+    "case-015": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 678,
+          "outputTokens": 98,
+          "latencyMs": 296
+        }
+      }
+    },
+    "case-016": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 715,
+          "outputTokens": 115,
+          "latencyMs": 325
+        }
+      }
+    },
+    "case-017": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [
+          "brainstorming"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 752,
+          "outputTokens": 42,
+          "latencyMs": 354
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "brainstorming"
+        ],
+        "skillCandidates": [
+          "brainstorming"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 188,
+          "outputTokens": 36,
+          "latencyMs": 114
+        }
+      }
+    },
+    "case-018": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [
+          "test-driven-development"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 789,
+          "outputTokens": 59,
+          "latencyMs": 223
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "test-driven-development"
+        ],
+        "skillCandidates": [
+          "test-driven-development"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 211,
+          "outputTokens": 47,
+          "latencyMs": 133
+        }
+      }
+    },
+    "case-019": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 826,
+          "outputTokens": 76,
+          "latencyMs": 252
+        }
+      }
+    },
+    "case-020": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 863,
+          "outputTokens": 93,
+          "latencyMs": 281
+        }
+      }
+    },
+    "case-021": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 900,
+          "outputTokens": 110,
+          "latencyMs": 310
+        }
+      }
+    },
+    "case-022": {
+      "pass1": {
+        "error": "service-error"
+      }
+    },
+    "case-023": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [
+          "brainstorming"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 974,
+          "outputTokens": 54,
+          "latencyMs": 368
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "brainstorming"
+        ],
+        "skillCandidates": [
+          "brainstorming"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 206,
+          "outputTokens": 22,
+          "latencyMs": 138
+        }
+      }
+    },
+    "case-024": {
+      "pass1": {
+        "taskType": "change",
+        "skillCandidates": [
+          "test-driven-development",
+          "brainstorming"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.15,
+          "data-loss": 0.1,
+          "public-contract": 0.2,
+          "migration": 0.05,
+          "user-behavior": 0.3
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1011,
+          "outputTokens": 71,
+          "latencyMs": 237
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "test-driven-development",
+          "brainstorming"
+        ],
+        "skillCandidates": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 229,
+          "outputTokens": 33,
+          "latencyMs": 157
+        }
+      }
+    },
+    "case-025": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1048,
+          "outputTokens": 88,
+          "latencyMs": 266
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "writing-plans"
+        ],
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 252,
+          "outputTokens": 44,
+          "latencyMs": 86
+        }
+      }
+    },
+    "case-026": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1085,
+          "outputTokens": 105,
+          "latencyMs": 295
+        }
+      }
+    },
+    "case-027": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 642,
+          "outputTokens": 122,
+          "latencyMs": 324
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "writing-plans"
+        ],
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 298,
+          "outputTokens": 26,
+          "latencyMs": 124
+        }
+      }
+    },
+    "case-028": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "executing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 679,
+          "outputTokens": 49,
+          "latencyMs": 353
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "executing-plans"
+        ],
+        "skillCandidates": [
+          "executing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 201,
+          "outputTokens": 37,
+          "latencyMs": 143
+        }
+      }
+    },
+    "case-029": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 716,
+          "outputTokens": 66,
+          "latencyMs": 222
+        }
+      }
+    },
+    "case-030": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "brainstorming",
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.3,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 753,
+          "outputTokens": 83,
+          "latencyMs": 251
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "brainstorming"
+        ],
+        "skillCandidates": [
+          "brainstorming"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 247,
+          "outputTokens": 59,
+          "latencyMs": 91
+        }
+      }
+    },
+    "case-031": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 790,
+          "outputTokens": 100,
+          "latencyMs": 280
+        }
+      }
+    },
+    "case-032": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 827,
+          "outputTokens": 117,
+          "latencyMs": 309
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "writing-plans"
+        ],
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 293,
+          "outputTokens": 41,
+          "latencyMs": 129
+        }
+      }
+    },
+    "case-033": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 864,
+          "outputTokens": 44,
+          "latencyMs": 338
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "writing-plans"
+        ],
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 196,
+          "outputTokens": 52,
+          "latencyMs": 148
+        }
+      }
+    },
+    "case-034": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "executing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 901,
+          "outputTokens": 61,
+          "latencyMs": 367
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "executing-plans"
+        ],
+        "skillCandidates": [
+          "executing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 219,
+          "outputTokens": 23,
+          "latencyMs": 167
+        }
+      }
+    },
+    "case-035": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.1,
+          "data-loss": 0.1,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 938,
+          "outputTokens": 78,
+          "latencyMs": 236
+        }
+      }
+    },
+    "case-036": {
+      "pass1": {
+        "taskType": "plan",
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.3,
+          "public-contract": 0.15,
+          "migration": 0.25,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 975,
+          "outputTokens": 95,
+          "latencyMs": 265
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "writing-plans"
+        ],
+        "skillCandidates": [
+          "writing-plans"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 265,
+          "outputTokens": 45,
+          "latencyMs": 115
+        }
+      }
+    },
+    "case-037": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1012,
+          "outputTokens": 112,
+          "latencyMs": 294
+        }
+      }
+    },
+    "case-038": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1049,
+          "outputTokens": 129,
+          "latencyMs": 323
+        }
+      }
+    },
+    "case-039": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1086,
+          "outputTokens": 56,
+          "latencyMs": 352
+        }
+      }
+    },
+    "case-040": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 643,
+          "outputTokens": 73,
+          "latencyMs": 221
+        }
+      }
+    },
+    "case-041": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 680,
+          "outputTokens": 90,
+          "latencyMs": 250
+        }
+      }
+    },
+    "case-042": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 717,
+          "outputTokens": 107,
+          "latencyMs": 279
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 283,
+          "outputTokens": 31,
+          "latencyMs": 139
+        }
+      }
+    },
+    "case-043": {
+      "pass1": {
+        "error": "stale-decision",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 754,
+          "outputTokens": 124,
+          "latencyMs": 308
+        }
+      }
+    },
+    "case-044": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 791,
+          "outputTokens": 51,
+          "latencyMs": 337
+        }
+      }
+    },
+    "case-045": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 828,
+          "outputTokens": 68,
+          "latencyMs": 366
+        }
+      }
+    },
+    "case-046": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 865,
+          "outputTokens": 85,
+          "latencyMs": 235
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 255,
+          "outputTokens": 35,
+          "latencyMs": 125
+        }
+      }
+    },
+    "case-047": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 902,
+          "outputTokens": 102,
+          "latencyMs": 264
+        }
+      }
+    },
+    "case-048": {
+      "pass1": {
+        "taskType": "research",
+        "skillCandidates": [
+          "systematic-debugging",
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.05,
+          "data-loss": 0.05,
+          "public-contract": 0.1,
+          "migration": 0.1,
+          "user-behavior": 0.1
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 939,
+          "outputTokens": 119,
+          "latencyMs": 293
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "systematic-debugging",
+          "writing-plans"
+        ],
+        "skillCandidates": [
+          "systematic-debugging"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 181,
+          "outputTokens": 57,
+          "latencyMs": 163
+        }
+      }
+    },
+    "case-049": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.5,
+          "data-loss": 0.35,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 976,
+          "outputTokens": 46,
+          "latencyMs": 322
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 204,
+          "outputTokens": 28,
+          "latencyMs": 92
+        }
+      }
+    },
+    "case-050": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review",
+          "receiving-code-review",
+          "systematic-debugging",
+          "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1013,
+          "outputTokens": 63,
+          "latencyMs": 351
+        }
+      }
+    },
+    "case-051": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1050,
+          "outputTokens": 80,
+          "latencyMs": 220
+        }
+      }
+    },
+    "case-052": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "receiving-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 1087,
+          "outputTokens": 97,
+          "latencyMs": 249
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "receiving-code-review"
+        ],
+        "skillCandidates": [
+          "receiving-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 273,
+          "outputTokens": 21,
+          "latencyMs": 149
+        }
+      }
+    },
+    "case-053": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 644,
+          "outputTokens": 114,
+          "latencyMs": 278
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 296,
+          "outputTokens": 32,
+          "latencyMs": 168
+        }
+      }
+    },
+    "case-054": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.5,
+          "data-loss": 0.35,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 681,
+          "outputTokens": 41,
+          "latencyMs": 307
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 199,
+          "outputTokens": 43,
+          "latencyMs": 97
+        }
+      }
+    },
+    "case-055": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 718,
+          "outputTokens": 58,
+          "latencyMs": 336
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 222,
+          "outputTokens": 54,
+          "latencyMs": 116
+        }
+      }
+    },
+    "case-056": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "receiving-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 755,
+          "outputTokens": 75,
+          "latencyMs": 365
+        }
+      }
+    },
+    "case-057": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.5,
+          "data-loss": 0.35,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 792,
+          "outputTokens": 92,
+          "latencyMs": 234
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 268,
+          "outputTokens": 36,
+          "latencyMs": 154
+        }
+      }
+    },
+    "case-058": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "receiving-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.3,
+          "data-loss": 0.15,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 829,
+          "outputTokens": 109,
+          "latencyMs": 263
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "receiving-code-review"
+        ],
+        "skillCandidates": [
+          "receiving-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 291,
+          "outputTokens": 47,
+          "latencyMs": 83
+        }
+      }
+    },
+    "case-059": {
+      "pass1": {
+        "error": "low-confidence",
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 866,
+          "outputTokens": 126,
+          "latencyMs": 292
+        }
+      }
+    },
+    "case-060": {
+      "pass1": {
+        "taskType": "review",
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+          "security": 0.5,
+          "data-loss": 0.35,
+          "public-contract": 0.2,
+          "migration": 0.1,
+          "user-behavior": 0.2
+        },
+        "contextRelevance": [],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 903,
+          "outputTokens": 53,
+          "latencyMs": 321
+        }
+      },
+      "pass2": {
+        "shortlist": [
+          "requesting-code-review"
+        ],
+        "skillCandidates": [
+          "requesting-code-review"
+        ],
+        "metadata": {
+          "model": "jev-1.13.0",
+          "inputTokens": 217,
+          "outputTokens": 29,
+          "latencyMs": 121
+        }
+      }
+    }
+  }
+}
+
