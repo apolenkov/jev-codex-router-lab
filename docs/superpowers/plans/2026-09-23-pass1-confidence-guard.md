@@ -70,7 +70,7 @@ mandatory skills.
 6. Run focused tests, build, lint, typecheck, OpenSpec validation, then the full
    test suite. Preserve and report the known unrelated arena `ENOENT` failure.
 7. Request one read-only final Astra review on the exact candidate after the
-   checks; do not claim full TASK-054 completion while live/calibration gates
+   checks; do not claim full completion of the parent routing task while live/calibration gates
    remain unmet.
 
 ## Scope boundaries
