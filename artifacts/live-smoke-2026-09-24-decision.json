@@ -1,0 +1,25 @@
+{
+    "status": "ok",
+    "signals": {
+        "taskType": "diagnose",
+        "skillCandidates": [
+            "test-driven-development",
+            "writing-plans"
+        ],
+        "criticalGap": null,
+        "reuseCandidate": null,
+        "architectureFork": null,
+        "riskDimensions": {
+            "security": 0.04,
+            "data-loss": 0.09,
+            "public-contract": 0.57,
+            "migration": 0.6,
+            "user-behavior": 0.87
+        },
+        "contextRelevance": []
+    },
+    "forcedSkillIds": [
+        "systematic-debugging"
+    ],
+    "protectedContextIds": []
+}
