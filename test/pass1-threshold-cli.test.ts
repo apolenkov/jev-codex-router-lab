@@ -8,6 +8,7 @@ import {
   readdir,
   readFile,
   rm,
+  writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -237,6 +238,162 @@ test("an aborted calibration run resumes once in place", async (t) => {
     collectOptions(root),
   );
   assert.equal(secondResume.exitCode, 2);
+});
+
+test("repeated aborts resume in place until complete", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const failOn = (ids: ReadonlySet<string>): Fetch =>
+    async (input, init) => {
+      const body = JSON.parse(String(init?.body)) as {
+        state: { echo: { taskId: string } };
+      };
+      if (ids.has(body.state.echo.taskId)) {
+        return new Response("upstream error", { status: 500 });
+      }
+      return fakeFetch(input, init);
+    };
+
+  const first = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOn(new Set(["CAL-004"])),
+    delay: async () => {},
+  });
+  assert.equal(first.summary?.status, "incomplete");
+  assert.equal(first.summary?.attempts, 4);
+
+  const second = await runPass1ThresholdCli(["--split", "calibration", "--resume"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOn(new Set(["CAL-010"])),
+    delay: async () => {},
+  });
+  assert.equal(second.summary?.status, "incomplete");
+  assert.equal(second.summary?.attempts, 11);
+  assert.equal(second.summary?.collected, 9);
+
+  const third = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(third.exitCode, 0, third.error);
+  assert.equal(third.summary?.status, "complete");
+  assert.equal(third.summary?.collected, 56);
+  assert.equal(third.summary?.attempts, 58);
+
+  const evidenceDir = join(root, "artifacts", "pass1-threshold-evidence-calibration");
+  const manifest = JSON.parse(
+    await readFile(join(evidenceDir, "manifest.json"), "utf8"),
+  ) as { resumeCount?: number };
+  assert.equal(manifest.resumeCount, 2);
+  const names = await readdir(evidenceDir);
+  assert.equal(names.filter((n) => /^case-CAL-\d{3}\.json$/.test(n)).length, 56);
+});
+
+test("resumed run refuses attempts beyond the cumulative ceiling", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const failOnce: Fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+    };
+    if (body.state.echo.taskId === "CAL-004") {
+      return new Response("upstream error", { status: 500 });
+    }
+    return fakeFetch(input, init);
+  };
+  const first = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOnce,
+    delay: async () => {},
+  });
+  assert.equal(first.summary?.status, "incomplete");
+  assert.equal(first.summary?.attempts, 4);
+
+  const checkpointPath = join(
+    root,
+    "artifacts",
+    "pass1-threshold-evidence-calibration",
+    "checkpoint.json",
+  );
+  const checkpoint = JSON.parse(await readFile(checkpointPath, "utf8")) as {
+    accounting: { attempts: number };
+  };
+  checkpoint.accounting.attempts = 79;
+  await writeFile(checkpointPath, JSON.stringify(checkpoint));
+
+  const resumed = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(resumed.summary?.status, "incomplete");
+  assert.equal(resumed.summary?.attempts, 80);
+  assert.equal(resumed.summary?.collected, 4);
+
+  const stuck = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(stuck.summary?.status, "incomplete");
+  assert.equal(stuck.summary?.attempts, 80);
+});
+
+test("an aborted evaluation replaces its incomplete report on resume", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
+  assert.equal(collect.exitCode, 0, collect.error);
+  const select = await runPass1ThresholdCli(
+    ["--offline-select", "pass1-threshold-evidence-calibration"],
+    collectOptions(root),
+  );
+  assert.equal(select.exitCode, 0, select.error);
+
+  const failOnce: Fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+    };
+    if (body.state.echo.taskId === "EVAL-002") {
+      return new Response("upstream error", { status: 500 });
+    }
+    return fakeFetch(input, init);
+  };
+  const first = await runPass1ThresholdCli(["--split", "evaluation"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOnce,
+    delay: async () => {},
+  });
+  assert.equal(first.summary?.status, "incomplete");
+
+  const reportPath = join(root, "artifacts", "pass1-threshold-evaluation.json");
+  const incomplete = JSON.parse(await readFile(reportPath, "utf8")) as {
+    status: string;
+    uncollected: number;
+  };
+  assert.equal(incomplete.status, "incomplete");
+  assert.ok(incomplete.uncollected > 0);
+
+  const resumed = await runPass1ThresholdCli(
+    ["--split", "evaluation", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.summary?.status, "complete");
+
+  const complete = JSON.parse(await readFile(reportPath, "utf8")) as {
+    status: string;
+    uncollected: number;
+    totalCases: number;
+  };
+  assert.equal(complete.status, "complete");
+  assert.equal(complete.uncollected, 0);
+  assert.equal(complete.totalCases, 28);
 });
 
 test("offline select rejects missing and incomplete evidence", async (t) => {

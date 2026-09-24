@@ -113,7 +113,11 @@ in the change design before collection.
 | Provider attempts | 73 | 37 |
 | Transport failures | 17 | 9 |
 | Recorded cost | USD 0.0028 | USD 0.0014 |
-| Budget cap | USD 0.25 | USD 0.25 |
+| Budget cap (per run) | USD 0.25 | USD 0.25 |
+
+Accounting records provider-reported settled usage only; a failed call's
+provider-side billing is not observable and is reported as an attempt without
+cost. Total recorded spend across both runs was USD 0.0042.
 
 The provider returned transport-level failures (timeouts, connection errors)
 on roughly a quarter of calls during the run window; aborted runs were resumed

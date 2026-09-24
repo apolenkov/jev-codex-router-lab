@@ -4,26 +4,28 @@
 
 ### Requirement: Calibration collection is bounded and sequential
 
-The calibration runner MUST issue exactly one pass-1 `systemOne` request per
-calibration case, in declared corpus order, strictly sequentially, with an
-injected fetch implementation, `maxRetries: 0`, and a per-call timeout. The
-runner MUST count every actual HTTP attempt and record the counted number in
-the evidence manifest.
+The calibration runner MUST issue one pass-1 `systemOne` request per
+calibration case per collection attempt, in declared corpus order, strictly
+sequentially, with an injected fetch implementation, `maxRetries: 0`, and a
+per-call timeout. The runner MUST count every actual HTTP attempt, including
+failed and retried ones, and record the counted number in the evidence
+manifest.
 
 #### Scenario: Collection respects the attempt cap
 
 - **WHEN** the calibration collection runs
-- **THEN** counted actual attempts never exceed the number of corpus cases
-  and the run aborts on the first transport or terminal HTTP failure
+- **THEN** counted actual attempts never exceed the declared ceiling (fresh
+  run: corpus size; resumed run: the cumulative ceiling) and the run aborts
+  on the first transport or terminal HTTP failure
 
 ### Requirement: Evidence directory is create-once
 
 The runner MUST create a fresh evidence directory per run, refuse to write
 into a pre-existing or modified directory, and preserve partial evidence
-marked incomplete on abort. An incomplete run MAY be resumed at most once
-in place under the resume rule: `collected` and `invalid-response` records
-are immutable, a `failed` record may be replaced by exactly one retry, and
-the manifest MUST record the carried-over accounting.
+marked incomplete on abort. An incomplete run MAY be resumed in place any
+number of times under the resume rule: `collected` and `invalid-response`
+records are immutable, a `failed` record may be retried once per resume, and
+the manifest MUST record the carried-over accounting and the resume count.
 
 #### Scenario: Stale evidence is not overwritten
 
@@ -61,14 +63,23 @@ eligible-set, tie-break, and denominator rules without post-hoc adjustment.
 ### Requirement: Evaluation is single-shot on a frozen tuple
 
 The evaluator MUST refuse to run without the frozen selection artifact,
-MUST apply the selected tuple to the evaluation corpus exactly once, and
-MUST NOT accept tuple changes from evaluation evidence.
+MUST verify that the artifact's selected tuple and evidence hash derive from
+the retained calibration evidence, MUST apply the selected tuple to the
+evaluation corpus exactly once, and MUST NOT accept tuple changes from
+evaluation evidence.
 
 #### Scenario: No retuning from holdout
 
 - **WHEN** evaluation evidence is produced
 - **THEN** the reported tuple is byte-identical to the frozen selection and
   no second evaluation pass exists
+
+#### Scenario: Artifact must derive from evidence
+
+- **WHEN** the selection artifact's tuple or evidence hash does not match a
+  fresh recomputation over the retained calibration evidence
+- **THEN** the evaluator refuses to run and exits non-zero without any
+  provider call
 
 ### Requirement: Runs are isolated lab operations
 

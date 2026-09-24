@@ -497,6 +497,35 @@ const runCollection = async (
     ) {
       return { exitCode: 2, error: "selection artifact fingerprint mismatch" };
     }
+    const calibrationFrozen = await loadFrozenInputs(root, "calibration");
+    if (calibrationFrozen === null) {
+      return { exitCode: 2, error: "invalid frozen input" };
+    }
+    const canonicalArtifacts = await realpath(join(root, "artifacts")).catch(
+      () => null,
+    );
+    const calibrationEvidence = canonicalArtifacts === null
+      ? null
+      : await loadCalibrationEvidence(
+        canonicalArtifacts,
+        EVIDENCE_DIR.calibration,
+        calibrationFrozen.corpus,
+      );
+    if (calibrationEvidence === null || calibrationEvidence === "invalid") {
+      return { exitCode: 2, error: "calibration evidence unavailable" };
+    }
+    const rederived = selectPass1Threshold(
+      calibrationFrozen.corpus,
+      calibrationEvidence.records,
+    );
+    if (
+      calibrationEvidence.evidenceSha256 !== artifact.inputs.evidenceSha256 ||
+      rederived.tuple.floor !== artifact.selected.floor ||
+      rederived.tuple.lo !== artifact.selected.lo ||
+      rederived.tuple.hi !== artifact.selected.hi
+    ) {
+      return { exitCode: 2, error: "selection artifact not derived" };
+    }
     const reportPath = join(root, EVALUATION_REPORT_PATH);
     if (!isWithin(root, await realpath(join(root, "artifacts")))) {
       return { exitCode: 2, error: "evidence path unavailable" };
@@ -545,6 +574,66 @@ const runCollection = async (
   }
 };
 
+interface CalibrationEvidence {
+  readonly records: Pass1ThresholdCaseRecord[];
+  readonly evidenceSha256: string;
+}
+
+const loadCalibrationEvidence = async (
+  canonicalArtifacts: string,
+  evidenceDirArgument: string,
+  corpus: Pass1AnnotatedCorpus,
+): Promise<CalibrationEvidence | "invalid" | null> => {
+  const evidenceDir = resolve(canonicalArtifacts, evidenceDirArgument);
+  if (!isWithin(canonicalArtifacts, evidenceDir)) {
+    return null;
+  }
+  const canonicalEvidenceDir = await realpath(evidenceDir).catch(() => null);
+  if (canonicalEvidenceDir === null || canonicalEvidenceDir !== evidenceDir) {
+    return null;
+  }
+  let names: readonly string[];
+  try {
+    names = await readdir(canonicalEvidenceDir);
+  } catch {
+    return null;
+  }
+  const caseFiles = names.filter((name) => CASE_RECORD_PATTERN.test(name)).sort();
+  if (caseFiles.length === 0) {
+    return null;
+  }
+  const records: Pass1ThresholdCaseRecord[] = [];
+  const evidenceHash = createHash("sha256");
+  try {
+    const manifestRaw = await readFile(
+      join(canonicalEvidenceDir, "manifest.json"),
+      "utf8",
+    );
+    const manifestEvidence = JSON.parse(manifestRaw) as { split?: unknown };
+    if (manifestEvidence.split !== "calibration") {
+      return "invalid";
+    }
+    evidenceHash.update(manifestRaw);
+    for (const name of caseFiles) {
+      const raw = await readFile(join(canonicalEvidenceDir, name), "utf8");
+      records.push(parsePass1ThresholdCaseRecord(JSON.parse(raw)));
+      evidenceHash.update(raw);
+    }
+  } catch {
+    return "invalid";
+  }
+  const expectedIds = new Set(corpus.cases.map((entry) => entry.caseId));
+  const recordIds = new Set(records.map((record) => record.caseId));
+  if (
+    records.some((record) => record.outcome === "failed") ||
+    expectedIds.size !== recordIds.size ||
+    ![...expectedIds].every((id) => recordIds.has(id))
+  ) {
+    return "invalid";
+  }
+  return { records, evidenceSha256: evidenceHash.digest("hex") };
+};
+
 const runOfflineSelect = async (
   root: string,
   evidenceDirArgument: string,
@@ -559,55 +648,19 @@ const runOfflineSelect = async (
   if (canonicalArtifacts === null || !isWithin(root, canonicalArtifacts)) {
     return { exitCode: 2, error: "evidence path unavailable" };
   }
-  const evidenceDir = resolve(canonicalArtifacts, evidenceDirArgument);
-  if (!isWithin(canonicalArtifacts, evidenceDir)) {
-    return { exitCode: 2, error: "evidence path unavailable" };
-  }
-  const canonicalEvidenceDir = await realpath(evidenceDir).catch(() => null);
-  if (canonicalEvidenceDir === null || canonicalEvidenceDir !== evidenceDir) {
-    return { exitCode: 2, error: "evidence path unavailable" };
-  }
-  let names: readonly string[];
-  try {
-    names = await readdir(canonicalEvidenceDir);
-  } catch {
-    return { exitCode: 2, error: "evidence path unavailable" };
-  }
-  const caseFiles = names.filter((name) => CASE_RECORD_PATTERN.test(name)).sort();
-  if (caseFiles.length === 0) {
-    return { exitCode: 2, error: "missing evidence records" };
-  }
-  const records: Pass1ThresholdCaseRecord[] = [];
-  const evidenceHash = createHash("sha256");
-  try {
-    const manifestRaw = await readFile(
-      join(canonicalEvidenceDir, "manifest.json"),
-      "utf8",
-    );
-    const manifestEvidence = JSON.parse(manifestRaw) as { split?: unknown };
-    if (manifestEvidence.split !== "calibration") {
-      return { exitCode: 2, error: "invalid evidence manifest" };
-    }
-    evidenceHash.update(manifestRaw);
-    for (const name of caseFiles) {
-      const raw = await readFile(join(canonicalEvidenceDir, name), "utf8");
-      records.push(parsePass1ThresholdCaseRecord(JSON.parse(raw)));
-      evidenceHash.update(raw);
-    }
-  } catch {
-    return { exitCode: 2, error: "invalid evidence records" };
-  }
-  const expectedIds = new Set(
-    frozen.corpus.cases.map((entry) => entry.caseId),
+  const evidence = await loadCalibrationEvidence(
+    canonicalArtifacts,
+    evidenceDirArgument,
+    frozen.corpus,
   );
-  const recordIds = new Set(records.map((record) => record.caseId));
-  if (
-    records.some((record) => record.outcome === "failed") ||
-    expectedIds.size !== recordIds.size ||
-    ![...expectedIds].every((id) => recordIds.has(id))
-  ) {
+  if (evidence === null) {
+    return { exitCode: 2, error: "evidence path unavailable" };
+  }
+  if (evidence === "invalid") {
     return { exitCode: 2, error: "incomplete evidence" };
   }
+  const records = evidence.records;
+  const evidenceSha256 = evidence.evidenceSha256;
 
   const selection = selectPass1Threshold(frozen.corpus, records);
   const inputs: Pass1SelectionInputs = {
@@ -615,7 +668,7 @@ const runOfflineSelect = async (
     evaluationCorpusFileSha256: frozen.manifest.splits.evaluation.sha256,
     questionBuilderSha256: frozen.actual.questionBuilderSha256,
     corpusFingerprint: createCorpusGuard(frozen.corpus).fingerprint,
-    evidenceSha256: evidenceHash.digest("hex"),
+    evidenceSha256,
   };
   const artifact = buildPass1SelectionArtifact(selection, inputs);
   try {

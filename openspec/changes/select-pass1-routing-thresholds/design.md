@@ -108,6 +108,19 @@ evaluation evidence; a poor evaluation is reported, not retuned.
   the ~25% provider failure rate persisted (17 transport failures in 70
   attempts; 53/56 collected). Calibration ceiling raised to **80**;
   evaluation ceiling stays 40. Spend cap unchanged.
+- **Amendment 2026-09-24 v5 (independent review hardening):**
+  - The evaluator MUST verify the frozen artifact derives from the retained
+    calibration evidence: the CLI reloads calibration records, recomputes
+    `selectPass1Threshold`, and requires the artifact's selected tuple and
+    `inputs.evidenceSha256` to match exactly before any evaluation call.
+  - A resumed evaluation MAY replace its own `incomplete` report atomically;
+    fresh runs stay create-once and a `complete` summary blocks any further
+    resume, so a final report can never be rewritten.
+  - Spend-cap semantics clarified: USD 0.25 is enforced per bounded run
+    (calibration and evaluation each). Accounting records only
+    provider-reported settled usage; a failed call's provider-side billing
+    is not observable and is reported as an attempt without cost. Actual
+    total spend was USD 0.0042 — inside the authorized package either way.
 - Protected-context fragments are stripped by the request builder; the
   corpus validator already proves no protected fragment reaches the wire.
 
