@@ -104,6 +104,10 @@ evaluation evidence; a poor evaluation is reported, not retuned.
   and 40 for evaluation**; a fixed 1000 ms inter-call delay is inserted
   between sequential calls to reduce rate-limit pressure and is recorded
   in the manifest `limits.interCallDelayMs`. Spend cap unchanged.
+- **Amendment 2026-09-24 v4 (owner-approved at ceiling exhaustion):**
+  the ~25% provider failure rate persisted (17 transport failures in 70
+  attempts; 53/56 collected). Calibration ceiling raised to **80**;
+  evaluation ceiling stays 40. Spend cap unchanged.
 - Protected-context fragments are stripped by the request builder; the
   corpus validator already proves no protected fragment reaches the wire.
 

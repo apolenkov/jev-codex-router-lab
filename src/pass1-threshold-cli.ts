@@ -8,6 +8,7 @@ import {
   readdir,
   readFile,
   realpath,
+  rename,
   unlink,
   writeFile,
 } from "node:fs/promises";
@@ -201,6 +202,27 @@ const publishOnce = async (
     });
     await beforeWrite?.();
     await link(temporaryPath, path);
+    await beforeWrite?.();
+  } finally {
+    await unlink(temporaryPath).catch(() => undefined);
+  }
+};
+
+const publishOrReplace = async (
+  path: string,
+  value: unknown,
+  beforeWrite?: () => Promise<void>,
+): Promise<void> => {
+  await beforeWrite?.();
+  const temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+      mode: 0o600,
+    });
+    await beforeWrite?.();
+    await rename(temporaryPath, path);
     await beforeWrite?.();
   } finally {
     await unlink(temporaryPath).catch(() => undefined);
@@ -499,7 +521,9 @@ const runCollection = async (
         }),
       ...(options.delay === undefined ? {} : { delay: options.delay }),
       writeReport: (evaluation) =>
-        publishOnce(reportPath, evaluation, assertEvidencePath),
+        (resume
+          ? publishOrReplace(reportPath, evaluation, assertEvidencePath)
+          : publishOnce(reportPath, evaluation, assertEvidencePath)),
     });
     return {
       exitCode: result.status === "complete" ? 0 : 2,

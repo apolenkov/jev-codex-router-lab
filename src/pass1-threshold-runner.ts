@@ -68,7 +68,7 @@ export const PASS1_THRESHOLD_LIMITS: Readonly<
 export const PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING: Readonly<
   Record<Pass1CorpusSplit, number>
 > = {
-  calibration: 70,
+  calibration: 80,
   evaluation: 40,
 };
 

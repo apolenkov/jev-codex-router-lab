@@ -37,7 +37,7 @@ the manifest MUST record the carried-over accounting.
   a failed case may be retried and its record replaced, manifest and
   summary are atomically rewritten, cumulative accounting continues from
   the checkpoint, cumulative attempts stay within the declared
-  hard ceiling (70 calibration / 40 evaluation), and sequential calls
+  hard ceiling (80 calibration / 40 evaluation), and sequential calls
   are spaced by the declared inter-call delay
 
 ### Requirement: Threshold selection is offline and pre-registered

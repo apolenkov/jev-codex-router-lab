@@ -1,0 +1,6892 @@
+{
+  "schemaVersion": 1,
+  "kind": "pass1-threshold-selection",
+  "inputs": {
+    "corpusFileSha256": "7bb0ed93f53edbd00842bdea089d261e02132d8f9ab9a09b96d6e9974427aa45",
+    "evaluationCorpusFileSha256": "1ac7218ff70c0407662c0d9a768ec85a7e1d199935698320067bd944c3a81720",
+    "questionBuilderSha256": "5101440bf90c2a6d174b6f87c112bbdffa8eac2080a2e1eb8d2bc938ccc25e78",
+    "corpusFingerprint": "b5487000b8a6d0ae43e11731a848a24605c7330aac561c73ec33ec0a31dff58f",
+    "evidenceSha256": "1ecf08a8819f230c45e8977d4964f247f2bddbe0c48cc46727f1f7ab42b9610c"
+  },
+  "grid": {
+    "floors": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "los": [
+      0.4,
+      0.44,
+      0.48
+    ],
+    "his": [
+      0.52,
+      0.56,
+      0.6
+    ],
+    "size": 90
+  },
+  "selected": {
+    "floor": 0.95,
+    "lo": 0.4,
+    "hi": 0.52
+  },
+  "eligible": false,
+  "tieBroken": false,
+  "tiedTuples": [
+    {
+      "floor": 0.95,
+      "lo": 0.4,
+      "hi": 0.52
+    }
+  ],
+  "table": [
+    {
+      "floor": 0.5,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 29,
+      "coverage": 0.5178571428571429,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 29,
+          "errors": 1,
+          "errorRate": 0.034482758620689655,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 29,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 17,
+          "errors": 7,
+          "errorRate": 0.4117647058823529,
+          "excluded": 12
+        },
+        "reuseCandidate": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 12,
+          "errors": 6,
+          "errorRate": 0.5,
+          "excluded": 17
+        },
+        "contextRelevance": {
+          "evaluable": 28,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 28,
+          "errors": 2,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 29,
+          "errors": 3,
+          "errorRate": 0.10344827586206896,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 28,
+          "errors": 2,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 28,
+          "errors": 6,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 29,
+          "errors": 8,
+          "errorRate": 0.27586206896551724,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 35
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 26,
+      "coverage": 0.4642857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 26,
+          "errors": 1,
+          "errorRate": 0.038461538461538464,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 16,
+          "errors": 6,
+          "errorRate": 0.375,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 5,
+          "errorRate": 0.5,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 25,
+          "errors": 2,
+          "errorRate": 0.08,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 25,
+          "errors": 2,
+          "errorRate": 0.08,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 25,
+          "errors": 6,
+          "errorRate": 0.24,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 26,
+          "errors": 7,
+          "errorRate": 0.2692307692307692,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 31
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 5,
+          "errorRate": 0.5555555555555556,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 6,
+          "errorRate": 0.2608695652173913,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 6,
+          "errorRate": 0.25,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 28
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 30,
+      "coverage": 0.5357142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 30,
+          "errors": 1,
+          "errorRate": 0.03333333333333333,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 17,
+          "errors": 7,
+          "errorRate": 0.4117647058823529,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 13,
+          "errors": 6,
+          "errorRate": 0.46153846153846156,
+          "excluded": 17
+        },
+        "contextRelevance": {
+          "evaluable": 29,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 29,
+          "errors": 2,
+          "errorRate": 0.06896551724137931,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 30,
+          "errors": 3,
+          "errorRate": 0.1,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 29,
+          "errors": 3,
+          "errorRate": 0.10344827586206896,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 29,
+          "errors": 6,
+          "errorRate": 0.20689655172413793,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 30,
+          "errors": 8,
+          "errorRate": 0.26666666666666666,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 36
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 27,
+      "coverage": 0.48214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 27,
+          "errors": 1,
+          "errorRate": 0.037037037037037035,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 27,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 16,
+          "errors": 6,
+          "errorRate": 0.375,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 11,
+          "errors": 5,
+          "errorRate": 0.45454545454545453,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 27,
+          "errors": 2,
+          "errorRate": 0.07407407407407407,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 26,
+          "errors": 3,
+          "errorRate": 0.11538461538461539,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 26,
+          "errors": 6,
+          "errorRate": 0.23076923076923078,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 27,
+          "errors": 7,
+          "errorRate": 0.25925925925925924,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 32
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 5,
+          "errorRate": 0.5555555555555556,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 6,
+          "errorRate": 0.2608695652173913,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 6,
+          "errorRate": 0.25,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 28
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 33,
+      "coverage": 0.5892857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 33,
+          "errors": 1,
+          "errorRate": 0.030303030303030304,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 33,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 17,
+          "errors": 7,
+          "errorRate": 0.4117647058823529,
+          "excluded": 16
+        },
+        "reuseCandidate": {
+          "evaluable": 27,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 13,
+          "errors": 6,
+          "errorRate": 0.46153846153846156,
+          "excluded": 20
+        },
+        "contextRelevance": {
+          "evaluable": 31,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 31,
+          "errors": 2,
+          "errorRate": 0.06451612903225806,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 32,
+          "errors": 4,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 31,
+          "errors": 3,
+          "errorRate": 0.0967741935483871,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 31,
+          "errors": 6,
+          "errorRate": 0.1935483870967742,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 33,
+          "errors": 9,
+          "errorRate": 0.2727272727272727,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 38
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 30,
+      "coverage": 0.5357142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 30,
+          "errors": 1,
+          "errorRate": 0.03333333333333333,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 16,
+          "errors": 6,
+          "errorRate": 0.375,
+          "excluded": 14
+        },
+        "reuseCandidate": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 11,
+          "errors": 5,
+          "errorRate": 0.45454545454545453,
+          "excluded": 19
+        },
+        "contextRelevance": {
+          "evaluable": 28,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 28,
+          "errors": 2,
+          "errorRate": 0.07142857142857142,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 29,
+          "errors": 3,
+          "errorRate": 0.10344827586206896,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 28,
+          "errors": 3,
+          "errorRate": 0.10714285714285714,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 28,
+          "errors": 6,
+          "errorRate": 0.21428571428571427,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 30,
+          "errors": 8,
+          "errorRate": 0.26666666666666666,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 34
+    },
+    {
+      "floor": 0.5,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 27,
+      "coverage": 0.48214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 27,
+          "errors": 1,
+          "errorRate": 0.037037037037037035,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 27,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 5,
+          "errorRate": 0.5555555555555556,
+          "excluded": 18
+        },
+        "contextRelevance": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 25,
+          "errors": 2,
+          "errorRate": 0.08,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 25,
+          "errors": 2,
+          "errorRate": 0.08,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 25,
+          "errors": 6,
+          "errorRate": 0.24,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 27,
+          "errors": 7,
+          "errorRate": 0.25925925925925924,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 30
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 27,
+      "coverage": 0.48214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 27,
+          "errors": 1,
+          "errorRate": 0.037037037037037035,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 27,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 15,
+          "errors": 6,
+          "errorRate": 0.4,
+          "excluded": 12
+        },
+        "reuseCandidate": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 11,
+          "errors": 5,
+          "errorRate": 0.45454545454545453,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 27,
+          "errors": 3,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 26,
+          "errors": 1,
+          "errorRate": 0.038461538461538464,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 26,
+          "errors": 6,
+          "errorRate": 0.23076923076923078,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 27,
+          "errors": 8,
+          "errorRate": 0.2962962962962963,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 32
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 1,
+          "errorRate": 0.043478260869565216,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 6,
+          "errorRate": 0.2608695652173913,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 7,
+          "errorRate": 0.2916666666666667,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 28
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 22,
+      "coverage": 0.39285714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 4,
+          "errorRate": 0.3333333333333333,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 21,
+          "errors": 1,
+          "errorRate": 0.047619047619047616,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 21,
+          "errors": 6,
+          "errorRate": 0.2857142857142857,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 22,
+          "errors": 6,
+          "errorRate": 0.2727272727272727,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 25
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 28,
+      "coverage": 0.5,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 28,
+          "errors": 1,
+          "errorRate": 0.03571428571428571,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 28,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 15,
+          "errors": 6,
+          "errorRate": 0.4,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 12,
+          "errors": 5,
+          "errorRate": 0.4166666666666667,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 27,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 27,
+          "errors": 2,
+          "errorRate": 0.07407407407407407,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 28,
+          "errors": 3,
+          "errorRate": 0.10714285714285714,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 27,
+          "errors": 2,
+          "errorRate": 0.07407407407407407,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 27,
+          "errors": 6,
+          "errorRate": 0.2222222222222222,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 28,
+          "errors": 8,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 33
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 25,
+      "coverage": 0.44642857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 25,
+          "errors": 1,
+          "errorRate": 0.04,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 4,
+          "errorRate": 0.4,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 25,
+          "errors": 2,
+          "errorRate": 0.08,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 24,
+          "errors": 6,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 25,
+          "errors": 7,
+          "errorRate": 0.28,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 29
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 22,
+      "coverage": 0.39285714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 4,
+          "errorRate": 0.3333333333333333,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 21,
+          "errors": 1,
+          "errorRate": 0.047619047619047616,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 21,
+          "errors": 6,
+          "errorRate": 0.2857142857142857,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 22,
+          "errors": 6,
+          "errorRate": 0.2727272727272727,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 25
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 31,
+      "coverage": 0.5535714285714286,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 31,
+          "errors": 1,
+          "errorRate": 0.03225806451612903,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 31,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 15,
+          "errors": 6,
+          "errorRate": 0.4,
+          "excluded": 16
+        },
+        "reuseCandidate": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 12,
+          "errors": 5,
+          "errorRate": 0.4166666666666667,
+          "excluded": 19
+        },
+        "contextRelevance": {
+          "evaluable": 29,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 29,
+          "errors": 2,
+          "errorRate": 0.06896551724137931,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 30,
+          "errors": 4,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 29,
+          "errors": 2,
+          "errorRate": 0.06896551724137931,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 29,
+          "errors": 6,
+          "errorRate": 0.20689655172413793,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 31,
+          "errors": 9,
+          "errorRate": 0.2903225806451613,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 35
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 28,
+      "coverage": 0.5,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 28,
+          "errors": 1,
+          "errorRate": 0.03571428571428571,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 28,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 14
+        },
+        "reuseCandidate": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 4,
+          "errorRate": 0.4,
+          "excluded": 18
+        },
+        "contextRelevance": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 27,
+          "errors": 3,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 26,
+          "errors": 6,
+          "errorRate": 0.23076923076923078,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 28,
+          "errors": 8,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 31
+    },
+    {
+      "floor": 0.55,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 25,
+      "coverage": 0.44642857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 25,
+          "errors": 1,
+          "errorRate": 0.04,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 4,
+          "errorRate": 0.3333333333333333,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 17
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 1,
+          "errorRate": 0.043478260869565216,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 6,
+          "errorRate": 0.2608695652173913,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 25,
+          "errors": 7,
+          "errorRate": 0.28,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 27
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 1,
+          "errorRate": 0.041666666666666664,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 5,
+          "errorRate": 0.5,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 3,
+          "errorRate": 0.125,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 1,
+          "errorRate": 0.043478260869565216,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 5,
+          "errorRate": 0.21739130434782608,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 8,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 30
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 21,
+      "coverage": 0.375,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 21,
+          "errors": 1,
+          "errorRate": 0.047619047619047616,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 13
+        },
+        "contextRelevance": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 20,
+          "errors": 1,
+          "errorRate": 0.05,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 20,
+          "errors": 5,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 21,
+          "errors": 7,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 26
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 19,
+      "coverage": 0.3392857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 5,
+          "errorRate": 0.2777777777777778,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 19,
+          "errors": 6,
+          "errorRate": 0.3157894736842105,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 23
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 25,
+      "coverage": 0.44642857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 25,
+          "errors": 1,
+          "errorRate": 0.04,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 11,
+          "errors": 5,
+          "errorRate": 0.45454545454545453,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 25,
+          "errors": 3,
+          "errorRate": 0.12,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 24,
+          "errors": 5,
+          "errorRate": 0.20833333333333334,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 25,
+          "errors": 8,
+          "errorRate": 0.32,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 31
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 22,
+      "coverage": 0.39285714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 13
+        },
+        "contextRelevance": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 21,
+          "errors": 5,
+          "errorRate": 0.23809523809523808,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 22,
+          "errors": 7,
+          "errorRate": 0.3181818181818182,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 27
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 19,
+      "coverage": 0.3392857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 5,
+          "errorRate": 0.2777777777777778,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 19,
+          "errors": 6,
+          "errorRate": 0.3157894736842105,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 23
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 28,
+      "coverage": 0.5,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 28,
+          "errors": 1,
+          "errorRate": 0.03571428571428571,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 28,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 14
+        },
+        "reuseCandidate": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 11,
+          "errors": 5,
+          "errorRate": 0.45454545454545453,
+          "excluded": 17
+        },
+        "contextRelevance": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 27,
+          "errors": 4,
+          "errorRate": 0.14814814814814814,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 26,
+          "errors": 2,
+          "errorRate": 0.07692307692307693,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 26,
+          "errors": 5,
+          "errorRate": 0.19230769230769232,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 28,
+          "errors": 9,
+          "errorRate": 0.32142857142857145,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 33
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 25,
+      "coverage": 0.44642857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 25,
+          "errors": 1,
+          "errorRate": 0.04,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 12
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 24,
+          "errors": 3,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 23,
+          "errors": 2,
+          "errorRate": 0.08695652173913043,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 23,
+          "errors": 5,
+          "errorRate": 0.21739130434782608,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 25,
+          "errors": 8,
+          "errorRate": 0.32,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 29
+    },
+    {
+      "floor": 0.6,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 22,
+      "coverage": 0.39285714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 22,
+          "errors": 1,
+          "errorRate": 0.045454545454545456,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 20,
+          "errors": 1,
+          "errorRate": 0.05,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 20,
+          "errors": 5,
+          "errorRate": 0.25,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 22,
+          "errors": 7,
+          "errorRate": 0.3181818181818182,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 25
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 22,
+      "coverage": 0.39285714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 5,
+          "errorRate": 0.5555555555555556,
+          "excluded": 13
+        },
+        "contextRelevance": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 22,
+          "errors": 3,
+          "errorRate": 0.13636363636363635,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 21,
+          "errors": 1,
+          "errorRate": 0.047619047619047616,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 21,
+          "errors": 5,
+          "errorRate": 0.23809523809523808,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 22,
+          "errors": 7,
+          "errorRate": 0.3181818181818182,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 27
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 20,
+      "coverage": 0.35714285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 19,
+          "errors": 5,
+          "errorRate": 0.2631578947368421,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 20,
+          "errors": 6,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 23
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 18,
+      "coverage": 0.32142857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 17,
+          "errors": 1,
+          "errorRate": 0.058823529411764705,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 17,
+          "errors": 5,
+          "errorRate": 0.29411764705882354,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 18,
+          "errors": 5,
+          "errorRate": 0.2777777777777778,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 20
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 23,
+      "coverage": 0.4107142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 5,
+          "errorRate": 0.5,
+          "excluded": 13
+        },
+        "contextRelevance": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 23,
+          "errors": 3,
+          "errorRate": 0.13043478260869565,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 22,
+          "errors": 5,
+          "errorRate": 0.22727272727272727,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 23,
+          "errors": 7,
+          "errorRate": 0.30434782608695654,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 28
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 21,
+      "coverage": 0.375,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 20,
+          "errors": 5,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 21,
+          "errors": 6,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 24
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 18,
+      "coverage": 0.32142857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 17,
+          "errors": 1,
+          "errorRate": 0.058823529411764705,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 17,
+          "errors": 5,
+          "errorRate": 0.29411764705882354,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 18,
+          "errors": 5,
+          "errorRate": 0.2777777777777778,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 20
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 26,
+      "coverage": 0.4642857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 26,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 10,
+          "errors": 5,
+          "errorRate": 0.5,
+          "excluded": 16
+        },
+        "contextRelevance": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 25,
+          "errors": 4,
+          "errorRate": 0.16,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 24,
+          "errors": 2,
+          "errorRate": 0.08333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 24,
+          "errors": 5,
+          "errorRate": 0.20833333333333334,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 26,
+          "errors": 8,
+          "errorRate": 0.3076923076923077,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 30
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 12
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 23,
+          "errors": 3,
+          "errorRate": 0.13043478260869565,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 22,
+          "errors": 5,
+          "errorRate": 0.22727272727272727,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 7,
+          "errorRate": 0.2916666666666667,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 26
+    },
+    {
+      "floor": 0.65,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 21,
+      "coverage": 0.375,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 19,
+          "errors": 5,
+          "errorRate": 0.2631578947368421,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 21,
+          "errors": 6,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 22
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 20,
+      "coverage": 0.35714285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 19,
+          "errors": 1,
+          "errorRate": 0.05263157894736842,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 19,
+          "errors": 4,
+          "errorRate": 0.21052631578947367,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 20,
+          "errors": 6,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 21
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 19,
+      "coverage": 0.3392857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 4,
+          "errorRate": 0.2222222222222222,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 19,
+          "errors": 6,
+          "errorRate": 0.3157894736842105,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 21
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 17,
+          "errors": 1,
+          "errorRate": 0.058823529411764705,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 16,
+          "errors": 1,
+          "errorRate": 0.0625,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 16,
+          "errors": 4,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 5,
+          "errorRate": 0.29411764705882354,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 21,
+      "coverage": 0.375,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 20,
+          "errors": 4,
+          "errorRate": 0.2,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 21,
+          "errors": 6,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 22
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 20,
+      "coverage": 0.35714285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 19,
+          "errors": 4,
+          "errorRate": 0.21052631578947367,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 20,
+          "errors": 6,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 22
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 17,
+          "errors": 1,
+          "errorRate": 0.058823529411764705,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 16,
+          "errors": 1,
+          "errorRate": 0.0625,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 16,
+          "errors": 4,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 5,
+          "errorRate": 0.29411764705882354,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 24,
+      "coverage": 0.42857142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 24,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 13
+        },
+        "reuseCandidate": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 15
+        },
+        "contextRelevance": {
+          "evaluable": 22,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 23,
+          "errors": 3,
+          "errorRate": 0.13043478260869565,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 22,
+          "errors": 2,
+          "errorRate": 0.09090909090909091,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 22,
+          "errors": 4,
+          "errorRate": 0.18181818181818182,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 24,
+          "errors": 7,
+          "errorRate": 0.2916666666666667,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 24
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 23,
+      "coverage": 0.4107142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 23,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 12
+        },
+        "reuseCandidate": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 14
+        },
+        "contextRelevance": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 22,
+          "errors": 3,
+          "errorRate": 0.13636363636363635,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 21,
+          "errors": 2,
+          "errorRate": 0.09523809523809523,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 21,
+          "errors": 4,
+          "errorRate": 0.19047619047619047,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 23,
+          "errors": 7,
+          "errorRate": 0.30434782608695654,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 24
+    },
+    {
+      "floor": 0.7,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 20,
+      "coverage": 0.35714285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 13
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 1,
+          "errorRate": 0.05555555555555555,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 4,
+          "errorRate": 0.2222222222222222,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 20,
+          "errors": 6,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 20
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 18,
+      "coverage": 0.32142857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 17,
+          "errors": 1,
+          "errorRate": 0.058823529411764705,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 17,
+          "errors": 3,
+          "errorRate": 0.17647058823529413,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 18,
+          "errors": 6,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 20
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 8,
+          "errors": 4,
+          "errorRate": 0.5,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 16,
+          "errors": 1,
+          "errorRate": 0.0625,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 16,
+          "errors": 3,
+          "errorRate": 0.1875,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 6,
+          "errorRate": 0.35294117647058826,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 20
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 15,
+      "coverage": 0.26785714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 1,
+          "errorRate": 0.125,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 1,
+          "errorRate": 0.06666666666666667,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 1,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 15,
+          "errors": 5,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 19,
+      "coverage": 0.3392857142857143,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 3,
+          "errorRate": 0.16666666666666666,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 19,
+          "errors": 6,
+          "errorRate": 0.3157894736842105,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 21
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 18,
+      "coverage": 0.32142857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 17,
+          "errors": 3,
+          "errorRate": 0.17647058823529413,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 18,
+          "errors": 6,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 21
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 15,
+      "coverage": 0.26785714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 1,
+          "errorRate": 0.125,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 1,
+          "errorRate": 0.06666666666666667,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 1,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 15,
+          "errors": 5,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 21,
+      "coverage": 0.375,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 21,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 11
+        },
+        "reuseCandidate": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 12
+        },
+        "contextRelevance": {
+          "evaluable": 19,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 20,
+          "errors": 2,
+          "errorRate": 0.1,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 19,
+          "errors": 3,
+          "errorRate": 0.15789473684210525,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 21,
+          "errors": 7,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 22
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 20,
+      "coverage": 0.35714285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 20,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 9,
+          "errors": 4,
+          "errorRate": 0.4444444444444444,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 19,
+          "errors": 2,
+          "errorRate": 0.10526315789473684,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 18,
+          "errors": 2,
+          "errorRate": 0.1111111111111111,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 18,
+          "errors": 3,
+          "errorRate": 0.16666666666666666,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 20,
+          "errors": 7,
+          "errorRate": 0.35,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 22
+    },
+    {
+      "floor": 0.75,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 1,
+          "errorRate": 0.125,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 4,
+          "errorRate": 0.5714285714285714,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 1,
+          "errorRate": 0.0625,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 1,
+          "errorRate": 0.06666666666666667,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 6,
+          "errorRate": 0.35294117647058826,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 16,
+      "coverage": 0.2857142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 1,
+          "errorRate": 0.06666666666666667,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 16,
+          "errors": 5,
+          "errorRate": 0.3125,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 15,
+      "coverage": 0.26785714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 1,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 15,
+          "errors": 5,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 13,
+      "coverage": 0.23214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 5,
+          "errors": 2,
+          "errorRate": 0.4,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 12,
+          "errors": 2,
+          "errorRate": 0.16666666666666666,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 13,
+          "errors": 1,
+          "errorRate": 0.07692307692307693,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 14
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 16,
+          "errors": 3,
+          "errorRate": 0.1875,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 5,
+          "errorRate": 0.29411764705882354,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 16,
+      "coverage": 0.2857142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 16,
+          "errors": 5,
+          "errorRate": 0.3125,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 13,
+      "coverage": 0.23214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 5,
+          "errors": 2,
+          "errorRate": 0.4,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 12,
+          "errors": 2,
+          "errorRate": 0.16666666666666666,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 13,
+          "errors": 1,
+          "errorRate": 0.07692307692307693,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 13,
+          "errors": 4,
+          "errorRate": 0.3076923076923077,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 14
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 18,
+      "coverage": 0.32142857142857145,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 18,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 17,
+          "errors": 2,
+          "errorRate": 0.11764705882352941,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 16,
+          "errors": 3,
+          "errorRate": 0.1875,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 18,
+          "errors": 6,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 19
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 8,
+          "errors": 2,
+          "errorRate": 0.25,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 6,
+          "errorRate": 0.35294117647058826,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 19
+    },
+    {
+      "floor": 0.8,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 14,
+      "coverage": 0.25,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 5,
+          "errors": 2,
+          "errorRate": 0.4,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 12,
+          "errors": 2,
+          "errorRate": 0.16666666666666666,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 13,
+          "errors": 1,
+          "errorRate": 0.07692307692307693,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 12,
+          "errors": 3,
+          "errorRate": 0.25,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 15
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 15,
+      "coverage": 0.26785714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 1,
+          "errorRate": 0.07142857142857142,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 15,
+          "errors": 5,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 16
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 14,
+      "coverage": 0.25,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 13,
+          "errors": 2,
+          "errorRate": 0.15384615384615385,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 13,
+          "errors": 1,
+          "errorRate": 0.07692307692307693,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 13,
+          "errors": 3,
+          "errorRate": 0.23076923076923078,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 14,
+          "errors": 5,
+          "errorRate": 0.35714285714285715,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 16
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 12,
+      "coverage": 0.21428571428571427,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 1,
+          "errorRate": 0.25,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 11,
+          "errors": 1,
+          "errorRate": 0.09090909090909091,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 12,
+          "errors": 4,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 13
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 16,
+      "coverage": 0.2857142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 16,
+          "errors": 5,
+          "errorRate": 0.3125,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 15,
+      "coverage": 0.26785714285714285,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 15,
+          "errors": 5,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 17
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 12,
+      "coverage": 0.21428571428571427,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 7
+        },
+        "reuseCandidate": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 1,
+          "errorRate": 0.25,
+          "excluded": 8
+        },
+        "contextRelevance": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "riskDimensions.security": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 1
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 11,
+          "errors": 1,
+          "errorRate": 0.09090909090909091,
+          "excluded": 1
+        },
+        "riskDimensions.migration": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 1
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 12,
+          "errors": 4,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 13
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 17,
+      "coverage": 0.30357142857142855,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 17,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 10
+        },
+        "reuseCandidate": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 11
+        },
+        "contextRelevance": {
+          "evaluable": 15,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 16,
+          "errors": 2,
+          "errorRate": 0.125,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 15,
+          "errors": 3,
+          "errorRate": 0.2,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 17,
+          "errors": 6,
+          "errorRate": 0.35294117647058826,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 16,
+      "coverage": 0.2857142857142857,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 16,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 9
+        },
+        "reuseCandidate": {
+          "evaluable": 12,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "architectureFork": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 10
+        },
+        "contextRelevance": {
+          "evaluable": 14,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 15,
+          "errors": 2,
+          "errorRate": 0.13333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 14,
+          "errors": 2,
+          "errorRate": 0.14285714285714285,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 14,
+          "errors": 3,
+          "errorRate": 0.21428571428571427,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 16,
+          "errors": 6,
+          "errorRate": 0.375,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 18
+    },
+    {
+      "floor": 0.85,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 13,
+      "coverage": 0.23214285714285715,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 13,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 8
+        },
+        "reuseCandidate": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 3
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 1,
+          "errorRate": 0.25,
+          "excluded": 9
+        },
+        "contextRelevance": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 2
+        },
+        "riskDimensions.security": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 2
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 12,
+          "errors": 1,
+          "errorRate": 0.08333333333333333,
+          "excluded": 1
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 11,
+          "errors": 1,
+          "errorRate": 0.09090909090909091,
+          "excluded": 2
+        },
+        "riskDimensions.migration": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 2
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 13,
+          "errors": 5,
+          "errorRate": 0.38461538461538464,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 14
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 10,
+      "coverage": 0.17857142857142858,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 3,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 7
+        },
+        "contextRelevance": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 10,
+          "errors": 1,
+          "errorRate": 0.1,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 10,
+          "errors": 3,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 9
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 9,
+      "coverage": 0.16071428571428573,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 8,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 3,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 9,
+          "errors": 3,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 9
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 9,
+      "coverage": 0.16071428571428573,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 8,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 3,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 9,
+          "errors": 3,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 9
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 11,
+      "coverage": 0.19642857142857142,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 6
+        },
+        "reuseCandidate": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 7
+        },
+        "contextRelevance": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 10
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 10,
+      "coverage": 0.17857142857142858,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 10,
+          "errors": 3,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 10
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 9,
+      "coverage": 0.16071428571428573,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 8,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 3,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 9,
+          "errors": 3,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 9
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 11,
+      "coverage": 0.19642857142857142,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 6
+        },
+        "reuseCandidate": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 7
+        },
+        "contextRelevance": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 11,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 11,
+          "errors": 2,
+          "errorRate": 0.18181818181818182,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 11,
+          "errors": 3,
+          "errorRate": 0.2727272727272727,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 10
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 10,
+      "coverage": 0.17857142857142858,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 4,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 10,
+          "errors": 2,
+          "errorRate": 0.2,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 10,
+          "errors": 3,
+          "errorRate": 0.3,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 10
+    },
+    {
+      "floor": 0.9,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 9,
+      "coverage": 0.16071428571428573,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 5,
+          "errors": 1,
+          "errorRate": 0.2,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 8,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 1
+        },
+        "architectureFork": {
+          "evaluable": 3,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 9,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 9,
+          "errors": 1,
+          "errorRate": 0.1111111111111111,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 9,
+          "errors": 2,
+          "errorRate": 0.2222222222222222,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 9,
+          "errors": 3,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 9
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.4,
+      "hi": 0.52,
+      "accepted": 7,
+      "coverage": 0.125,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 7,
+          "errors": 3,
+          "errorRate": 0.42857142857142855,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.4,
+      "hi": 0.56,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.4,
+      "hi": 0.6,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.44,
+      "hi": 0.52,
+      "accepted": 7,
+      "coverage": 0.125,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 7,
+          "errors": 3,
+          "errorRate": 0.42857142857142855,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.44,
+      "hi": 0.56,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.44,
+      "hi": 0.6,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.48,
+      "hi": 0.52,
+      "accepted": 7,
+      "coverage": 0.125,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "reuseCandidate": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 6
+        },
+        "contextRelevance": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 7,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 7,
+          "errors": 1,
+          "errorRate": 0.14285714285714285,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 7,
+          "errors": 2,
+          "errorRate": 0.2857142857142857,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 7,
+          "errors": 3,
+          "errorRate": 0.42857142857142855,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.48,
+      "hi": 0.56,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    },
+    {
+      "floor": 0.95,
+      "lo": 0.48,
+      "hi": 0.6,
+      "accepted": 6,
+      "coverage": 0.10714285714285714,
+      "perSignal": {
+        "taskType": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "skillCandidates": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "criticalGap": {
+          "evaluable": 2,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 4
+        },
+        "reuseCandidate": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "architectureFork": {
+          "evaluable": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 5
+        },
+        "contextRelevance": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.security": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.data-loss": {
+          "evaluable": 6,
+          "errors": 0,
+          "errorRate": 0,
+          "excluded": 0
+        },
+        "riskDimensions.public-contract": {
+          "evaluable": 6,
+          "errors": 1,
+          "errorRate": 0.16666666666666666,
+          "excluded": 0
+        },
+        "riskDimensions.migration": {
+          "evaluable": 6,
+          "errors": 2,
+          "errorRate": 0.3333333333333333,
+          "excluded": 0
+        },
+        "riskDimensions.user-behavior": {
+          "evaluable": 6,
+          "errors": 3,
+          "errorRate": 0.5,
+          "excluded": 0
+        }
+      },
+      "totalErrors": 7
+    }
+  ]
+}

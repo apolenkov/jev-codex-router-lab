@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "pass1-threshold-evaluation",
+  "split": "evaluation",
+  "status": "complete",
+  "selection": {
+    "floor": 0.95,
+    "lo": 0.4,
+    "hi": 0.52,
+    "eligible": false,
+    "tieBroken": false,
+    "artifactSha256": "7a52fcd83de574c1b13c1ef61b64fcb399bca6bbe9cedc0944c464efcb1a6175"
+  },
+  "inputs": {
+    "corpusFileSha256": "1ac7218ff70c0407662c0d9a768ec85a7e1d199935698320067bd944c3a81720",
+    "questionBuilderSha256": "5101440bf90c2a6d174b6f87c112bbdffa8eac2080a2e1eb8d2bc938ccc25e78",
+    "corpusFingerprint": "1d67fb6008dead2f7ab9cc6a73326af0be139f1904dae4632ecc33d4207f1dde"
+  },
+  "totalCases": 28,
+  "accepted": 6,
+  "rejected": 22,
+  "invalidResponses": 0,
+  "uncollected": 0,
+  "perSignal": {
+    "taskType": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "skillCandidates": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "criticalGap": {
+      "evaluable": 2,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 4
+    },
+    "reuseCandidate": {
+      "evaluable": 3,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 3
+    },
+    "architectureFork": {
+      "evaluable": 0,
+      "errors": 0,
+      "errorRate": null,
+      "excluded": 6
+    },
+    "contextRelevance": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "riskDimensions.security": {
+      "evaluable": 6,
+      "errors": 3,
+      "errorRate": 0.5,
+      "excluded": 0
+    },
+    "riskDimensions.data-loss": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "riskDimensions.public-contract": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "riskDimensions.migration": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    },
+    "riskDimensions.user-behavior": {
+      "evaluable": 6,
+      "errors": 0,
+      "errorRate": 0,
+      "excluded": 0
+    }
+  },
+  "totalErrors": 3,
+  "accounting": {
+    "attempts": 37,
+    "spentUsd": 0.0014276640000000004,
+    "reservedUsd": 0,
+    "terminal": true
+  }
+}

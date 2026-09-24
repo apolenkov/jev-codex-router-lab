@@ -17,8 +17,8 @@
 
 ## 4. Evidence and closeout
 
-- [ ] 4.1 Live collection run (56 calls, capped) — owner-authorized.
-- [ ] 4.2 Offline selection → frozen tuple artifact.
-- [ ] 4.3 Live evaluation run (28 calls, capped) — same authorization scope.
+- [x] 4.1 Live collection run — 56/56 collected over 73 attempts, USD 0.0028 (provider instability absorbed via authorized resume, ceiling 80).
+- [x] 4.2 Offline selection → frozen tuple artifact `{floor: 0.95, lo: 0.4, hi: 0.52}`, `eligible: false` (no zero-error tuple on the grid).
+- [x] 4.3 Live evaluation run — 28/28 collected over 37 attempts, USD 0.0014; single frozen tuple, no retune.
 - [ ] 4.4 Report: `docs/calibration.md` update (selection rule, results, n-limits), artifact hashes recorded in backlog task.
 - [ ] 4.5 Independent review; `npm run check` green; no `uncalibrated-thresholds` string in public docs.
