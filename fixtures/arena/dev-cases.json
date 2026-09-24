@@ -1,0 +1,696 @@
+{
+  "cases": [
+    {
+      "id": "case-001",
+      "familyId": "fam-bug-login",
+      "language": "en",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "The login form rejects valid passwords that contain a '+' character. Reproduce the failure, find the root cause, and fix it. Write the failing regression test first using test-driven-development; verification-before-completion is required before handoff.",
+      "explicitSkillIds": [
+        "test-driven-development"
+      ],
+      "requiredSkillIds": [
+        "verification-before-completion"
+      ]
+    },
+    {
+      "id": "case-002",
+      "familyId": "fam-bug-flaky-ci",
+      "language": "en",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "The payments spec times out on roughly one CI run in ten. Investigate the flake and make the test stable.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-003",
+      "familyId": "fam-bug-docs-link",
+      "language": "en",
+      "stratum": "bug",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "The footer link on the docs page still points at a retired URL. Update it to the current documentation home.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-004",
+      "familyId": "fam-bug-csv-export",
+      "language": "en",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Users report that CSV export silently drops rows containing commas. Track down where the escaping breaks and fix it.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-005",
+      "familyId": "fam-bug-empty-config",
+      "language": "en",
+      "stratum": "bug",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "The CLI crashes with `TypeError: Cannot read properties of undefined` when the config file is empty. Trace the crash and fix the underlying cause.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-006",
+      "familyId": "fam-bug-empty-config",
+      "language": "en",
+      "stratum": "bug",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "The CLI crashes with `TypeError: Cannot read properties of undefined` when the config file is empty; `loadConfig` returns undefined for empty input. Patch `main` to handle that case.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-007",
+      "familyId": "fam-bug-xml-import",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "После обновления зависимости `fast-xml` импорт каталога падает с `ENOENT`. Воспроизведи падение, найди причину и почини.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-008",
+      "familyId": "fam-bug-dedup-job",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Используй systematic-debugging: ночной джоб дедупликации начал удалять валидные записи. Найди причину и устрани её.",
+      "explicitSkillIds": [
+        "systematic-debugging"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-009",
+      "familyId": "fam-bug-deprecation",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Воркер пишет в лог предупреждение `deprecated endpoint` — это известная проблема старого клиента. Обнови строку подключения, как описано в комментарии рядом с кодом.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-010",
+      "familyId": "fam-bug-windows-path",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Тест `orders.test.ts` падает только под Windows: проверка пути не учитывает разделитель. Разберись, исправь и прогони весь набор проверок перед сдачей.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": [
+        "verification-before-completion"
+      ]
+    },
+    {
+      "id": "case-011",
+      "familyId": "fam-bug-stale-balance",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Пользователи видят устаревший баланс после оплаты. Определи, где теряется инвалидация кеша, и исправь. Используй test-driven-development для регрессионного теста; verification-before-completion обязателен перед сдачей.",
+      "explicitSkillIds": [
+        "test-driven-development"
+      ],
+      "requiredSkillIds": [
+        "verification-before-completion"
+      ]
+    },
+    {
+      "id": "case-012",
+      "familyId": "fam-bug-stale-balance",
+      "language": "ru",
+      "stratum": "bug",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Пользователи видят устаревший баланс после оплаты: событие `payment.completed` не доходит из-за известного сбоя брокера. Добавь повторную инвалидацию кеша при чтении профиля.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-013",
+      "familyId": "fam-fn-dry-run",
+      "language": "en",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Add a `--dry-run` flag to the cleanup command that lists the files it would delete without deleting them.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-014",
+      "familyId": "fam-fn-rate-limit",
+      "language": "en",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Implement rate limiting for the public API: 100 requests per minute per key. Use test-driven development — write the failing tests first.",
+      "explicitSkillIds": [
+        "test-driven-development"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-015",
+      "familyId": "fam-fn-shortcuts",
+      "language": "en",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Add keyboard shortcuts to the queue view: j/k to move, enter to open. Use brainstorming to pick the key map with me before implementing.",
+      "explicitSkillIds": [
+        "brainstorming"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-016",
+      "familyId": "fam-fn-duration-spec",
+      "language": "en",
+      "stratum": "function",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Implement `formatDuration(ms)` exactly as specified in `docs/duration.md`; every edge case is already enumerated there.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-017",
+      "familyId": "fam-fn-search",
+      "language": "en",
+      "stratum": "function",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Add full-text search to the notes list. Before writing code, walk me through two indexing approaches and help me pick one.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-018",
+      "familyId": "fam-fn-search",
+      "language": "en",
+      "stratum": "function",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Add full-text search to the notes list on SQLite FTS5 and wire it into the existing repository layer.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-019",
+      "familyId": "fam-fn-stats",
+      "language": "ru",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Добавь в CLI команду `stats`, печатающую число задач по статусам. Работай по TDD: сначала падающий тест.",
+      "explicitSkillIds": [
+        "test-driven-development"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-020",
+      "familyId": "fam-fn-pdf-export",
+      "language": "ru",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Добавь экспорт отчёта в PDF. По регламенту изменение должно пройти ревью до мержа.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": [
+        "requesting-code-review"
+      ]
+    },
+    {
+      "id": "case-021",
+      "familyId": "fam-fn-dict-cache",
+      "language": "ru",
+      "stratum": "function",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Реализуй in-memory кеш справочника с TTL в 5 минут. Перед сдачей обязателен полный прогон тестов и линтера.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": [
+        "verification-before-completion"
+      ]
+    },
+    {
+      "id": "case-022",
+      "familyId": "fam-fn-email-copy",
+      "language": "ru",
+      "stratum": "function",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Замени текст приветствия в письме-подтверждении на новую формулировку из тикета.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-023",
+      "familyId": "fam-fn-vcard",
+      "language": "ru",
+      "stratum": "function",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Добавь импорт контактов из vCard. Сначала обсуди со мной граничные случаи формата, потом реализуй.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-024",
+      "familyId": "fam-fn-vcard",
+      "language": "ru",
+      "stratum": "function",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Добавь импорт контактов из vCard по RFC 6350: обрабатывай только поля FN, TEL и EMAIL, остальное игнорируй.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-025",
+      "familyId": "fam-plan-sqlite",
+      "language": "en",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Draft an implementation plan for migrating the settings store from JSON files to SQLite.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-026",
+      "familyId": "fam-plan-logging",
+      "language": "en",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "We need structured logging across the three services. Outline a phased rollout plan.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-027",
+      "familyId": "fam-plan-oauth",
+      "language": "en",
+      "stratum": "plan",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Write an implementation plan for adding OAuth2 login: discovery, token storage, refresh, and logout.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-028",
+      "familyId": "fam-plan-oauth",
+      "language": "en",
+      "stratum": "plan",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Here is the approved OAuth2 plan: discovery, then token storage, then refresh, then logout. Execute it step by step.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-029",
+      "familyId": "fam-plan-sketch",
+      "language": "en",
+      "stratum": "plan",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Give me a rough one-paragraph sketch of how you'd approach the database migration — no formal plan needed.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-030",
+      "familyId": "fam-plan-billing-split",
+      "language": "en",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Decompose the billing module out of the monolith into a separate service. Compliance requires a written implementation plan before any code; include rollback points.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": [
+        "writing-plans"
+      ]
+    },
+    {
+      "id": "case-031",
+      "familyId": "fam-plan-queue",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Составь план внедрения очереди сообщений между приёмщиком вебхуков и обработчиком; оформи результат по writing-plans.",
+      "explicitSkillIds": [
+        "writing-plans"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-032",
+      "familyId": "fam-plan-docs-gen",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Документацию нужно перевести на новый генератор сайта. Подготовь пошаговый план с оценкой объёма работ.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-033",
+      "familyId": "fam-plan-dal-cache",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Подготовь план кеширования в слое доступа к данным: что кешировать, как инвалидировать, какие метрики собирать.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-034",
+      "familyId": "fam-plan-dal-cache",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Вот утверждённый план кеширования: read-through кеш на справочники, инвалидация по TTL, метрики hit/miss. Выполняй его по шагам.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-035",
+      "familyId": "fam-plan-informal",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Расскажи в двух словах, как бы ты подошёл к переносу планировщика на отдельную ноду — детальный план не нужен.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-036",
+      "familyId": "fam-plan-ci-migrate",
+      "language": "ru",
+      "stratum": "plan",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Спланируй перевод CI с GitHub Actions на внутренний раннер. Сначала обсуди со мной варианты топологии и ограничения, затем в независимых параллельных потоках собери факты о зависимостях, секретах и параллельном прогоне, и оформи итог поэтапным планом.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-037",
+      "familyId": "fam-res-retry",
+      "language": "en",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Where in this codebase is retry backoff configured? Trace the call path and summarize what you find.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-038",
+      "familyId": "fam-res-search-choice",
+      "language": "en",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Compare Postgres full-text search with an external search service for our catalogue and recommend one with reasoning.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-039",
+      "familyId": "fam-res-rfc",
+      "language": "en",
+      "stratum": "research",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Read the open RFC for the cache layer and tell me whether the review comments on it have been addressed.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-040",
+      "familyId": "fam-res-latency",
+      "language": "en",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Staging latency doubled last week. Use systematic-debugging to compare recent deploys, config diffs, and traffic patterns, then report your hypotheses.",
+      "explicitSkillIds": [
+        "systematic-debugging"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-041",
+      "familyId": "fam-res-auth-flow",
+      "language": "en",
+      "stratum": "research",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Explain how authentication works in this repo: where tokens are issued, validated, and refreshed.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-042",
+      "familyId": "fam-res-auth-flow",
+      "language": "en",
+      "stratum": "research",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "A bug report says sessions survive logout. First, brainstorm with me two or three plausible explanations and help me pick which to verify, then investigate session storage, invalidation, and middleware as independent parallel workstreams, and point at the most likely culprit.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-043",
+      "familyId": "fam-res-form-errors",
+      "language": "ru",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Найди, где в проекте формируется текст ошибок валидации формы, и перечисли все места.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-044",
+      "familyId": "fam-res-migration-approaches",
+      "language": "ru",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Сравни подходы expand/contract и blue-green к миграции схемы нашего Postgres под текущим трафиком.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-045",
+      "familyId": "fam-res-adr",
+      "language": "ru",
+      "stratum": "research",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "В тикете просят «поревьюить» архитектуру нового сервиса — на деле нужно прочитать ADR и пересказать решения команде.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-046",
+      "familyId": "fam-res-slow-container",
+      "language": "ru",
+      "stratum": "research",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Разберись, почему прогон тестов в контейнере вдвое медленнее локального, и опиши возможные причины.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-047",
+      "familyId": "fam-res-deploy-pipeline",
+      "language": "ru",
+      "stratum": "research",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Объясни, как устроен наш деплой: какие шаги выполняет пайплайн и где возможны задержки.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-048",
+      "familyId": "fam-res-deploy-pipeline",
+      "language": "ru",
+      "stratum": "research",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Вчерашний деплой упал на шаге миграций. Проверь логи миграций и состояние окружения как независимые параллельные потоки, объясни устройство пайплайна и укажи, где искать причину падения.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-049",
+      "familyId": "fam-rev-checkout",
+      "language": "en",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Review my pending diff for the checkout flow before I merge; flag correctness and security issues.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-050",
+      "familyId": "fam-rev-comments",
+      "language": "en",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "The PR review came back with twelve comments. Apply the ones that are right and explain the ones you reject.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-051",
+      "familyId": "fam-rev-branch",
+      "language": "en",
+      "stratum": "review",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Walk the diff on this branch using requesting-code-review and tell me whether it's ready to merge.",
+      "explicitSkillIds": [
+        "requesting-code-review"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-052",
+      "familyId": "fam-rev-branch",
+      "language": "en",
+      "stratum": "review",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "Walk the reviewer's comments on this branch and tell me which ones the diff already addresses.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-053",
+      "familyId": "fam-rev-config-bump",
+      "language": "en",
+      "stratum": "review",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Check the two-line config change I just made — it's a one-value bump.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-054",
+      "familyId": "fam-rev-permissions",
+      "language": "en",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Audit the new permissions module for privilege-escalation paths and give me a written findings list.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-055",
+      "familyId": "fam-rev-pr",
+      "language": "ru",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Проведи ревью моего PR: обрати внимание на граничные случаи и обработку ошибок.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-056",
+      "familyId": "fam-rev-comments-ru",
+      "language": "ru",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "standard",
+      "taskText": "Ревьюер просит разбить PR и упростить обработку ошибок. Используй receiving-code-review: разбери комментарии, примени обоснованные и ответь по остальным.",
+      "explicitSkillIds": [
+        "receiving-code-review"
+      ],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-057",
+      "familyId": "fam-rev-migration",
+      "language": "ru",
+      "stratum": "review",
+      "source": "minimal-pair",
+      "risk": "high",
+      "taskText": "Посмотри миграцию схемы в моём диффе и скажи, безопасно ли её катить на прод.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-058",
+      "familyId": "fam-rev-migration",
+      "language": "ru",
+      "stratum": "review",
+      "source": "minimal-pair",
+      "risk": "standard",
+      "taskText": "На мою миграцию пришли замечания в ревью — оцени их и поправь дифф там, где они справедливы.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-059",
+      "familyId": "fam-rev-comma",
+      "language": "ru",
+      "stratum": "review",
+      "source": "hard-negative",
+      "risk": "standard",
+      "taskText": "Глянь одним глазом на мой коммит из трёх строк — подтверди, что я не забыл запятую.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    },
+    {
+      "id": "case-060",
+      "familyId": "fam-rev-upload-vuln",
+      "language": "ru",
+      "stratum": "review",
+      "source": "synthetic",
+      "risk": "high",
+      "taskText": "Сделай независимое ревью исправления уязвимости при загрузке файлов: проверь векторы обхода.",
+      "explicitSkillIds": [],
+      "requiredSkillIds": []
+    }
+  ]
+}

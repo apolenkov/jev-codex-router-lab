@@ -1,0 +1,64 @@
+{
+  "skills": [
+    {
+      "id": "brainstorming",
+      "description": "Explore requirements and design choices before building a new feature or behavior.",
+      "excerpt": "Use before creative work: clarify intent, then design.",
+      "contextTokens": 240
+    },
+    {
+      "id": "systematic-debugging",
+      "description": "Diagnose defects from evidence and isolate the root cause before changing code.",
+      "excerpt": "Reproduce the failure, find the root cause, then fix.",
+      "contextTokens": 290
+    },
+    {
+      "id": "test-driven-development",
+      "description": "Write a failing test before implementing or changing behavior.",
+      "excerpt": "RED, GREEN, refactor: test first, then code.",
+      "contextTokens": 210
+    },
+    {
+      "id": "writing-plans",
+      "description": "Break a multi-step change into an ordered implementation plan before coding.",
+      "excerpt": "Produce ordered tasks with verification steps.",
+      "contextTokens": 230
+    },
+    {
+      "id": "executing-plans",
+      "description": "Execute an existing implementation plan task by task.",
+      "excerpt": "Work the approved plan in order and verify each step.",
+      "contextTokens": 190
+    },
+    {
+      "id": "verification-before-completion",
+      "description": "Run the project's checks and confirm their output before claiming work is done.",
+      "excerpt": "Evidence before assertions: run tests and linters first.",
+      "contextTokens": 170
+    },
+    {
+      "id": "requesting-code-review",
+      "description": "Request a review of completed work before merging or claiming done.",
+      "excerpt": "Verify the change meets requirements through review.",
+      "contextTokens": 180
+    },
+    {
+      "id": "receiving-code-review",
+      "description": "Evaluate and respond to code review feedback with technical rigor.",
+      "excerpt": "Verify each suggestion before implementing it.",
+      "contextTokens": 180
+    },
+    {
+      "id": "using-git-worktrees",
+      "description": "Isolate feature work in a separate git worktree before starting.",
+      "excerpt": "Create an isolated workspace for the change.",
+      "contextTokens": 150
+    },
+    {
+      "id": "dispatching-parallel-agents",
+      "description": "Split independent tasks across parallel agents with disjoint scope.",
+      "excerpt": "Delegate independent work with clear boundaries.",
+      "contextTokens": 220
+    }
+  ]
+}

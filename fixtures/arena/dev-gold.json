@@ -1,0 +1,711 @@
+{
+  "records": [
+    {
+      "caseId": "case-001",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "test-driven-development",
+        "verification-before-completion"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-002",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-003",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "systematic-debugging"
+      ]
+    },
+    {
+      "caseId": "case-004",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-005",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-006",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "systematic-debugging"
+      ]
+    },
+    {
+      "caseId": "case-007",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-008",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "systematic-debugging"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-009",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "systematic-debugging"
+      ]
+    },
+    {
+      "caseId": "case-010",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "verification-before-completion"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-011",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "test-driven-development",
+        "verification-before-completion"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-012",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "systematic-debugging"
+      ]
+    },
+    {
+      "caseId": "case-013",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-014",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "test-driven-development"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-015",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "brainstorming"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-016",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "brainstorming"
+      ]
+    },
+    {
+      "caseId": "case-017",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-018",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-019",
+      "acceptedRoutes": [
+        [
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "test-driven-development"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-020",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "requesting-code-review"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-021",
+      "acceptedRoutes": [
+        [
+          "test-driven-development"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "verification-before-completion"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-022",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-023",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-024",
+      "acceptedRoutes": [
+        [
+          "test-driven-development",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-025",
+      "acceptedRoutes": [
+        [
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-026",
+      "acceptedRoutes": [
+        [
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-027",
+      "acceptedRoutes": [
+        [
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-028",
+      "acceptedRoutes": [
+        [
+          "executing-plans",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "writing-plans",
+        "brainstorming"
+      ]
+    },
+    {
+      "caseId": "case-029",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "writing-plans",
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-030",
+      "acceptedRoutes": [
+        [
+          "brainstorming"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "writing-plans"
+      ],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-031",
+      "acceptedRoutes": [
+        [
+          "brainstorming"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "writing-plans"
+      ],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-032",
+      "acceptedRoutes": [
+        [
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-033",
+      "acceptedRoutes": [
+        [
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-034",
+      "acceptedRoutes": [
+        [
+          "executing-plans",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "writing-plans",
+        "brainstorming"
+      ]
+    },
+    {
+      "caseId": "case-035",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "writing-plans",
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-036",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "dispatching-parallel-agents",
+          "writing-plans"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "executing-plans"
+      ]
+    },
+    {
+      "caseId": "case-037",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-038",
+      "acceptedRoutes": [
+        [
+          "brainstorming"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-039",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "requesting-code-review",
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-040",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [
+        "systematic-debugging"
+      ],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-041",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-042",
+      "acceptedRoutes": [
+        [
+          "brainstorming",
+          "dispatching-parallel-agents",
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-043",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-044",
+      "acceptedRoutes": [
+        [
+          "brainstorming"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-045",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "requesting-code-review",
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-046",
+      "acceptedRoutes": [
+        [
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-047",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-048",
+      "acceptedRoutes": [
+        [
+          "dispatching-parallel-agents",
+          "systematic-debugging"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": []
+    },
+    {
+      "caseId": "case-049",
+      "acceptedRoutes": [
+        [
+          "requesting-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-050",
+      "acceptedRoutes": [
+        [
+          "receiving-code-review",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "requesting-code-review"
+      ]
+    },
+    {
+      "caseId": "case-051",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [
+        "requesting-code-review"
+      ],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-052",
+      "acceptedRoutes": [
+        [
+          "receiving-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "requesting-code-review"
+      ]
+    },
+    {
+      "caseId": "case-053",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-054",
+      "acceptedRoutes": [
+        [
+          "requesting-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-055",
+      "acceptedRoutes": [
+        [
+          "requesting-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-056",
+      "acceptedRoutes": [
+        [
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [
+        "receiving-code-review"
+      ],
+      "forbiddenSkillIds": [
+        "requesting-code-review"
+      ]
+    },
+    {
+      "caseId": "case-057",
+      "acceptedRoutes": [
+        [
+          "requesting-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-058",
+      "acceptedRoutes": [
+        [
+          "receiving-code-review",
+          "verification-before-completion"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "requesting-code-review"
+      ]
+    },
+    {
+      "caseId": "case-059",
+      "acceptedRoutes": [
+        []
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    },
+    {
+      "caseId": "case-060",
+      "acceptedRoutes": [
+        [
+          "requesting-code-review"
+        ]
+      ],
+      "mandatorySkillIds": [],
+      "forbiddenSkillIds": [
+        "receiving-code-review"
+      ]
+    }
+  ],
+  "provenance": {
+    "rubricVersion": "skill-routing-arena-gold-v1",
+    "labelerRoles": [
+      "annotator-a",
+      "annotator-b"
+    ],
+    "adjudicatorRole": "adjudicator"
+  }
+}
