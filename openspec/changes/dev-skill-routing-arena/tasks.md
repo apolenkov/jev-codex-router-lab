@@ -38,5 +38,5 @@
 
 ## 8. Final verification
 
-- [ ] 8.1 Run the complete local gate (lint, strict typecheck, all tests offline without credentials, strict OpenSpec validation including the new change) and the byte-identical double-run check; record exact results
-- [ ] 8.2 Obtain independent review of the corpus safety fields, scorer tie-breaks, isolation boundary, and opt-in gateway boundary; fix important findings and repeat targeted gates
+- [x] 8.1 Run the complete local gate (lint, strict typecheck, all tests offline without credentials, strict OpenSpec validation including the new change) and the byte-identical double-run check; record exact results
+- [x] 8.2 Obtain independent review of the corpus safety fields, scorer tie-breaks, isolation boundary, and opt-in gateway boundary; fix important findings and repeat targeted gates
