@@ -1,0 +1,334 @@
+{
+  "schemaVersion": "pass1-annotated-corpus-v1",
+  "guideVersion": "pass1-label-guide-v1",
+  "hashes": {
+    "guide": {
+      "path": "fixtures/pass1-annotation-guide.md",
+      "sha256": "e48caa15f9a8342ef3b8b487b09e9da30391c6d1f69ad388b259cca53fcc0d1c"
+    },
+    "splits": {
+      "pilot": {
+        "path": "fixtures/pass1-rubric-pilot.json",
+        "sha256": "49bd13e706a44575ef1affd6eaebdf936cceed864a7cad1625f1aefef41e20a1"
+      },
+      "calibration": {
+        "path": "fixtures/pass1-calibration-cases.json",
+        "sha256": "934952f97dd300805691f8bebe3aa04991fbcaf8cdf8d4676a3a12d0f3887091"
+      },
+      "evaluation": {
+        "path": "fixtures/pass1-evaluation-cases.json",
+        "sha256": "fd9d08640dd26743ffd16951dbd7a09bad1941f3a8a0cc8ddc19fc0260c37c40"
+      }
+    },
+    "questionBuilder": {
+      "path": "src/questions.ts",
+      "sha256": "5101440bf90c2a6d174b6f87c112bbdffa8eac2080a2e1eb8d2bc938ccc25e78"
+    }
+  },
+  "counts": {
+    "pilot": {
+      "cases": 14,
+      "families": 14,
+      "labels": {
+        "resolved": 132,
+        "ambiguous": 3,
+        "notQueried": 19
+      },
+      "disagreements": 12,
+      "signals": {
+        "taskType": {
+          "resolved": 13,
+          "ambiguous": 1,
+          "notQueried": 0
+        },
+        "skillCandidates": {
+          "resolved": 13,
+          "ambiguous": 0,
+          "notQueried": 1
+        },
+        "criticalGap": {
+          "resolved": 10,
+          "ambiguous": 0,
+          "notQueried": 4
+        },
+        "reuseCandidate": {
+          "resolved": 7,
+          "ambiguous": 1,
+          "notQueried": 6
+        },
+        "architectureFork": {
+          "resolved": 6,
+          "ambiguous": 1,
+          "notQueried": 7
+        },
+        "contextRelevance": {
+          "resolved": 13,
+          "ambiguous": 0,
+          "notQueried": 1
+        },
+        "riskDimensions.security": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.data-loss": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.public-contract": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.migration": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.user-behavior": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 0
+        }
+      },
+      "taskTypeValues": {
+        "explain": 2,
+        "research": 2,
+        "plan": 2,
+        "diagnose": 2,
+        "change": 2,
+        "review": 1,
+        "operate": 2
+      },
+      "riskValues": {
+        "security": {
+          "positive": 6,
+          "negative": 8
+        },
+        "data-loss": {
+          "positive": 7,
+          "negative": 7
+        },
+        "public-contract": {
+          "positive": 5,
+          "negative": 9
+        },
+        "migration": {
+          "positive": 2,
+          "negative": 12
+        },
+        "user-behavior": {
+          "positive": 10,
+          "negative": 4
+        }
+      }
+    },
+    "calibration": {
+      "cases": 56,
+      "families": 44,
+      "labels": {
+        "resolved": 546,
+        "ambiguous": 1,
+        "notQueried": 69
+      },
+      "disagreements": 20,
+      "signals": {
+        "taskType": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "skillCandidates": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "criticalGap": {
+          "resolved": 31,
+          "ambiguous": 1,
+          "notQueried": 24
+        },
+        "reuseCandidate": {
+          "resolved": 43,
+          "ambiguous": 0,
+          "notQueried": 13
+        },
+        "architectureFork": {
+          "resolved": 25,
+          "ambiguous": 0,
+          "notQueried": 31
+        },
+        "contextRelevance": {
+          "resolved": 55,
+          "ambiguous": 0,
+          "notQueried": 1
+        },
+        "riskDimensions.security": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.data-loss": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.public-contract": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.migration": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.user-behavior": {
+          "resolved": 56,
+          "ambiguous": 0,
+          "notQueried": 0
+        }
+      },
+      "taskTypeValues": {
+        "explain": 8,
+        "research": 6,
+        "plan": 8,
+        "diagnose": 9,
+        "change": 9,
+        "review": 8,
+        "operate": 8
+      },
+      "riskValues": {
+        "security": {
+          "positive": 16,
+          "negative": 40
+        },
+        "data-loss": {
+          "positive": 19,
+          "negative": 37
+        },
+        "public-contract": {
+          "positive": 26,
+          "negative": 30
+        },
+        "migration": {
+          "positive": 8,
+          "negative": 48
+        },
+        "user-behavior": {
+          "positive": 41,
+          "negative": 15
+        }
+      }
+    },
+    "evaluation": {
+      "cases": 28,
+      "families": 24,
+      "labels": {
+        "resolved": 272,
+        "ambiguous": 1,
+        "notQueried": 35
+      },
+      "disagreements": 9,
+      "signals": {
+        "taskType": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "skillCandidates": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "criticalGap": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 14
+        },
+        "reuseCandidate": {
+          "resolved": 21,
+          "ambiguous": 0,
+          "notQueried": 7
+        },
+        "architectureFork": {
+          "resolved": 14,
+          "ambiguous": 0,
+          "notQueried": 14
+        },
+        "contextRelevance": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.security": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.data-loss": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.public-contract": {
+          "resolved": 27,
+          "ambiguous": 1,
+          "notQueried": 0
+        },
+        "riskDimensions.migration": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        },
+        "riskDimensions.user-behavior": {
+          "resolved": 28,
+          "ambiguous": 0,
+          "notQueried": 0
+        }
+      },
+      "taskTypeValues": {
+        "explain": 4,
+        "research": 3,
+        "plan": 4,
+        "diagnose": 5,
+        "change": 4,
+        "review": 4,
+        "operate": 4
+      },
+      "riskValues": {
+        "security": {
+          "positive": 9,
+          "negative": 19
+        },
+        "data-loss": {
+          "positive": 11,
+          "negative": 17
+        },
+        "public-contract": {
+          "positive": 12,
+          "negative": 15
+        },
+        "migration": {
+          "positive": 6,
+          "negative": 22
+        },
+        "user-behavior": {
+          "positive": 17,
+          "negative": 11
+        }
+      }
+    }
+  },
+  "notes": [
+    "Both annotations are model-assisted (Devin SWE-2 High sessions); they are procedurally separate reviewers, not independent human gold labels.",
+    "The final label equals the adopted annotation record: annotations[0] on agreement, the adopted side for adopt-a/adopt-b, and ambiguous with the union of competing spans when unresolvable. Both annotation records with their evidence are preserved in every case.",
+    "state.forcedSkillIds is admitted as evidence only for the skillCandidates signal (guide sections 2 and 3 read together); every other signal cites only its question's visible fields.",
+    "Ambiguous and not_queried fields are reported outside evaluable denominators and are never converted to negative labels.",
+    "Public origin is not proof that an example was absent from model training.",
+    "This corpus is a practical laboratory sample: it is not statistically powered and supports no production-readiness or economy claim.",
+    "Preparation made zero provider requests and selected no thresholds; the evaluation partition is locked against policy or threshold selection.",
+    "Risk labels follow the guide's text-evidence rule: positive when the task text states a fact of the category (data-integrity corruption counts as data-loss, and an unconfirmed allegation still counts as textual evidence), negative when the text names no such fact; user-behavior covers surfaces the product's users or external consumers observe, not internal machinery or ops workflows. Where the frozen guide genuinely leaves a disagreement open, the label stays ambiguous per guide section 8.4 rather than revising the frozen rules."
+  ]
+}
