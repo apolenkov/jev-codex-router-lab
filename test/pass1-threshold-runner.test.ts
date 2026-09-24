@@ -288,7 +288,7 @@ test("corpus manifest pins match the frozen corpus files and question builder", 
     manifest.questionBuilder.sha256,
     fileSha256(QUESTION_BUILDER_PATH),
   );
-  assert.equal(PASS1_THRESHOLD_TIMEOUT_MS, 45_000);
+  assert.equal(PASS1_THRESHOLD_TIMEOUT_MS, 120_000);
   assert.deepEqual(PASS1_THRESHOLD_LIMITS.calibration, {
     maxAttempts: 56,
     spendCapUsd: 0.25,

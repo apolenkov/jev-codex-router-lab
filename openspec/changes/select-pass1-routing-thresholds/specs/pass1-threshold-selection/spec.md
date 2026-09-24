@@ -30,13 +30,14 @@ the manifest MUST record the carried-over accounting.
 - **WHEN** the target evidence directory already exists
 - **THEN** the runner refuses to run and exits non-zero
 
-#### Scenario: A transport-aborted run resumes once in place
+#### Scenario: A transport-aborted run resumes in place
 
 - **WHEN** an incomplete run is resumed with `--resume`
 - **THEN** collected and invalid-response records are never re-attempted,
-  a failed case is retried once and its record replaced, manifest and
-  summary are atomically rewritten, and cumulative accounting continues
-  from the checkpoint
+  a failed case may be retried and its record replaced, manifest and
+  summary are atomically rewritten, cumulative accounting continues from
+  the checkpoint, and cumulative attempts stay within the declared
+  hard ceiling (60 calibration / 32 evaluation)
 
 ### Requirement: Threshold selection is offline and pre-registered
 

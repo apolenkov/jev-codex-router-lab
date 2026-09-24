@@ -129,6 +129,7 @@ export interface RunPass1ThresholdEvaluationOptions {
       readonly attempts: number;
       readonly spentUsd: number;
     };
+    readonly resumeCount: number;
   };
   readonly writeReport: (
     report: Pass1ThresholdEvaluationReport,

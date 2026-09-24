@@ -27,6 +27,7 @@ import {
   parsePass1ThresholdCaseRecord,
   runPass1ThresholdCollection,
   PASS1_THRESHOLD_LIMITS,
+  PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING,
   PASS1_THRESHOLD_TIMEOUT_MS,
   type Pass1AnnotatedCorpus,
   type Pass1CorpusManifest,
@@ -281,6 +282,7 @@ const parseArgs = (
 interface ResumeState {
   readonly priorRecords: Map<string, Pass1ThresholdCaseRecord>;
   readonly priorAccounting: { readonly attempts: number; readonly spentUsd: number };
+  readonly resumeCount: number;
 }
 
 const loadResumeState = async (
@@ -302,7 +304,6 @@ const loadResumeState = async (
     const expectedFingerprint = createCorpusGuard(corpus).fingerprint;
     if (
       manifest.kind !== "pass1-threshold-evidence" ||
-      manifest.resumedFrom !== undefined ||
       manifest.corpusFileSha256 !== pins.corpusFileSha256 ||
       manifest.questionBuilderSha256 !== pins.questionBuilderSha256 ||
       manifest.corpusFingerprint !== expectedFingerprint ||
@@ -327,12 +328,19 @@ const loadResumeState = async (
       priorRecords.set(record.caseId, record);
     }
     if (priorRecords.size === 0) return null;
+    const priorResumeCount = manifest.resumeCount;
     return {
       priorRecords,
       priorAccounting: {
         attempts: accounting.attempts as number,
         spentUsd: accounting.spentUsd,
       },
+      resumeCount:
+        typeof priorResumeCount === "number" &&
+          Number.isInteger(priorResumeCount) &&
+          priorResumeCount >= 1
+          ? priorResumeCount + 1
+          : 1,
     };
   } catch {
     return null;
@@ -375,13 +383,10 @@ const runCollection = async (
     if (resume && resumeState === null) {
       return { exitCode: 2, error: "invalid resume state" };
     }
-    const priorFailed = resumeState === null
-      ? 0
-      : [...resumeState.priorRecords.values()].filter(
-        (record) => record.outcome === "failed",
-      ).length;
     const bounds = {
-      maxAttempts: PASS1_THRESHOLD_LIMITS[split].maxAttempts + priorFailed,
+      maxAttempts: resumeState === null
+        ? PASS1_THRESHOLD_LIMITS[split].maxAttempts
+        : PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING[split],
       spendCapUsd: PASS1_THRESHOLD_LIMITS[split].spendCapUsd,
     };
     const checkpoint = createAtomicCalibrationCheckpointStore(
@@ -431,6 +436,7 @@ const runCollection = async (
             resume: {
               priorRecords: resumeState.priorRecords,
               priorAccounting: resumeState.priorAccounting,
+              resumeCount: resumeState.resumeCount,
             },
           }),
       });
@@ -486,6 +492,7 @@ const runCollection = async (
           resume: {
             priorRecords: resumeState.priorRecords,
             priorAccounting: resumeState.priorAccounting,
+            resumeCount: resumeState.resumeCount,
           },
         }),
       writeReport: (evaluation) =>

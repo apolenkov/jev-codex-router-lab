@@ -46,7 +46,7 @@ import {
 
 export const PASS1_THRESHOLD_SDK = "@typesafe-ai/sdk@0.6.0";
 export const PASS1_THRESHOLD_MODEL = CALIBRATION_MODEL;
-export const PASS1_THRESHOLD_TIMEOUT_MS = 45_000;
+export const PASS1_THRESHOLD_TIMEOUT_MS = 120_000;
 
 export type Pass1CorpusSplit = "calibration" | "evaluation";
 
@@ -63,6 +63,13 @@ export const PASS1_THRESHOLD_LIMITS: Readonly<
     spendCapUsd: 0.25,
     requestReserveUsd: CALIBRATION_REQUEST_RESERVE_USD,
   },
+};
+
+export const PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING: Readonly<
+  Record<Pass1CorpusSplit, number>
+> = {
+  calibration: 60,
+  evaluation: 32,
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -816,6 +823,7 @@ export interface Pass1ThresholdEvidenceManifest {
     readonly attempts: number;
     readonly spentUsd: number;
   };
+  readonly resumeCount?: number;
   readonly limits: {
     readonly maxAttempts: number;
     readonly spendCapUsd: number;
@@ -893,6 +901,7 @@ export interface RunPass1ThresholdCollectionOptions {
       readonly attempts: number;
       readonly spentUsd: number;
     };
+    readonly resumeCount: number;
   };
 }
 
@@ -993,14 +1002,12 @@ export const runPass1ThresholdCollection = async (
           attempts: options.resume.priorAccounting.attempts,
           spentUsd: options.resume.priorAccounting.spentUsd,
         },
+        resumeCount: options.resume.resumeCount,
       }),
     limits: {
-      maxAttempts: PASS1_THRESHOLD_LIMITS[options.split].maxAttempts +
-        (options.resume === undefined
-          ? 0
-          : [...options.resume.priorRecords.values()].filter(
-            (record) => record.outcome === "failed",
-          ).length),
+      maxAttempts: options.resume === undefined
+        ? PASS1_THRESHOLD_LIMITS[options.split].maxAttempts
+        : PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING[options.split],
       spendCapUsd: PASS1_THRESHOLD_LIMITS[options.split].spendCapUsd,
       requestReserveUsd: PASS1_THRESHOLD_LIMITS[options.split].requestReserveUsd,
       maxInputTokens: CALIBRATION_MAX_INPUT_TOKENS,
