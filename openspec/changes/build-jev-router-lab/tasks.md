@@ -23,6 +23,6 @@
 
 - [x] 4.1 Add the approved public synthetic fixture and regression proving required-skill fallback preservation and metadata-only report output
 - [x] 4.2 Run the complete local gate sequence twice and record the local-only evidence with `TYPESAFE_API_KEY` absent
-- [ ] 4.3 Run one owner-authorized live smoke; verify `status: ok`, exactly two Jev calls, all seven valid signals, latency/usage records, and state that `n=1` proves operability only
-- [ ] 4.4 Obtain the required final review on the exact live-smoke candidate
-- [ ] 4.5 Finalize OpenSpec and backlog closeout evidence, then commit the accepted evidence
+- [x] 4.3 Run one owner-authorized live smoke; verify `status: ok`, exactly two Jev calls, all seven valid signals, latency/usage records, and state that `n=1` proves operability only
+- [x] 4.4 Obtain the required final review on the exact live-smoke candidate
+- [x] 4.5 Finalize OpenSpec and backlog closeout evidence, then commit the accepted evidence

@@ -92,9 +92,11 @@ Read the full [architecture](docs/architecture.md) and
 
 ## Current evidence
 
-The current evidence is deliberately negative. No valid current live run proves
-`status: ok`, routing quality, general reliability, savings, economy, or
-production readiness.
+The current evidence remains deliberately narrow. One 2026-09-24 owner-authorized
+live smoke (`n=1`) returned `status: ok` under an explicitly exploratory pass-1
+policy derived from the eight collected evidence cases — it proves operability
+of the gated live path only, not routing quality, general reliability, savings,
+economy, or production readiness.
 
 On 2026-09-21, one corrected public synthetic smoke (`n=1`) used
 `jev-1.13.0`, made two calls, and ended in `fallback/low-confidence` while

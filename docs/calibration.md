@@ -64,6 +64,42 @@ production readiness. See the [metadata report](../artifacts/corrected-smoke-rep
 [decision](../artifacts/corrected-smoke-decision.json), and
 [method notes](../artifacts/smoke-summary.md).
 
+## Live smoke — 2026-09-24 (`status: ok`)
+
+One owner-authorized live smoke ran once on the frozen public synthetic
+fixture `fixtures/smoke-input.json` (SHA-256
+`e54113a38b089f4ed5096c9611fadfa8e175a60459e9082dfdc8349909f4a2fb`).
+
+Pass-1 policy: the router requires `JEV_PASS1_THRESHOLDS_JSON`. The owner
+explicitly authorized deriving an exploratory policy from the eight collected
+pass-1 evidence cases under `artifacts/pass1-calibration/` — a documented
+deviation from that change's not-for-runtime boundary. The rule: accept
+responses at least as decisive as the weakest collected case.
+`choiceConfidenceMin` is `0.5`, a small margin below the weakest observed
+choice confidence (`0.52`); the Noul uncertainty band `[0.48, 0.52]` sits
+inside the observed gap (`0.43` below, `0.53` above) around `0.5`. All eight
+collected cases pass under this policy. These are smoke-gate values, not
+calibrated production thresholds; the dedicated 56-case calibration corpus
+remains the proper source for those.
+
+| Measure | Observed value |
+| --- | --- |
+| Model | `jev-1.13.0` |
+| Calls | 2 (pass 1 + pass 2) |
+| Decision | `ok` |
+| Total latency | 1256.747 ms |
+| Input / output tokens | 1,476 / 574 |
+| Recorded cost | USD 0.000061992 |
+
+All seven signals were valid: `taskType=diagnose`,
+`skillCandidates=[test-driven-development, writing-plans]`, `criticalGap`,
+`reuseCandidate`, `architectureFork` all `null`, five `riskDimensions` values,
+`contextRelevance=[]`. The required `systematic-debugging` skill was
+preserved. With `n=1` this proves operability of the gated live path only —
+not routing quality, reliability, savings, economy, or production readiness.
+See the [metadata report](../artifacts/live-smoke-2026-09-24-report.json) and
+[decision](../artifacts/live-smoke-2026-09-24-decision.json).
+
 ## Invalid historical `status: ok`
 
 An earlier live artifact recorded `status: ok`, but that gateway version
@@ -77,7 +113,10 @@ accounting record. It must not be used to claim successful routing.
   boundary without a provider.
 - The corrected live path made two calls, recorded bounded metadata, preserved
   a mandatory skill, and failed safely.
-- No valid current live run proves `status: ok`.
+- One 2026-09-24 live smoke returned `status: ok` under an explicitly
+  exploratory, owner-authorized pass-1 policy. With `n=1` it proves
+  operability only — not routing quality, reliability, savings, economy, or
+  production readiness.
 
 Any future quality claim needs a new pre-registered evaluation with a useful
 denominator, frozen labels, explicit thresholds, and evidence retained without
