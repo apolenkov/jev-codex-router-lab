@@ -10,6 +10,11 @@ import type {
   TaskType,
 } from "./contracts.js";
 import { MAX_OPTIONAL_SKILL_CANDIDATES } from "./contracts.js";
+import {
+  PASS1_THRESHOLDS_ENV,
+  parsePass1Thresholds,
+  type Pass1Thresholds,
+} from "./pass1-thresholds.js";
 import { buildPass1Request, buildPass2Request, NONE } from "./questions.js";
 import {
   SemanticGatewayError,
@@ -47,6 +52,23 @@ const RISK_QUESTIONS: Readonly<Record<RiskDimension, string>> = {
 export interface ParsedTypeSafeEnvelope {
   answers: Record<string, unknown>;
   metadata: PassMetadata;
+}
+
+export interface Pass1ChoiceObservation {
+  readonly choice: string;
+  readonly confidence: number;
+  readonly probabilities: Readonly<Record<string, number>>;
+}
+
+export interface Pass1Observations {
+  readonly echo: SemanticEcho;
+  readonly taskType: Pass1ChoiceObservation;
+  readonly skillCandidates: Pass1ChoiceObservation | null;
+  readonly criticalGap: Pass1ChoiceObservation | null;
+  readonly reuseCandidate: Pass1ChoiceObservation | null;
+  readonly architectureFork: Pass1ChoiceObservation | null;
+  readonly contextRelevance: Pass1ChoiceObservation | null;
+  readonly riskDimensions: Readonly<Record<RiskDimension, number>>;
 }
 
 interface ParsedChoice {
@@ -197,6 +219,43 @@ const rankedIds = (
     .slice(0, limit)
     .map(({ id }) => id);
 
+const queriedChoice = (
+  answerValue: unknown,
+  ids: readonly string[],
+): ParsedChoice | null =>
+  ids.length === 0 ? null : parseChoice(answerValue, [...ids, NONE]);
+
+const selectedId = (answer: ParsedChoice | null): string | null =>
+  answer === null || answer.choice === NONE ? null : answer.choice;
+
+const selectedObject = <T extends { id: string }>(
+  answer: ParsedChoice | null,
+  candidates: readonly T[],
+): T | null => {
+  const selected = selectedId(answer);
+  return selected === null
+    ? null
+    : candidates.find(({ id }) => id === selected)!;
+};
+
+const assertPass1Confidence = (
+  choices: readonly (ParsedChoice | null)[],
+  nouls: readonly number[],
+  thresholds: Pass1Thresholds,
+): void => {
+  if (
+    choices.some((answer) =>
+      answer !== null && answer.confidence < thresholds.choiceConfidenceMin
+    ) ||
+    nouls.some((value) =>
+      value >= thresholds.noulUncertaintyLower &&
+      value <= thresholds.noulUncertaintyUpper
+    )
+  ) {
+    throw new SemanticGatewayError("low-confidence");
+  }
+};
+
 const assertNoReservedChoiceValues = (input: PrecheckedInput): void => {
   const values = [
     input.taskId,
@@ -222,6 +281,61 @@ const mapWithMetadata = <T>(metadata: PassMetadata, operation: () => T): T => {
     }
     throw error;
   }
+};
+
+export const parsePass1Observations = (
+  answers: Readonly<Record<string, unknown>>,
+  input: PrecheckedInput,
+): Pass1Observations => {
+  const echo = parseEchoes(answers, input);
+  const taskType = parseChoice(
+    answers.task_type,
+    TASK_TYPES,
+    "malformed-response",
+  );
+  const forced = new Set(input.forcedSkillIds);
+  const optionalSkillIds = input.skills
+    .map(({ id }) => id)
+    .filter((id) => !forced.has(id));
+  const skillCandidates = optionalSkillIds.length === 0
+    ? null
+    : parseChoice(answers.skill_candidates, [...optionalSkillIds, NONE]);
+  const criticalGap = queriedChoice(
+    answers.critical_gap,
+    (input.criticalGapCandidates ?? []).map(({ id }) => id),
+  );
+  const reuseCandidate = queriedChoice(
+    answers.reuse_candidate,
+    (input.reuseCandidates ?? []).map(({ id }) => id),
+  );
+  const architectureFork = queriedChoice(
+    answers.architecture_fork,
+    (input.architectureForkCandidates ?? []).map(({ id }) => id),
+  );
+  const riskDimensions = {
+    security: parseNoul(answers[RISK_QUESTIONS.security]),
+    "data-loss": parseNoul(answers[RISK_QUESTIONS["data-loss"]]),
+    "public-contract": parseNoul(answers[RISK_QUESTIONS["public-contract"]]),
+    migration: parseNoul(answers[RISK_QUESTIONS.migration]),
+    "user-behavior": parseNoul(answers[RISK_QUESTIONS["user-behavior"]]),
+  };
+  const publicContextIds = (input.contextFragments ?? [])
+    .filter((fragment) => fragment.protected !== true)
+    .map(({ id }) => id);
+  const contextRelevance = queriedChoice(
+    answers.context_relevance,
+    publicContextIds,
+  );
+  return {
+    echo,
+    taskType,
+    skillCandidates,
+    criticalGap,
+    reuseCandidate,
+    architectureFork,
+    contextRelevance,
+    riskDimensions,
+  };
 };
 
 export const parsePass2Record = (
@@ -252,71 +366,72 @@ export const parsePass2Record = (
 };
 
 export class TypeSafeGateway implements SemanticGateway {
-  constructor(private readonly client: SystemOneClientPort) {}
+  constructor(
+    private readonly client: SystemOneClientPort,
+    private readonly env: NodeJS.ProcessEnv = process.env,
+  ) {}
 
   async pass1(input: PrecheckedInput): Promise<Pass1Result> {
+    const thresholds = parsePass1Thresholds(this.env[PASS1_THRESHOLDS_ENV]);
+    if (thresholds === null) {
+      throw new SemanticGatewayError("uncalibrated-thresholds");
+    }
     assertNoReservedChoiceValues(input);
     const request = buildPass1Request(input);
     const { answers, metadata } = await this.call(request);
     return mapWithMetadata(metadata, () => {
-      const echo = parseEchoes(answers, input);
-      const taskType = parseChoice(
-        answers.task_type,
-        TASK_TYPES,
-        "malformed-response",
-      ).choice as TaskType;
+      const observations = parsePass1Observations(answers, input);
+      assertPass1Confidence(
+        [
+          observations.taskType,
+          observations.skillCandidates,
+          observations.criticalGap,
+          observations.reuseCandidate,
+          observations.architectureFork,
+          observations.contextRelevance,
+        ],
+        Object.values(observations.riskDimensions),
+        thresholds,
+      );
+
       const forced = new Set(input.forcedSkillIds);
       const optionalSkillIds = input.skills
         .map(({ id }) => id)
         .filter((id) => !forced.has(id));
-      const skillCandidates = optionalSkillIds.length === 0
-        ? []
-        : this.selectedRanking(
-          answers.skill_candidates,
-          optionalSkillIds,
-          MAX_OPTIONAL_SKILL_CANDIDATES,
-        );
-      const criticalGap = this.selectedObject(
-        answers.critical_gap,
-        input.criticalGapCandidates ?? [],
-      );
-      const reuseCandidate = this.selectedId(
-        answers.reuse_candidate,
-        (input.reuseCandidates ?? []).map(({ id }) => id),
-      );
-      const architectureFork = this.selectedObject(
-        answers.architecture_fork,
-        input.architectureForkCandidates ?? [],
-      );
-      const riskDimensions = {
-        security: parseNoul(answers[RISK_QUESTIONS.security]),
-        "data-loss": parseNoul(answers[RISK_QUESTIONS["data-loss"]]),
-        "public-contract": parseNoul(answers[RISK_QUESTIONS["public-contract"]]),
-        migration: parseNoul(answers[RISK_QUESTIONS.migration]),
-        "user-behavior": parseNoul(answers[RISK_QUESTIONS["user-behavior"]]),
-      };
       const publicContextIds = (input.contextFragments ?? [])
         .filter((fragment) => fragment.protected !== true)
         .map(({ id }) => id);
-      const contextAnswer = publicContextIds.length === 0
-        ? null
-        : parseChoice(answers.context_relevance, [...publicContextIds, NONE]);
-      const contextRelevance = contextAnswer === null || contextAnswer.choice === NONE
-        ? []
-        : rankedIds(contextAnswer, publicContextIds).map((id) => ({
-          id,
-          probability: contextAnswer.probabilities[id]!,
-        }));
+      const skillCandidates = observations.skillCandidates;
+      const contextRelevance = observations.contextRelevance;
 
       return {
-        echo,
-        taskType,
-        skillCandidates,
-        criticalGap,
-        reuseCandidate,
-        architectureFork,
-        riskDimensions,
-        contextRelevance,
+        echo: observations.echo,
+        taskType: observations.taskType.choice as TaskType,
+        skillCandidates: skillCandidates === null ||
+            skillCandidates.choice === NONE
+          ? []
+          : rankedIds(
+            skillCandidates,
+            optionalSkillIds,
+            MAX_OPTIONAL_SKILL_CANDIDATES,
+          ),
+        criticalGap: selectedObject(
+          observations.criticalGap,
+          input.criticalGapCandidates ?? [],
+        ),
+        reuseCandidate: selectedId(observations.reuseCandidate),
+        architectureFork: selectedObject(
+          observations.architectureFork,
+          input.architectureForkCandidates ?? [],
+        ),
+        riskDimensions: observations.riskDimensions,
+        contextRelevance: contextRelevance === null ||
+            contextRelevance.choice === NONE
+          ? []
+          : rankedIds(contextRelevance, publicContextIds).map((id) => ({
+            id,
+            probability: contextRelevance.probabilities[id]!,
+          })),
         metadata,
       };
     });
@@ -372,34 +487,12 @@ export class TypeSafeGateway implements SemanticGateway {
       performance.now() - started,
     );
   }
-
-  private selectedRanking(
-    answerValue: unknown,
-    ids: readonly string[],
-    limit: number,
-  ): string[] {
-    const answer = parseChoice(answerValue, [...ids, NONE]);
-    return answer.choice === NONE ? [] : rankedIds(answer, ids, limit);
-  }
-
-  private selectedId(answerValue: unknown, ids: readonly string[]): string | null {
-    if (ids.length === 0) {
-      return null;
-    }
-    const answer = parseChoice(answerValue, [...ids, NONE]);
-    return answer.choice === NONE ? null : answer.choice;
-  }
-
-  private selectedObject<T extends { id: string }>(
-    answerValue: unknown,
-    candidates: readonly T[],
-  ): T | null {
-    const selected = this.selectedId(answerValue, candidates.map(({ id }) => id));
-    return selected === null ? null : candidates.find(({ id }) => id === selected)!;
-  }
 }
 
 export function createTypeSafeGateway(): TypeSafeGateway {
+  if (parsePass1Thresholds(process.env[PASS1_THRESHOLDS_ENV]) === null) {
+    throw new SemanticGatewayError("uncalibrated-thresholds");
+  }
   const apiKey = process.env.TYPESAFE_API_KEY?.trim();
   if (!apiKey) {
     throw new SemanticGatewayError("service-error");

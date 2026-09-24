@@ -16,6 +16,10 @@ import type {
   RouterInput,
   TaskType,
 } from "./contracts.js";
+import {
+  PASS1_THRESHOLDS_ENV,
+  parsePass1Thresholds,
+} from "./pass1-thresholds.js";
 import { postcheck, precheck } from "./policy.js";
 import type {
   Pass1Result,
@@ -44,6 +48,18 @@ export const CALIBRATION_MAX_INPUT_TOKENS = 64_000;
 export const CALIBRATION_MAX_ATTEMPTS = 18;
 export const CALIBRATION_REQUEST_RESERVE_USD = 0.002688;
 export const CALIBRATION_SPEND_CAP_USD = 0.05;
+
+export interface CalibrationTransportLimits {
+  readonly maxAttempts: number;
+  readonly spendCapUsd: number;
+  readonly requestReserveUsd: number;
+}
+
+export const CALIBRATION_TRANSPORT_LIMITS: CalibrationTransportLimits = {
+  maxAttempts: CALIBRATION_MAX_ATTEMPTS,
+  spendCapUsd: CALIBRATION_SPEND_CAP_USD,
+  requestReserveUsd: CALIBRATION_REQUEST_RESERVE_USD,
+};
 
 export class CalibrationError extends Error {
   constructor(readonly reason: string) {
@@ -379,6 +395,7 @@ const CHECKPOINT_FAILURES = [
   "attempt-cap",
   "concurrent-dispatch",
   "corpus-mutated",
+  "evidence-write",
   "post-transport-validation",
   "provider-error",
   "redirect",
@@ -390,7 +407,7 @@ const CHECKPOINT_FAILURES = [
 
 export type CalibrationCheckpointFailure = (typeof CHECKPOINT_FAILURES)[number];
 
-const isCheckpointFailure = (value: unknown): value is CalibrationCheckpointFailure =>
+export const isCheckpointFailure = (value: unknown): value is CalibrationCheckpointFailure =>
   typeof value === "string" && (CHECKPOINT_FAILURES as readonly string[]).includes(value);
 
 export interface CalibrationCheckpoint {
@@ -703,6 +720,7 @@ interface CalibrationTransportOptions {
     readonly attempts: number;
     readonly spentUsd: number;
   };
+  readonly limits?: CalibrationTransportLimits;
 }
 
 const calibrationErrorFrom = (error: unknown): CalibrationError | null => {
@@ -726,14 +744,26 @@ export const createCalibrationTransport = async (options: CalibrationTransportOp
   if (options.apiKey.trim().length === 0) {
     throw new CalibrationError("missing-api-key");
   }
+  const limits = options.limits ?? CALIBRATION_TRANSPORT_LIMITS;
+  if (
+    !Number.isInteger(limits.maxAttempts) ||
+    limits.maxAttempts < 1 ||
+    !Number.isFinite(limits.spendCapUsd) ||
+    limits.spendCapUsd <= 0 ||
+    !Number.isFinite(limits.requestReserveUsd) ||
+    limits.requestReserveUsd <= 0 ||
+    limits.requestReserveUsd > limits.spendCapUsd
+  ) {
+    throw new CalibrationError("invalid-limits");
+  }
   const initial = options.accounting ?? { attempts: 0, spentUsd: 0 };
   if (
     !Number.isInteger(initial.attempts) ||
     initial.attempts < 0 ||
-    initial.attempts > CALIBRATION_MAX_ATTEMPTS ||
+    initial.attempts > limits.maxAttempts ||
     !Number.isFinite(initial.spentUsd) ||
     initial.spentUsd < 0 ||
-    initial.spentUsd > CALIBRATION_SPEND_CAP_USD
+    initial.spentUsd > limits.spendCapUsd
   ) {
     throw new CalibrationError("invalid-accounting");
   }
@@ -801,14 +831,14 @@ export const createCalibrationTransport = async (options: CalibrationTransportOp
     if (reservedUsd !== 0) {
       throw new CalibrationError("concurrent-dispatch");
     }
-    if (attempts >= CALIBRATION_MAX_ATTEMPTS) {
+    if (attempts >= limits.maxAttempts) {
       throw new CalibrationError("attempt-cap");
     }
-    if (spentUsd + CALIBRATION_REQUEST_RESERVE_USD > CALIBRATION_SPEND_CAP_USD) {
+    if (spentUsd + limits.requestReserveUsd > limits.spendCapUsd) {
       throw new CalibrationError("spend-cap");
     }
     attempts += 1;
-    reservedUsd = CALIBRATION_REQUEST_RESERVE_USD;
+    reservedUsd = limits.requestReserveUsd;
     await persistCheckpoint("reserved", null);
     guard.assertUnchanged();
     const response = await options.fetch(input, { ...init, redirect: "manual" });
@@ -884,7 +914,7 @@ export const createCalibrationTransport = async (options: CalibrationTransportOp
       !Number.isFinite(costUsd) ||
       costUsd < 0 ||
       costUsd > reservedUsd ||
-      spentUsd + costUsd > CALIBRATION_SPEND_CAP_USD
+      spentUsd + costUsd > limits.spendCapUsd
     ) {
       return fail("unknown-accounting");
     }
@@ -919,6 +949,7 @@ interface RunCalibrationExperimentOptions {
   readonly smokeInput: RouterInput;
   readonly transport: CalibrationTransport;
   readonly writeReport: (report: CalibrationReport) => Promise<void>;
+  readonly env?: NodeJS.ProcessEnv;
 }
 
 const rawEnvelope = (result: CalibrationTransportResult): Record<string, unknown> => ({
@@ -944,9 +975,13 @@ const semanticFromPass1 = (result: Pass1Result): AdvisorySignals & { readonly ec
 const validatePass1 = async (
   input: ReturnType<typeof precheck>,
   result: CalibrationTransportResult,
+  env: NodeJS.ProcessEnv,
 ): Promise<Pass1Result> => {
   try {
-    return await new TypeSafeGateway({ systemOne: async () => rawEnvelope(result) }).pass1(input);
+    return await new TypeSafeGateway(
+      { systemOne: async () => rawEnvelope(result) },
+      env,
+    ).pass1(input);
   } catch {
     throw new CalibrationError("invalid-provider-evidence");
   }
@@ -1042,6 +1077,7 @@ const collectionFailure = (
 const collectCase = async (
   corpusCase: CalibrationCorpusCase,
   systemOne: CalibrationTransport["systemOne"],
+  env: NodeJS.ProcessEnv,
 ): Promise<CollectedCase> => {
   const checked = precheck(corpusCase.input);
   let pass1Transport: CalibrationTransportResult;
@@ -1054,7 +1090,7 @@ const collectCase = async (
   }
   let pass1: Pass1Result;
   try {
-    pass1 = await validatePass1(checked, pass1Transport);
+    pass1 = await validatePass1(checked, pass1Transport, env);
   } catch {
     throw collectionFailure(
       corpusCase.id,
@@ -1158,10 +1194,11 @@ const collectSmoke = async (
   input: RouterInput,
   systemOne: CalibrationTransport["systemOne"],
   thresholds: Pass2Thresholds,
+  env: NodeJS.ProcessEnv,
 ): Promise<Extract<CalibrationSmokeResult, { status: "completed" }>> => {
   const checked = precheck(input);
   const pass1Transport = await systemOne(buildPass1Request(checked));
-  const pass1 = await validatePass1(checked, pass1Transport);
+  const pass1 = await validatePass1(checked, pass1Transport, env);
   const preliminary = postcheck(checked, semanticFromPass1(pass1));
   if (preliminary.status !== "ok" || preliminary.signals.skillCandidates.length === 0) {
     throw new CalibrationError("invalid-smoke-evidence");
@@ -1281,6 +1318,11 @@ const reportEvaluation = (
 export const runCalibrationExperiment = async (
   options: RunCalibrationExperimentOptions,
 ): Promise<CalibrationReport> => {
+  const pass1Policy = (options.env ?? process.env)[PASS1_THRESHOLDS_ENV];
+  if (parsePass1Thresholds(pass1Policy) === null) {
+    throw new CalibrationError("uncalibrated-thresholds");
+  }
+  const env: NodeJS.ProcessEnv = { [PASS1_THRESHOLDS_ENV]: pass1Policy };
   const guard = createCorpusGuard(options.corpus);
   const smokeGuard = createCorpusGuard(options.smokeInput);
   const corpus = structuredClone(options.corpus);
@@ -1335,7 +1377,9 @@ export const runCalibrationExperiment = async (
     const collectedCalibration: CollectedCase[] = [];
     for (const corpusCase of calibrationCases) {
       try {
-        collectedCalibration.push(await collectCase(corpusCase, systemOne));
+        collectedCalibration.push(
+          await collectCase(corpusCase, systemOne, env),
+        );
       } catch (error) {
         await terminalizeFailure(error);
         const failure = error instanceof CaseCollectionError
@@ -1407,7 +1451,7 @@ export const runCalibrationExperiment = async (
     for (const corpusCase of holdoutCases) {
       let collected: CollectedCase;
       try {
-        collected = await collectCase(corpusCase, systemOne);
+        collected = await collectCase(corpusCase, systemOne, env);
       } catch (error) {
         await terminalizeFailure(error);
         const skipped: CalibrationReport = {
@@ -1483,7 +1527,12 @@ export const runCalibrationExperiment = async (
     }
 
     try {
-      const smoke = await collectSmoke(smokeInput, systemOne, selectedTuple);
+      const smoke = await collectSmoke(
+        smokeInput,
+        systemOne,
+        selectedTuple,
+        env,
+      );
       return await finish({
         ...holdoutReport,
         phase: "smoke-completed",

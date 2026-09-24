@@ -115,8 +115,25 @@ and excerpts within the fixed 4,000-code-unit field bound, yielding zero to
 three verified optional skills. Protected fragment IDs and bodies are absent
 from both passes.
 Retries are bounded; timeout/service failure → `fallback`
-(`service-error`); per-signal confidence below configured threshold →
-`low-confidence`. Thresholds are experiment configuration.
+(`service-error`). Pass 1 checks every queried non-echo semantic answer as one
+atomic result: Choice answers use a pass-1-specific `confidence` floor, while
+Noul answers inside a pass-1-specific inclusive uncertainty band →
+`low-confidence`. Answers to optional questions omitted because no candidates
+were supplied are not evaluated. Pass 1 has no defaults copied from pass 2.
+The only runtime source for pass-1 thresholds is
+`JEV_PASS1_THRESHOLDS_JSON`, an exact object containing `choiceConfidenceMin`,
+`noulUncertaintyLower`, and `noulUncertaintyUpper`. Missing or invalid
+configuration returns `uncalibrated-thresholds` before credential or provider
+access. Code validates shape and ranges, not the provenance or quality of the
+operator's calibration. Numeric threshold values remain unset until supported
+by a separate pass-1 calibration; they are not inferred from one smoke or
+copied from pass 2.
+The calibration CLI and experiment share the same parser and fail-closed
+rule: the CLI validates the pass-1 policy before reading `TYPESAFE_API_KEY`
+or creating its transport, and the experiment stops before dispatching a
+request when the policy is absent. A pass-1 `low-confidence` answer during
+collection ends the run without a pass-2 request, so no successful
+calibration result can be produced from uncertain pass-1 evidence.
 
 ### 8. Minimal dependency surface
 
@@ -136,7 +153,7 @@ beyond the SDK and lint/type packages, all pinned to exact versions.
 
 ## Open Questions
 
-- Per-signal confidence threshold values — experiment configuration set when
-  the gateway lands, not a contract decision.
+- Pass-1 threshold values — require their own labeled calibration evidence;
+  do not reuse the pass-2 tuple or infer calibration from a single smoke.
 - Whether the exact-match response cache is needed for smoke repeatability —
   decided when the smoke flow is measured.

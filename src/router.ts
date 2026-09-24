@@ -41,6 +41,7 @@ const FALLBACK_REASONS: ReadonlySet<FallbackReason> = new Set([
   "stale-decision",
   "unknown-id",
   "low-confidence",
+  "uncalibrated-thresholds",
 ]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

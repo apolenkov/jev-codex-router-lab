@@ -4,6 +4,10 @@ import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Fetch } from "@typesafe-ai/sdk";
 import type { RouterInput } from "./contracts.js";
+import {
+  PASS1_THRESHOLDS_ENV,
+  parsePass1Thresholds,
+} from "./pass1-thresholds.js";
 import { precheck } from "./policy.js";
 import {
   createAtomicCalibrationCheckpointStore,
@@ -177,7 +181,13 @@ export const runCalibrationCli = async (
   if (argv.length !== 0) {
     return { exitCode: 2, error: "invalid CLI usage" };
   }
-  const apiKey = (options.env ?? process.env).TYPESAFE_API_KEY;
+  const env = options.env ?? process.env;
+  const pass1Policy = env[PASS1_THRESHOLDS_ENV];
+  if (parsePass1Thresholds(pass1Policy) === null) {
+    return { exitCode: 2, error: "uncalibrated-thresholds" };
+  }
+  const policyEnv: NodeJS.ProcessEnv = { [PASS1_THRESHOLDS_ENV]: pass1Policy };
+  const apiKey = env.TYPESAFE_API_KEY;
   if (apiKey === undefined || apiKey.trim().length === 0) {
     return { exitCode: 2, error: "missing TYPESAFE_API_KEY" };
   }
@@ -251,6 +261,7 @@ export const runCalibrationCli = async (
       writeReport: createAtomicCalibrationReportWriter(paths.report, {
         beforeWrite: assertEvidencePath,
       }),
+      env: policyEnv,
     });
     if (!await evidencePathUnchanged(paths)) {
       return { exitCode: 2, error: "evidence path unavailable" };

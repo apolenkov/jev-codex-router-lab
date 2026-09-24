@@ -113,6 +113,7 @@ test("offline fake-gateway example needs no credential or network", () => {
       delete environment[name];
     }
   }
+  delete environment.JEV_PASS1_THRESHOLDS_JSON;
   const denyNetwork = encodeURIComponent(`
     import http from "node:http";
     import https from "node:https";
@@ -147,7 +148,7 @@ test("offline fake-gateway example needs no credential or network", () => {
     fake: true,
     decision: {
       status: "fallback",
-      reason: "service-error",
+      reason: "uncalibrated-thresholds",
       forcedSkillIds: ["systematic-debugging"],
       protectedContextIds: ["synthetic-protected-context"],
     },

@@ -23,7 +23,8 @@ npm run check
 The offline example uses a clearly labelled fake gateway. It makes no provider
 request, needs no `TYPESAFE_API_KEY`, and is not presented as Jev output. It
 demonstrates the contract's important failure invariant: typed fallback keeps
-mandatory skill IDs and protected-context IDs.
+mandatory skill IDs and protected-context IDs. Because no pass-1 threshold
+policy is configured, it prints the `uncalibrated-thresholds` fallback.
 
 ## What the router returns
 
@@ -75,6 +76,17 @@ Jev is untrusted advisory input. Errors, malformed or stale responses, unknown
 IDs, and low confidence produce a typed `fallback`; they do not grant the model
 authority or trigger execution.
 
+Pass 1 applies an atomic confidence gate over every queried non-echo answer: a
+Choice confidence below the configured floor or a Noul probability inside the
+configured inclusive uncertainty band rejects the whole pass with
+`low-confidence` (a confident Noul "no" near zero is still confident). The
+pass-1 thresholds are independent of pass 2 and come only from
+`JEV_PASS1_THRESHOLDS_JSON` — an exact JSON object with numeric
+`choiceConfidenceMin`, `noulUncertaintyLower`, and `noulUncertaintyUpper`
+fields in `[0,1]`, where the Noul interval must strictly contain `0.5`. Missing
+or invalid configuration fails closed as `uncalibrated-thresholds` before
+credentials are read or any provider request is made.
+
 Read the full [architecture](docs/architecture.md) and
 [security/privacy boundary](docs/security-and-privacy.md).
 
@@ -109,8 +121,37 @@ export TYPESAFE_OUTPUT_USD_PER_MILLION='0'
 npm run route -- --input fixtures/smoke-input.json --report artifacts/local-report.json
 ```
 
+Live routing additionally requires `JEV_PASS1_THRESHOLDS_JSON` in the shape
+described above. This repository ships no calibrated pass-1 values: until a
+dedicated pass-1 calibration supplies them, every route — and the calibration
+runner itself, which applies the same check before reading
+`TYPESAFE_API_KEY` or creating its transport — fails closed with
+`uncalibrated-thresholds`.
+
 Never commit `.env.local`, credentials, or unreviewed reports. Report paths are
 create-once and must stay inside the repository.
+
+## Pass-1 confidence evidence collection
+
+`npm run calibrate:pass1` is a separately authorized, single-use collector and
+is not part of routine tests. It reads `TYPESAFE_API_KEY`, sends the eight
+synthetic cases from `fixtures/calibration-corpus.json` to the paid TypeSafe
+API as one sequential pass-1 request each — at most eight actual attempts,
+USD 0.021504 hard cap — and stops on the first terminal provider, validation,
+or accounting error.
+
+The collector records closed structural evidence under
+`artifacts/pass1-calibration/` (git-ignored, create-once `0600` files, refused
+on any second run). It validates response structure and IDs but applies no
+pass-1 threshold policy: the evidence is not a calibration, does not calibrate
+thresholds, and does not enable routing. The gateway keeps failing closed
+without `JEV_PASS1_THRESHOLDS_JSON`.
+
+Run this only in a stable local checkout. The collector stops if it observes
+the evidence directory moving, but path checks cannot protect against another
+same-user process moving an already-open directory between checks. An
+interrupted run can leave partial create-once evidence; do not delete it and
+retry the paid one-shot collection.
 
 ## Development
 

@@ -2,13 +2,45 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { APITimeoutError } from "@typesafe-ai/sdk";
 import type { FallbackReason, RouterInput } from "../src/contracts.js";
+import { PASS1_THRESHOLDS_ENV } from "../src/pass1-thresholds.js";
 import { precheck } from "../src/policy.js";
 import {
   SemanticGatewayError,
   type SystemOneClientPort,
   type SystemOneRequest,
 } from "../src/semantic-gateway.js";
-import { TypeSafeGateway } from "../src/typesafe-gateway.js";
+import {
+  createTypeSafeGateway,
+  TypeSafeGateway,
+} from "../src/typesafe-gateway.js";
+
+const TEST_PASS1_POLICY = JSON.stringify({
+  choiceConfidenceMin: 0.5,
+  noulUncertaintyLower: 0.4,
+  noulUncertaintyUpper: 0.6,
+});
+process.env[PASS1_THRESHOLDS_ENV] = TEST_PASS1_POLICY;
+
+const withPass1Policy = async (
+  value: string | undefined,
+  run: () => Promise<void>,
+): Promise<void> => {
+  const previous = process.env[PASS1_THRESHOLDS_ENV];
+  if (value === undefined) {
+    delete process.env[PASS1_THRESHOLDS_ENV];
+  } else {
+    process.env[PASS1_THRESHOLDS_ENV] = value;
+  }
+  try {
+    await run();
+  } finally {
+    if (previous === undefined) {
+      delete process.env[PASS1_THRESHOLDS_ENV];
+    } else {
+      process.env[PASS1_THRESHOLDS_ENV] = previous;
+    }
+  }
+};
 
 const routerInput: RouterInput = {
   taskId: "synthetic-task-002",
@@ -77,8 +109,8 @@ const pass1Response = (): Record<string, unknown> => ({
     risk_security: { type: "noul", noul: 0.1 },
     risk_data_loss: { type: "noul", noul: 0.2 },
     risk_public_contract: { type: "noul", noul: 0.3 },
-    risk_migration: { type: "noul", noul: 0.4 },
-    risk_user_behavior: { type: "noul", noul: 0.5 },
+    risk_migration: { type: "noul", noul: 0.2 },
+    risk_user_behavior: { type: "noul", noul: 0.8 },
     context_relevance: choiceAnswer("ctx-public", { "ctx-public": 0.8, none: 0.2 }),
   },
 });
@@ -179,8 +211,8 @@ test("pass1 sends bounded task evidence and omits excerpts and protected context
     security: 0.1,
     "data-loss": 0.2,
     "public-contract": 0.3,
-    migration: 0.4,
-    "user-behavior": 0.5,
+    migration: 0.2,
+    "user-behavior": 0.8,
   });
   assert.deepEqual(result.contextRelevance, [{ id: "ctx-public", probability: 0.8 }]);
   assert.deepEqual(result.echo, {
@@ -449,6 +481,181 @@ test("pass2 treats relative Choice confidence below 0.5 as low confidence", asyn
   );
 });
 
+test("pass1 fails closed before any client access when the pass-1 policy is missing or invalid", async () => {
+  const policies: readonly (string | undefined)[] = [
+    undefined,
+    "",
+    "not-json",
+    "null",
+    "[]",
+    '{"choiceConfidenceMin":0.5,"noulUncertaintyLower":0.4}',
+    '{"choiceConfidenceMin":0.5,"noulUncertaintyLower":0.4,"noulUncertaintyUpper":0.6,"extra":0}',
+    '{"choiceConfidenceMin":"0.5","noulUncertaintyLower":0.4,"noulUncertaintyUpper":0.6}',
+    '{"choiceConfidenceMin":-0.1,"noulUncertaintyLower":0.4,"noulUncertaintyUpper":0.6}',
+    '{"choiceConfidenceMin":0.5,"noulUncertaintyLower":0.4,"noulUncertaintyUpper":1.1}',
+    '{"choiceConfidenceMin":0.5,"noulUncertaintyLower":0.5,"noulUncertaintyUpper":0.6}',
+    '{"choiceConfidenceMin":0.5,"noulUncertaintyLower":0.4,"noulUncertaintyUpper":0.5}',
+  ];
+
+  for (const policy of policies) {
+    await withPass1Policy(policy, async () => {
+      const client = new RecordingSystemOneClient(pass1Response());
+      await assertGatewayReason(
+        () => new TypeSafeGateway(client).pass1(input),
+        "uncalibrated-thresholds",
+      );
+      assert.equal(client.requests.length, 0);
+    });
+  }
+});
+
+test("createTypeSafeGateway validates the pass-1 policy before reading credentials", async () => {
+  const previousPolicy = process.env[PASS1_THRESHOLDS_ENV];
+  const previousKey = process.env.TYPESAFE_API_KEY;
+  try {
+    delete process.env[PASS1_THRESHOLDS_ENV];
+    delete process.env.TYPESAFE_API_KEY;
+    assert.throws(() => createTypeSafeGateway(), (error: unknown) =>
+      error instanceof SemanticGatewayError &&
+      error.reason === "uncalibrated-thresholds");
+
+    process.env.TYPESAFE_API_KEY = "test-key";
+    process.env[PASS1_THRESHOLDS_ENV] = "not-json";
+    assert.throws(() => createTypeSafeGateway(), (error: unknown) =>
+      error instanceof SemanticGatewayError &&
+      error.reason === "uncalibrated-thresholds");
+
+    process.env[PASS1_THRESHOLDS_ENV] = TEST_PASS1_POLICY;
+    delete process.env.TYPESAFE_API_KEY;
+    assert.throws(() => createTypeSafeGateway(), (error: unknown) =>
+      error instanceof SemanticGatewayError && error.reason === "service-error");
+  } finally {
+    if (previousPolicy === undefined) {
+      delete process.env[PASS1_THRESHOLDS_ENV];
+    } else {
+      process.env[PASS1_THRESHOLDS_ENV] = previousPolicy;
+    }
+    if (previousKey === undefined) {
+      delete process.env.TYPESAFE_API_KEY;
+    } else {
+      process.env.TYPESAFE_API_KEY = previousKey;
+    }
+  }
+});
+
+test("pass1 rejects the whole pass when a queried Choice confidence is below the configured floor", async () => {
+  await withPass1Policy(TEST_PASS1_POLICY, async () => {
+    const response = pass1Response();
+    (response.answers as Record<string, unknown>).task_type = choiceAnswer(
+      "diagnose",
+      {
+        explain: 0.02,
+        research: 0.03,
+        plan: 0.05,
+        diagnose: 0.75,
+        change: 0.05,
+        review: 0.05,
+        operate: 0.05,
+      },
+      0.49,
+    );
+
+    await assertGatewayReason(
+      () => new TypeSafeGateway(new RecordingSystemOneClient(response)).pass1(input),
+      "low-confidence",
+    );
+  });
+});
+
+test("every queried pass1 Choice answer enforces the configured confidence floor", async () => {
+  const queriedChoices = [
+    "task_type",
+    "skill_candidates",
+    "critical_gap",
+    "reuse_candidate",
+    "architecture_fork",
+    "context_relevance",
+  ];
+
+  for (const name of queriedChoices) {
+    const response = pass1Response();
+    const answers = response.answers as Record<string, unknown>;
+    const queried = answers[name] as Record<string, unknown>;
+    assert.equal(queried.type, "choice");
+    answers[name] = { ...queried, confidence: 0.49 };
+
+    await assertGatewayReason(
+      () => new TypeSafeGateway(new RecordingSystemOneClient(response)).pass1(input),
+      "low-confidence",
+    );
+  }
+});
+
+test("a queried Choice confidence equal to the configured floor is accepted", async () => {
+  const response = pass1Response();
+  const answers = response.answers as Record<string, unknown>;
+  const queried = answers.task_type as Record<string, unknown>;
+  answers.task_type = { ...queried, confidence: 0.5 };
+
+  const result = await new TypeSafeGateway(new RecordingSystemOneClient(response))
+    .pass1(input);
+
+  assert.equal(result.taskType, "diagnose");
+});
+
+test("each of the five queried pass1 Noul answers inside the band rejects the pass", async () => {
+  const queriedNouls = [
+    "risk_security",
+    "risk_data_loss",
+    "risk_public_contract",
+    "risk_migration",
+    "risk_user_behavior",
+  ];
+
+  for (const name of queriedNouls) {
+    const response = pass1Response();
+    (response.answers as Record<string, unknown>)[name] = {
+      type: "noul",
+      noul: 0.5,
+    };
+
+    await assertGatewayReason(
+      () => new TypeSafeGateway(new RecordingSystemOneClient(response)).pass1(input),
+      "low-confidence",
+    );
+  }
+});
+
+test("pass1 treats the configured Noul band boundaries as inclusive", async () => {
+  for (const boundary of [0.4, 0.6]) {
+    const response = pass1Response();
+    (response.answers as Record<string, unknown>).risk_security = {
+      type: "noul",
+      noul: boundary,
+    };
+
+    await assertGatewayReason(
+      () => new TypeSafeGateway(new RecordingSystemOneClient(response)).pass1(input),
+      "low-confidence",
+    );
+  }
+});
+
+test("confident Noul answers just outside and at the extremes of the band are accepted", async () => {
+  for (const noul of [0.39, 0.61, 0, 1]) {
+    const response = pass1Response();
+    (response.answers as Record<string, unknown>).risk_security = {
+      type: "noul",
+      noul,
+    };
+
+    const result = await new TypeSafeGateway(new RecordingSystemOneClient(response))
+      .pass1(input);
+
+    assert.equal(result.riskDimensions.security, noul);
+  }
+});
+
 test("pass2 validates every shortlisted fit before applying the ranking threshold", async () => {
   for (const malformedFit of [{ type: "noul", noul: 1.5 }, undefined]) {
     const response = pass2Response([0.9, 0.8, 0.7], 0.1);
@@ -526,4 +733,47 @@ test("timeouts and service errors are typed without leaking the SDK error payloa
       "service-error",
     );
   }
+});
+
+const gatewayWithEnv = (
+  client: SystemOneClientPort,
+  env: NodeJS.ProcessEnv,
+): TypeSafeGateway => new TypeSafeGateway(client, env);
+
+test("pass1 uses the supplied environment policy when the global policy is absent", async () => {
+  await withPass1Policy(undefined, async () => {
+    const client = new RecordingSystemOneClient(pass1Response());
+    const result = await gatewayWithEnv(
+      client,
+      { [PASS1_THRESHOLDS_ENV]: TEST_PASS1_POLICY },
+    ).pass1(input);
+
+    assert.equal(result.taskType, "diagnose");
+    assert.equal(client.requests.length, 1);
+  });
+});
+
+test("an explicit environment without the policy does not inherit a valid global value", async () => {
+  for (const env of [{}, { [PASS1_THRESHOLDS_ENV]: "not-json" }]) {
+    const client = new RecordingSystemOneClient(pass1Response());
+    await assertGatewayReason(
+      () => gatewayWithEnv(client, env).pass1(input),
+      "uncalibrated-thresholds",
+    );
+    assert.equal(client.requests.length, 0);
+  }
+});
+
+test("pass1 enforces the supplied policy over a different valid global policy", async () => {
+  const strictPolicy = JSON.stringify({
+    choiceConfidenceMin: 0.95,
+    noulUncertaintyLower: 0.4,
+    noulUncertaintyUpper: 0.6,
+  });
+  const client = new RecordingSystemOneClient(pass1Response());
+
+  await assertGatewayReason(
+    () => gatewayWithEnv(client, { [PASS1_THRESHOLDS_ENV]: strictPolicy }).pass1(input),
+    "low-confidence",
+  );
 });

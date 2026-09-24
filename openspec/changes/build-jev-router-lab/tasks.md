@@ -10,7 +10,9 @@
 ## 2. Jev semantic gateway
 
 - [x] 2.1 Implement the two-pass gateway (`SemanticGateway` port + TypeSafe Jev adapter): pass 1 batches the seven signals, pass 2 verifies the top three skills; verify with fake-client tests covering all signals and absent optional candidates
-- [x] 2.2 Add bounded retries and per-signal confidence thresholds; verify timeout, service failure, and low confidence each produce `fallback` with the right reason in tests
+- [x] 2.2 Add bounded retries and pass-2 confidence thresholds; verify timeout, service failure, and pass-2 low confidence each produce `fallback` with the right reason in tests
+- [x] 2.3 Add an independent pass-1 Choice/Noul confidence policy; reject the whole pass on any uncertain queried signal, fail closed before provider calls when calibration is absent, and preserve mandatory skills
+- [ ] 2.4 Calibrate pass-1 thresholds using separate labeled evidence; do not reuse pass-2 thresholds or call one smoke calibration
 
 ## 3. Router and CLI
 
