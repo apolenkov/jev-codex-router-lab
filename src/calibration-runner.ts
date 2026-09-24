@@ -334,7 +334,7 @@ export const loadCalibrationCorpus = (path: string): CalibrationCorpus => {
   }
 };
 
-const canonicalJson = (value: unknown): string => {
+export const canonicalJson = (value: unknown): string => {
   if (value === null || typeof value === "boolean" || typeof value === "string") {
     return JSON.stringify(value);
   }
