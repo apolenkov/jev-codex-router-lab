@@ -22,10 +22,14 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  APIError,
+  APITimeoutError,
   TypeSafeClient,
+  TypeSafeError,
   choice,
   type ChoiceQuestion,
   type EntryType,
+  type Fetch,
   type Questions,
 } from "@typesafe-ai/sdk";
 import { loadCorpus, type CorpusCase, type Verdict } from "./score.js";
@@ -411,6 +415,32 @@ export const loadCoveredCaseIds = (resultsPath: string): ReadonlySet<string> => 
   return covered;
 };
 
+/**
+ * Bound an unknown thrown value to fields that cannot carry provider payload
+ * text. SDK `APIError.message` embeds the response body, so only the class
+ * name, HTTP status, request id and timeout fields are recorded; our own
+ * `RunLiveError` messages are already bounded and stay intact.
+ */
+const describeCallError = (error: unknown): string => {
+  if (error instanceof APIError) {
+    const requestId = error.requestId === undefined ? "" : ` request_id=${error.requestId}`;
+    return `${error.name} status=${error.status}${requestId}`;
+  }
+  if (error instanceof APITimeoutError) {
+    return `${error.name} timeout_ms=${error.timeoutMs}`;
+  }
+  if (error instanceof TypeSafeError) {
+    return error.name;
+  }
+  if (error instanceof RunLiveError) {
+    return `${error.name}: ${error.message}`;
+  }
+  if (error instanceof Error) {
+    return error.name;
+  }
+  return "unknown error";
+};
+
 export interface RunSummary {
   readonly resultsPath: string;
   readonly errorsPath: string;
@@ -423,7 +453,15 @@ export interface RunSummary {
   readonly stoppedBy: "completed" | "max-calls" | "input-tokens";
 }
 
-export const runLive = async (options: CliOptions): Promise<RunSummary> => {
+export interface RunLiveDeps {
+  /** Transport injection point for tests; production runs use the SDK default. */
+  readonly fetch?: Fetch;
+}
+
+export const runLive = async (
+  options: CliOptions,
+  deps: RunLiveDeps = {},
+): Promise<RunSummary> => {
   const apiKey = process.env.TYPESAFE_API_KEY?.trim();
   if (!apiKey) {
     throw new RunLiveError("TYPESAFE_API_KEY is not set");
@@ -433,15 +471,18 @@ export const runLive = async (options: CliOptions): Promise<RunSummary> => {
   for (const directory of [dirname(options.results), dirname(options.errors)]) {
     mkdirSync(directory, { recursive: true });
   }
-  // Same client shape as jev-mcp 0.5.0 provider.js: env key, optional base URL,
-  // SDK-default timeout (10s) and retries (2). apiKey is passed explicitly
-  // because it was validated above; behavior is identical.
+  // Same client shape as jev-mcp 0.5.0 provider.js except retries: each
+  // counted `calls` entry must be exactly one HTTP attempt, so SDK retries
+  // are disabled here (maxRetries 0). apiKey is passed explicitly because it
+  // was validated above; timeout stays at the SDK default (10s per attempt).
   const client = new TypeSafeClient({
     apiKey,
     ...(process.env.TYPESAFE_BASE_URL?.trim()
       ? { baseURL: process.env.TYPESAFE_BASE_URL.trim() }
       : {}),
     logLevel: "off",
+    retry: { maxRetries: 0 },
+    ...(deps.fetch !== undefined ? { fetch: deps.fetch } : {}),
   });
 
   let calls = 0;
@@ -491,7 +532,7 @@ export const runLive = async (options: CliOptions): Promise<RunSummary> => {
       );
     } catch (error) {
       const latencyMs = Math.round(performance.now() - started);
-      const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      const message = describeCallError(error);
       const entry: CaseError = {
         case_id: corpusCase.id,
         error: message,
