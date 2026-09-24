@@ -86,6 +86,52 @@ const LEGACY_CORPUS_PATH = "fixtures/calibration-corpus.json";
 const EXPOSED_ID_PATTERN = /^(C[1-6]|H[1-2])$/;
 const FAMILY_PATTERN = /^fam-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SHA256_PATTERN = /^[0-9a-f]{64}$/;
+const RISK_CORRECTION_SCHEMA_VERSION = "pass1-risk-corrections-v1";
+const RISK_CORRECTION_EXPECTED = {
+  sourceManifestSha256: "9b4308805d0f33d274881df1e5e39a32727f64b3ac41e7f381d00105e387fa2e",
+  baseManifestSha256: "71677b7d37b17d8a358f2c4ce38a04b3e21e6a988a32c378b9863718e4384108",
+  sourceInventorySha256: "273516939afe268b44947aa0e37963e60e909449c543ad81dd5d337180224143",
+  correctionCount: 264,
+  positiveCorrections: 15,
+  ambiguousCorrections: 249,
+  v5ChangedKeys: [
+    ["CAL-022", "riskDimensions.security"],
+    ["CAL-022", "riskDimensions.data-loss"],
+    ["CAL-022", "riskDimensions.migration"],
+    ["CAL-041", "riskDimensions.security"],
+    ["CAL-041", "riskDimensions.public-contract"],
+    ["CAL-041", "riskDimensions.migration"],
+    ["CAL-042", "riskDimensions.security"],
+    ["CAL-042", "riskDimensions.public-contract"],
+    ["CAL-042", "riskDimensions.migration"],
+    ["EVAL-019", "riskDimensions.security"],
+    ["EVAL-019", "riskDimensions.migration"],
+  ],
+  effectiveRiskStatusCounts: {
+    // Dimensions follow RISK_DIMENSIONS; each row is positive, negative, ambiguous, not_queried.
+    pilot: [
+      [6, 0, 8, 0],
+      [9, 0, 5, 0],
+      [5, 1, 8, 0],
+      [3, 0, 11, 0],
+      [10, 0, 4, 0],
+    ],
+    calibration: [
+      [16, 1, 39, 0],
+      [18, 2, 36, 0],
+      [29, 2, 25, 0],
+      [9, 7, 40, 0],
+      [42, 1, 13, 0],
+    ],
+    evaluation: [
+      [9, 2, 17, 0],
+      [12, 1, 15, 0],
+      [13, 2, 13, 0],
+      [6, 3, 19, 0],
+      [19, 1, 8, 0],
+    ],
+  },
+} as const;
 
 type Errors = string[];
 
@@ -139,6 +185,7 @@ const leafEquals = (actual: LeafParts, expected: LeafParts): boolean =>
 interface CaseRecord {
   caseId: string;
   familyId: string;
+  author?: { model: string };
   input: RouterInput;
   labels: Record<string, unknown>;
   annotations: { labels: Record<string, unknown> }[];
@@ -416,6 +463,9 @@ const checkLeaf = (
     errors.push(`${where}: status must be resolved, ambiguous, or not_queried`);
     return;
   }
+  if (kind === "annotator" && !nonEmptyString(leaf.rationale)) {
+    errors.push(`${where}: annotator label needs a non-empty rationale`);
+  }
   const isQueried = queried.has(unit);
   if (status === "not_queried" && isQueried) {
     errors.push(`${where}: ${unit} was queried but is marked not_queried`);
@@ -442,9 +492,6 @@ const checkLeaf = (
   }
   checkValue(unit, value, state, where, errors);
   checkEvidence(unit, evidence, state, where, errors);
-  if (kind === "annotator" && !nonEmptyString(leaf.rationale)) {
-    errors.push(`${where}: annotator label needs a non-empty rationale`);
-  }
 };
 
 const leafOf = (
@@ -974,6 +1021,19 @@ const sha256File = (path: string): string =>
 const loadSplitFile = (split: SplitName): unknown =>
   JSON.parse(readFileSync(SPLIT_FILE[split].path, "utf8"));
 
+const loadCorpusSplits = (): SplitInput[] =>
+  (["pilot", "calibration", "evaluation"] as SplitName[]).map((split) => ({
+    split,
+    file: loadSplitFile(split),
+    expectedCount: SPLIT_FILE[split].count,
+  }));
+
+const loadRiskCorrectionLedger = (): Record<string, unknown> =>
+  JSON.parse(readFileSync("fixtures/pass1-risk-corrections.json", "utf8")) as Record<
+    string,
+    unknown
+  >;
+
 // ---------------------------------------------------------------------------
 // In-memory synthetic corpus used by the mutation checks below.
 // ---------------------------------------------------------------------------
@@ -1158,6 +1218,279 @@ const syntheticCaseRecord = (
   return record;
 };
 
+const syntheticRiskLedger = (splits: SplitInput[]): Record<string, unknown> => {
+  const record = syntheticCaseRecord(splits, 0, 0);
+  const labels = record.labels as Record<string, unknown>;
+  const before = leafOf(labels, "riskDimensions.security");
+  return {
+    schemaVersion: "pass1-risk-corrections-v1",
+    guideVersion: GUIDE_VERSION,
+    sourceManifestSha256: "a".repeat(64),
+    baseManifestSha256: "b".repeat(64),
+    sourceInventorySha256: "c".repeat(64),
+    review: {
+      reviewers: RISK_DIMENSIONS.map((dimension) => ({
+        reviewerId: `synthetic-risk-${dimension}`,
+        dimension,
+        method: "model-assisted",
+        model: null,
+      })),
+      note: "synthetic test data",
+    },
+    corrections: [
+      {
+        caseId: record.caseId,
+        signal: "riskDimensions.security",
+        before: JSON.parse(JSON.stringify(before)) as unknown,
+        after: {
+          status: "resolved",
+          value: "positive",
+          evidence: [{ path: "state.taskText", span: "documentation update" }],
+        },
+        rule: "explicit-risk",
+        rationale: "Synthetic correction used only to exercise replay validation.",
+      },
+    ],
+  };
+};
+
+const validateRiskCorrectionLedger = (
+  ledger: unknown,
+  splits: readonly SplitInput[],
+): Errors => {
+  const errors: Errors = [];
+  if (!isRecord(ledger)) {
+    return ["risk correction ledger: must be an object"];
+  }
+  expectKeys(
+    ledger,
+    [
+      "schemaVersion",
+      "guideVersion",
+      "sourceManifestSha256",
+      "baseManifestSha256",
+      "sourceInventorySha256",
+      "review",
+      "corrections",
+    ],
+    "risk correction ledger",
+    errors,
+  );
+  if (ledger.schemaVersion !== RISK_CORRECTION_SCHEMA_VERSION) {
+    errors.push(`risk correction ledger: schemaVersion must be ${RISK_CORRECTION_SCHEMA_VERSION}`);
+  }
+  if (ledger.guideVersion !== GUIDE_VERSION) {
+    errors.push(`risk correction ledger: guideVersion must be ${GUIDE_VERSION}`);
+  }
+  for (const field of [
+    "sourceManifestSha256",
+    "baseManifestSha256",
+    "sourceInventorySha256",
+  ]) {
+    if (!isString(ledger[field]) || !SHA256_PATTERN.test(ledger[field])) {
+      errors.push(`risk correction ledger: ${field} must be a lowercase SHA-256`);
+    }
+  }
+  if (!isRecord(ledger.review) || Object.keys(ledger.review).length === 0) {
+    errors.push("risk correction ledger: review must be a non-empty object");
+  }
+  const reviewersByDimension = new Map<string, string>();
+  if (isRecord(ledger.review)) {
+    const reviewers = ledger.review.reviewers;
+    if (!Array.isArray(reviewers) || reviewers.length === 0) {
+      errors.push("risk correction ledger: review.reviewers must be a non-empty array");
+    } else {
+      for (const [index, rawReviewer] of reviewers.entries()) {
+        const reviewerWhere = `risk correction ledger review.reviewers[${index}]`;
+        if (!isRecord(rawReviewer)) {
+          errors.push(`${reviewerWhere}: reviewer must be an object`);
+          continue;
+        }
+        if (!nonEmptyString(rawReviewer.reviewerId)) {
+          errors.push(`${reviewerWhere}: reviewerId must be a non-empty string`);
+        }
+        if (
+          !isString(rawReviewer.dimension) ||
+          !(RISK_DIMENSIONS as readonly string[]).includes(rawReviewer.dimension)
+        ) {
+          errors.push(`${reviewerWhere}: dimension must be a known risk dimension`);
+          continue;
+        }
+        if (reviewersByDimension.has(rawReviewer.dimension)) {
+          errors.push(`${reviewerWhere}: duplicate reviewer for ${rawReviewer.dimension}`);
+          continue;
+        }
+        reviewersByDimension.set(
+          rawReviewer.dimension,
+          nonEmptyString(rawReviewer.reviewerId) ? rawReviewer.reviewerId : "unknown",
+        );
+      }
+      for (const dimension of RISK_DIMENSIONS) {
+        if (!reviewersByDimension.has(dimension)) {
+          errors.push(`risk correction ledger: review.reviewers lacks a reviewer for ${dimension}`);
+        }
+      }
+    }
+  }
+  if (!Array.isArray(ledger.corrections)) {
+    errors.push("risk correction ledger: corrections must be an array");
+    return errors;
+  }
+
+  const sources = new Map<
+    string,
+    { record: CaseRecord; state: VisibleState; queried: Set<string> }
+  >();
+  for (const { file } of splits) {
+    if (!isRecord(file) || !Array.isArray(file.cases)) {
+      continue;
+    }
+    for (const rawCase of file.cases) {
+      if (
+        !isRecord(rawCase) ||
+        !isString(rawCase.caseId) ||
+        !isRecord(rawCase.input) ||
+        !isRecord(rawCase.labels)
+      ) {
+        continue;
+      }
+      try {
+        const input = rawCase.input as unknown as RouterInput;
+        const state = buildPass1Request(precheck(input)).state as VisibleState;
+        sources.set(rawCase.caseId, {
+          record: rawCase as unknown as CaseRecord,
+          state,
+          queried: queriedUnitsOf(input),
+        });
+      } catch {
+        // The corpus validator reports invalid source cases separately.
+      }
+    }
+  }
+
+  const seenKeys = new Set<string>();
+  for (const [index, rawCorrection] of ledger.corrections.entries()) {
+    const where = `risk correction ledger corrections[${index}]`;
+    if (!isRecord(rawCorrection)) {
+      errors.push(`${where}: correction must be an object`);
+      continue;
+    }
+    expectKeys(
+      rawCorrection,
+      ["caseId", "signal", "before", "after", "rule", "rationale"],
+      where,
+      errors,
+    );
+    const { caseId, signal, before, after, rule, rationale } = rawCorrection;
+    if (!nonEmptyString(caseId)) {
+      errors.push(`${where}: caseId must be a non-empty string`);
+    }
+    const validSignal =
+      isString(signal) &&
+      signal.startsWith("riskDimensions.") &&
+      (RISK_DIMENSIONS as readonly string[]).includes(signal.slice("riskDimensions.".length));
+    if (!validSignal) {
+      errors.push(`${where}: signal must identify a known risk dimension`);
+    }
+    if (validSignal && isString(signal)) {
+      const dimension = signal.slice("riskDimensions.".length);
+      if (!reviewersByDimension.has(dimension)) {
+        errors.push(`${where}: signal ${signal} has no reviewer in review.reviewers`);
+      }
+    }
+    if (isString(caseId) && isString(signal)) {
+      const key = `${caseId}\0${signal}`;
+      if (seenKeys.has(key)) {
+        errors.push(`${where}: duplicate correction key ${caseId} ${signal}`);
+      }
+      seenKeys.add(key);
+    }
+    if (!nonEmptyString(rule)) {
+      errors.push(`${where}: rule must be a non-empty string`);
+    }
+    if (!nonEmptyString(rationale)) {
+      errors.push(`${where}: rationale must be a non-empty string`);
+    }
+    if (!nonEmptyString(caseId)) {
+      continue;
+    }
+    const source = sources.get(caseId);
+    if (!source) {
+      errors.push(`${where}: case ${caseId} is missing from corpus`);
+      continue;
+    }
+    if (!validSignal || !isString(signal)) {
+      continue;
+    }
+
+    checkLeaf(before, signal, source.state, source.queried, "final", `${where} before`, errors);
+    checkLeaf(after, signal, source.state, source.queried, "final", `${where} after`, errors);
+    const sourceLeaf = leafParts(leafOf(source.record.labels, signal));
+    const beforeLeaf = leafParts(before);
+    if (sourceLeaf && beforeLeaf && !leafEquals(beforeLeaf, sourceLeaf)) {
+      errors.push(`${where}: before does not match source label`);
+    }
+  }
+  return errors;
+};
+
+const effectiveLabel = (
+  caseId: string,
+  signal: string,
+  cases: readonly CaseRecord[],
+  ledger: unknown,
+): unknown => {
+  const source = cases.find((record) => record.caseId === caseId);
+  if (!source) {
+    throw new Error(`case ${caseId} is missing from corpus`);
+  }
+  if (!isRecord(ledger) || !Array.isArray(ledger.corrections)) {
+    throw new Error("risk correction ledger corrections must be an array");
+  }
+  const matches = ledger.corrections.filter(
+    (entry) => isRecord(entry) && entry.caseId === caseId && entry.signal === signal,
+  );
+  if (matches.length > 1) {
+    throw new Error(`multiple corrections for ${caseId} ${signal}`);
+  }
+  return matches.length === 1 && isRecord(matches[0])
+    ? matches[0].after
+    : leafOf(source.labels, signal);
+};
+
+const riskCountsFor = (
+  cases: readonly CaseRecord[],
+  ledger: unknown,
+): [number, number, number, number][] => {
+  const counts = RISK_DIMENSIONS.map(() => [0, 0, 0, 0] as [number, number, number, number]);
+  for (const [dimensionIndex, dimension] of RISK_DIMENSIONS.entries()) {
+    const row = counts[dimensionIndex];
+    assert.ok(row);
+    for (const record of cases) {
+      const signal = `riskDimensions.${dimension}`;
+      const leaf = leafParts(effectiveLabel(record.caseId, signal, [record], ledger));
+      assert.ok(leaf, `${record.caseId} ${signal} needs a label`);
+      if (leaf.status === "resolved" && leaf.value === "positive") {
+        row[0] += 1;
+      } else if (leaf.status === "resolved" && leaf.value === "negative") {
+        row[1] += 1;
+      } else if (leaf.status === "ambiguous" && leaf.value === null) {
+        row[2] += 1;
+      } else if (leaf.status === "not_queried" && leaf.value === null) {
+        row[3] += 1;
+      } else {
+        assert.fail(`${record.caseId} ${signal} has an unsupported label`);
+      }
+    }
+  }
+  return counts;
+};
+
+const riskEvaluationStatus = (
+  counts: readonly [number, number, number, number],
+): "evaluated" | "not evaluated" =>
+  counts[0] > 0 && counts[1] > 0 ? "evaluated" : "not evaluated";
+
 const baselineErrors = (splits: SplitInput[]): Errors => {
   const errors: Errors = [];
   validateCorpus(splits, errors);
@@ -1251,6 +1584,74 @@ test("corpus keeps queried null, ambiguous, and not_queried labels distinct", ()
   assert.ok(notQueried > 0, "the corpus needs not_queried examples");
 });
 
+test("review coverage keeps all final architecture-fork states in calibration and evaluation", () => {
+  const architectureForkCoverage = Object.fromEntries(
+    (["calibration", "evaluation"] as const).map((split) => {
+      const cases = (loadSplitFile(split) as { cases: CaseRecord[] }).cases;
+      const labels = cases.map((record) => leafParts(leafOf(record.labels, "architectureFork")));
+      return [
+        split,
+        {
+          resolvedFork: labels.some(
+            (label) => label?.status === "resolved" && nonEmptyString(label.value),
+          ),
+          resolvedNoFork: labels.some(
+            (label) => label?.status === "resolved" && label.value === null,
+          ),
+          ambiguous: labels.some((label) => label?.status === "ambiguous"),
+        },
+      ];
+    }),
+  );
+  const completeCoverage = { resolvedFork: true, resolvedNoFork: true, ambiguous: true };
+  assert.deepEqual(architectureForkCoverage, {
+    calibration: completeCoverage,
+    evaluation: completeCoverage,
+  });
+});
+
+test("review coverage spans zero, one, and multiple skills across the final 84 cases", () => {
+  const cases = (["calibration", "evaluation"] as const).flatMap(
+    (split) => (loadSplitFile(split) as { cases: CaseRecord[] }).cases,
+  );
+  const counts = { zero: 0, one: 0, many: 0 };
+  const invalidZero: string[] = [];
+  const invalidNonzero: string[] = [];
+  let queriedNegative = false;
+  for (const record of cases) {
+    const skillCount = (buildPass1Request(precheck(record.input)).state as VisibleState).skills.length;
+    const label = leafParts(leafOf(record.labels, "skillCandidates"));
+    const queried = queriedUnitsOf(record.input).has("skillCandidates");
+    counts[skillCount === 0 ? "zero" : skillCount === 1 ? "one" : "many"] += 1;
+    if (skillCount === 0) {
+      if (queried || label?.status !== "not_queried" || label.value !== null) {
+        invalidZero.push(record.caseId);
+      }
+    } else {
+      if (!queried || label?.status !== "resolved") {
+        invalidNonzero.push(record.caseId);
+      }
+      queriedNegative ||= queried && label?.status === "resolved" && label.value === null;
+    }
+  }
+  assert.deepEqual(
+    {
+      caseCount: cases.length,
+      coverage: { zero: counts.zero > 0, one: counts.one > 0, many: counts.many > 0 },
+      queriedNegative,
+      invalidZero,
+      invalidNonzero,
+    },
+    {
+      caseCount: 84,
+      coverage: { zero: true, one: true, many: true },
+      queriedNegative: true,
+      invalidZero: [],
+      invalidNonzero: [],
+    },
+  );
+});
+
 test("corpus excludes protected context and machine or credential fragments", () => {
   const forbidden = [
     "/" + "Users/",
@@ -1320,6 +1721,19 @@ test("manifest records split counts and hashes that match the corpus files", () 
   }
   const notes = manifest.notes;
   assert.ok(Array.isArray(notes) && notes.length > 0 && notes.every(nonEmptyString), "notes");
+});
+
+test("v5 checkpoints remain byte-for-byte pinned", () => {
+  const checkpoints = [
+    ["fixtures/checkpoints/v5/pass1-calibration-cases-v5-checkpoint.json", "c2b4a314099f6a491e5ba72956cdbf1b3d3c672132f44c6d946bc2770161e8d2"],
+    ["fixtures/checkpoints/v5/pass1-evaluation-cases-v5-checkpoint.json", "771f963039f43ecc6f6cec9aea3b487e8766295a51282c53584e189e5ef18930"],
+    ["fixtures/checkpoints/v5/pass1-corpus-manifest-v5-checkpoint.json", "b3b85243dc70e50f1abc61c2f38427d9c576345c0b340291e96ab4ff63b5c041"],
+    ["fixtures/checkpoints/v5/pass1-risk-corrections-v5-checkpoint.json", "f38af29c9cf35631bc87b8269a0b62784ac03091be9cf3db9bd627ce7d647118"],
+  ] as const;
+  for (const [path, expectedSha256] of checkpoints) {
+    const actualSha256 = createHash("sha256").update(readFileSync(path)).digest("hex");
+    assert.equal(actualSha256, expectedSha256, `${path} exists and remains unchanged`);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -1417,6 +1831,37 @@ test("validator rejects confusion among queried null, ambiguous, and not_queried
   );
 });
 
+test("validator rejects an ambiguous annotator label with an empty rationale", () => {
+  const splits = syntheticCorpus();
+  const record = syntheticCaseRecord(splits, 0, 0);
+  const annotations = record.annotations as {
+    labels: { criticalGap: Record<string, unknown> };
+  }[];
+  for (const annotation of annotations) {
+    annotation.labels.criticalGap.status = "ambiguous";
+    annotation.labels.criticalGap.value = null;
+  }
+  annotations[0]!.labels.criticalGap.rationale = "";
+  const final = (record.labels as { criticalGap: Record<string, unknown> }).criticalGap;
+  final.status = "ambiguous";
+  final.value = null;
+  assert.deepEqual(baselineErrors(splits), [
+    "case P01 annotations[0] labels criticalGap: annotator label needs a non-empty rationale",
+  ]);
+});
+
+test("validator rejects a not_queried annotator label with an empty rationale", () => {
+  const splits = syntheticCorpus();
+  const record = syntheticCaseRecord(splits, 0, 0);
+  const annotations = record.annotations as {
+    labels: { reuseCandidate: Record<string, unknown> };
+  }[];
+  annotations[0]!.labels.reuseCandidate.rationale = "";
+  assert.deepEqual(baselineErrors(splits), [
+    "case P01 annotations[0] labels reuseCandidate: annotator label needs a non-empty rationale",
+  ]);
+});
+
 test("validator rejects a final label that contradicts its annotations", () => {
   const splits = syntheticCorpus();
   const record = syntheticCaseRecord(splits, 0, 0);
@@ -1427,4 +1872,294 @@ test("validator rejects a final label that contradicts its annotations", () => {
     errors.some((entry) => entry.includes("must equal the adopted (first) annotation")),
     errors.join("\n"),
   );
+});
+
+test("risk correction ledger rejects a missing case", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const correction = (ledger.corrections as Record<string, unknown>[])[0];
+  assert.ok(correction);
+  correction.caseId = "EVAL-001";
+  const errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("missing from corpus")), errors.join("\n"));
+});
+
+test("risk correction ledger validates and overlays one source leaf", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const correction = (ledger.corrections as Record<string, unknown>[])[0];
+  const rawRecord = syntheticCaseRecord(splits, 0, 0);
+  assert.ok(correction);
+  assert.deepEqual(validateRiskCorrectionLedger(ledger, splits), []);
+  assert.deepEqual(
+    effectiveLabel(
+      "P01",
+      "riskDimensions.security",
+      [rawRecord as unknown as CaseRecord],
+      ledger,
+    ),
+    correction.after,
+  );
+  assert.deepEqual(
+    effectiveLabel(
+      "P01",
+      "riskDimensions.migration",
+      [rawRecord as unknown as CaseRecord],
+      ledger,
+    ),
+    leafOf(rawRecord.labels as Record<string, unknown>, "riskDimensions.migration"),
+  );
+});
+
+test("risk correction ledger rejects a duplicate case and signal key", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const corrections = ledger.corrections as Record<string, unknown>[];
+  const correction = corrections[0];
+  assert.ok(correction);
+  corrections.push(JSON.parse(JSON.stringify(correction)) as Record<string, unknown>);
+  const errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("duplicate correction key")), errors.join("\n"));
+  assert.throws(
+    () =>
+      effectiveLabel(
+        "P01",
+        "riskDimensions.security",
+        [syntheticCaseRecord(splits, 0, 0) as unknown as CaseRecord],
+        ledger,
+      ),
+    /multiple corrections/,
+  );
+});
+
+test("risk correction ledger rejects a before leaf that changed from the source", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const correction = (ledger.corrections as Record<string, unknown>[])[0];
+  assert.ok(correction);
+  (correction.before as { value: string }).value = "positive";
+  const errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("before does not match source label")), errors.join("\n"));
+});
+
+test("risk correction ledger rejects an invalid after leaf", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const correction = (ledger.corrections as Record<string, unknown>[])[0];
+  assert.ok(correction);
+  (correction.after as { status: string }).status = "ambiguous";
+  const errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("ambiguous needs a null value")), errors.join("\n"));
+});
+
+test("risk correction ledger rejects non-verbatim after evidence", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const correction = (ledger.corrections as Record<string, unknown>[])[0];
+  assert.ok(correction);
+  const after = correction.after as { evidence: { span: string }[] };
+  const evidence = after.evidence[0];
+  assert.ok(evidence);
+  evidence.span = "a security issue";
+  const errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("not an exact substring")), errors.join("\n"));
+});
+
+test("risk correction ledger requires each signal to resolve to a reviewer", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  const review = ledger.review as { reviewers: Record<string, unknown>[] };
+  review.reviewers = [];
+  let errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(
+    errors.some((entry) => entry.includes("review.reviewers must be a non-empty array")),
+    errors.join("\n"),
+  );
+  assert.ok(errors.some((entry) => entry.includes("no reviewer")), errors.join("\n"));
+
+  review.reviewers = [
+    {
+      reviewerId: "synthetic-risk-migration",
+      dimension: "migration",
+      method: "model-assisted",
+      model: null,
+    },
+  ];
+  errors = validateRiskCorrectionLedger(ledger, splits);
+  assert.ok(errors.some((entry) => entry.includes("no reviewer")), errors.join("\n"));
+});
+
+test("risk correction ledger pins provenance and corrects only unchanged v5 risk leaves", () => {
+  const ledger = loadRiskCorrectionLedger();
+  const splits = loadCorpusSplits();
+  assert.deepEqual(
+    splits.map(({ split, file }) => [
+      split,
+      isRecord(file) && Array.isArray(file.cases) ? file.cases.length : -1,
+    ]),
+    [
+      ["pilot", 14],
+      ["calibration", 56],
+      ["evaluation", 28],
+    ],
+  );
+  assert.equal(ledger.sourceManifestSha256, RISK_CORRECTION_EXPECTED.sourceManifestSha256);
+  assert.equal(ledger.baseManifestSha256, RISK_CORRECTION_EXPECTED.baseManifestSha256);
+  assert.equal(ledger.baseManifestSha256, sha256File("fixtures/pass1-corpus-manifest.json"));
+  assert.equal(ledger.sourceInventorySha256, RISK_CORRECTION_EXPECTED.sourceInventorySha256);
+  assert.deepEqual(validateRiskCorrectionLedger(ledger, splits), []);
+
+  const corrections = ledger.corrections as Record<string, unknown>[];
+  const keys = new Set(corrections.map(({ caseId, signal }) => `${caseId}\0${signal}`));
+  const totals = { positive: 0, ambiguous: 0 };
+  for (const { after } of corrections) {
+    const leaf = leafParts(after);
+    if (leaf?.status === "resolved" && leaf.value === "positive") {
+      totals.positive += 1;
+    } else if (leaf?.status === "ambiguous" && leaf.value === null) {
+      totals.ambiguous += 1;
+    } else {
+      assert.fail("corrections must resolve positive or remain ambiguous");
+    }
+  }
+  assert.deepEqual(
+    { count: corrections.length, uniqueKeys: keys.size, ...totals },
+    {
+      count: RISK_CORRECTION_EXPECTED.correctionCount,
+      uniqueKeys: RISK_CORRECTION_EXPECTED.correctionCount,
+      positive: RISK_CORRECTION_EXPECTED.positiveCorrections,
+      ambiguous: RISK_CORRECTION_EXPECTED.ambiguousCorrections,
+    },
+  );
+  for (const [caseId, signal] of RISK_CORRECTION_EXPECTED.v5ChangedKeys) {
+    assert.equal(keys.has(`${caseId}\0${signal}`), false, `${caseId} ${signal} was already repaired in v5`);
+  }
+});
+
+test("effective risk coverage preserves provenance and balances both signs in final splits", () => {
+  const ledger = loadRiskCorrectionLedger();
+  const splits = loadCorpusSplits();
+  assert.deepEqual(validateRiskCorrectionLedger(ledger, splits), []);
+  const records: CaseRecord[] = [];
+  for (const { file } of splits) {
+    assert.ok(isRecord(file) && Array.isArray(file.cases));
+    records.push(...(file.cases as CaseRecord[]));
+  }
+  const provenance = records.map(({ caseId, annotations, adjudication }) => ({
+    caseId,
+    annotations: structuredClone(annotations),
+    adjudication: structuredClone(adjudication),
+  }));
+  const actual = {} as Record<SplitName, [number, number, number, number][]>;
+  for (const { split, file } of splits) {
+    assert.ok(isRecord(file) && Array.isArray(file.cases));
+    actual[split] = riskCountsFor(file.cases as CaseRecord[], ledger);
+  }
+  assert.deepEqual(actual, RISK_CORRECTION_EXPECTED.effectiveRiskStatusCounts);
+  for (const split of ["calibration", "evaluation"] as const) {
+    assert.deepEqual(
+      actual[split].map((counts) => riskEvaluationStatus(counts)),
+      RISK_DIMENSIONS.map(() => "evaluated"),
+      `${split} must report every risk dimension as evaluated`,
+    );
+  }
+  assert.deepEqual(
+    records.map(({ caseId, annotations, adjudication }) => ({ caseId, annotations, adjudication })),
+    provenance,
+  );
+});
+
+test("effective risk coverage marks dimensions without both signs as not evaluated", () => {
+  const splits = syntheticCorpus();
+  const ledger = syntheticRiskLedger(splits);
+  assert.deepEqual(validateRiskCorrectionLedger(ledger, splits), []);
+  for (const { split, file } of splits) {
+    assert.ok(isRecord(file) && Array.isArray(file.cases));
+    const statuses = riskCountsFor(file.cases as CaseRecord[], ledger).map(riskEvaluationStatus);
+    if (split === "pilot") {
+      assert.deepEqual(statuses, [
+        "evaluated",
+        "not evaluated",
+        "not evaluated",
+        "not evaluated",
+        "not evaluated",
+      ]);
+    } else {
+      assert.deepEqual(
+        statuses,
+        RISK_DIMENSIONS.map(() => "not evaluated"),
+      );
+    }
+  }
+});
+
+test("v6 full-case annotations and adjudication remain source labels under replay", () => {
+  const ledger = loadRiskCorrectionLedger();
+  const splits = loadCorpusSplits();
+  assert.deepEqual(validateRiskCorrectionLedger(ledger, splits), []);
+  const records: CaseRecord[] = [];
+  for (const { file } of splits) {
+    assert.ok(isRecord(file) && Array.isArray(file.cases));
+    records.push(...(file.cases as CaseRecord[]));
+  }
+  const v6Ids = ["CAL-043", "EVAL-015", "EVAL-019"];
+  const v6Records = records.filter((record) => v6Ids.includes(record.caseId));
+  assert.deepEqual(v6Records.map((record) => record.caseId).sort(), [...v6Ids].sort());
+  const before = v6Records.map(({ caseId, input, annotations, adjudication }) => ({
+    caseId,
+    revision: input.taskRevision,
+    annotations: structuredClone(annotations),
+    adjudication: structuredClone(adjudication),
+  }));
+  const corrections = ledger.corrections as Record<string, unknown>[];
+  for (const record of v6Records) {
+    assert.equal(record.input.taskRevision, 2, `${record.caseId} is the v6 full-case revision`);
+    assert.equal(record.author?.model, "gpt-6-luna", `${record.caseId} author model is declared`);
+    for (const dimension of RISK_DIMENSIONS) {
+      const signal = `riskDimensions.${dimension}`;
+      assert.equal(
+        corrections.some((entry) => entry.caseId === record.caseId && entry.signal === signal),
+        false,
+        `${record.caseId} ${signal} comes from its full-case review`,
+      );
+      assert.deepEqual(
+        effectiveLabel(record.caseId, signal, [record], ledger),
+        leafOf(record.labels, signal),
+      );
+    }
+  }
+  assert.deepEqual(
+    v6Records.map(({ caseId, input, annotations, adjudication }) => ({
+      caseId,
+      revision: input.taskRevision,
+      annotations,
+      adjudication,
+    })),
+    before,
+  );
+});
+
+test("CAL-022, CAL-041, and CAL-042 differ from v5 only in declared author model", () => {
+  const cases = (loadSplitFile("calibration") as { cases: CaseRecord[] }).cases;
+  const v5Cases = (
+    JSON.parse(readFileSync("fixtures/checkpoints/v5/pass1-calibration-cases-v5-checkpoint.json", "utf8")) as {
+      cases: CaseRecord[];
+    }
+  ).cases;
+
+  for (const caseId of ["CAL-022", "CAL-041", "CAL-042"]) {
+    const record = cases.find((candidate) => candidate.caseId === caseId);
+    const v5Record = v5Cases.find((candidate) => candidate.caseId === caseId);
+    assert.ok(record, `${caseId} exists in current calibration`);
+    assert.ok(v5Record, `${caseId} exists in v5 checkpoint`);
+    assert.ok(record.author);
+    assert.ok(v5Record.author);
+    assert.equal(record.author.model, "gpt-5.6-terra", `${caseId} has verified author model`);
+    assert.notEqual(record.author.model, v5Record.author.model, `${caseId} model provenance changed`);
+
+    const currentWithV5Model = structuredClone(record);
+    assert.ok(currentWithV5Model.author);
+    currentWithV5Model.author.model = v5Record.author.model;
+    assert.deepEqual(currentWithV5Model, v5Record, `${caseId} has no other v5-to-v6 changes`);
+  }
 });

@@ -7548,14 +7548,14 @@
       "familyId": "fam-empty-state-copy",
       "split": "evaluation",
       "author": {
-        "id": "author_negative_cases",
+        "id": "model-author-eval-1",
         "method": "model-assisted",
-        "model": "gpt-6-luna"
+        "model": "swe-2-high"
       },
       "input": {
         "taskId": "EVAL-015",
-        "taskRevision": 2,
-        "taskText": "Review a small change to the Dovecote invoicing app that rewrites the empty-state message customers see when they have no invoices yet. The diff swaps 'Nothing here' for 'Your invoices will appear here once created' and renames the string key. Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout. Write review findings only. The diff changes display copy and its local string key only; it creates, deletes, or alters no invoice or account records or calculations, and leaves every published billing API, export format, schema, and customer term unchanged.",
+        "taskRevision": 1,
+        "taskText": "Review a small change to the Dovecote invoicing app that rewrites the empty-state message customers see when they have no invoices yet. The diff swaps 'Nothing here' for 'Your invoices will appear here once created' and renames the string key. Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout. Write review findings only.",
         "policyVersion": "pass1-lab-policy-v1",
         "catalogHash": "catalog-synthetic-v1",
         "explicitSkillIds": [],
@@ -7602,157 +7602,9 @@
       "forcedSkillIds": [],
       "annotations": [
         {
-          "annotatorId": "model-annotator-v6-a",
+          "annotatorId": "model-annotator-a",
           "method": "model-assisted",
-          "model": "gpt-6-sol",
-          "guideVersion": "pass1-label-guide-v1",
-          "labels": {
-            "taskType": {
-              "status": "resolved",
-              "value": "review",
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Write review findings only."
-                }
-              ],
-              "rationale": "The deliverable is review findings, with no correction requested."
-            },
-            "skillCandidates": {
-              "status": "resolved",
-              "value": [
-                "skill-ux-copy-review"
-              ],
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout."
-                },
-                {
-                  "path": "state.skills[skill-ux-copy-review].description",
-                  "span": "Review criteria for user-facing copy changes."
-                }
-              ],
-              "rationale": "The copy-review skill matches the explicit tone and rendering checks; index tuning does not."
-            },
-            "criticalGap": {
-              "status": "not_queried",
-              "value": null,
-              "evidence": [],
-              "rationale": "No critical-gap candidate was supplied."
-            },
-            "reuseCandidate": {
-              "status": "resolved",
-              "value": null,
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "empty-state message customers see when they have no invoices yet"
-                },
-                {
-                  "path": "state.reuseCandidates[reuse-1].summary",
-                  "span": "Tone checklist used for admin-console error messages, a different surface with different readers."
-                }
-              ],
-              "rationale": "The candidate checklist targets admin-console errors and is not demonstrably applicable to customer invoice empty-state copy."
-            },
-            "architectureFork": {
-              "status": "resolved",
-              "value": null,
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Write review findings only."
-                },
-                {
-                  "path": "state.architectureForks[fork-1].tradeoff",
-                  "span": "Naming preference only; no user-visible difference."
-                }
-              ],
-              "rationale": "The string-key choice is a naming preference, not a material structural decision required for the review."
-            },
-            "contextRelevance": {
-              "status": "resolved",
-              "value": null,
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout."
-                },
-                {
-                  "path": "state.contextFragments[ctx-1].summary",
-                  "span": "The invoicing team's standup moved to Tuesdays."
-                },
-                {
-                  "path": "state.contextFragments[ctx-2].summary",
-                  "span": "A legacy report builder is being sunset next year."
-                }
-              ],
-              "rationale": "Neither a meeting schedule nor a future report-builder sunset changes the copy review or its acceptance criteria."
-            },
-            "riskDimensions": {
-              "security": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "The diff changes display copy and its local string key only"
-                  }
-                ],
-                "rationale": "The described change is limited to display copy and a local string key, with no security surface identified."
-              },
-              "data-loss": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "it creates, deletes, or alters no invoice or account records or calculations"
-                  }
-                ],
-                "rationale": "The task explicitly excludes changes to records and calculations."
-              },
-              "public-contract": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "leaves every published billing API, export format, schema, and customer term unchanged"
-                  }
-                ],
-                "rationale": "The task explicitly preserves published billing interfaces, formats, schemas, and terms."
-              },
-              "migration": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "The diff changes display copy and its local string key only"
-                  }
-                ],
-                "rationale": "A local display-string change has no migration step or stored-data conversion."
-              },
-              "user-behavior": {
-                "status": "resolved",
-                "value": "positive",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "rewrites the empty-state message customers see when they have no invoices yet"
-                  }
-                ],
-                "rationale": "Customers will see different empty-state wording, so the reviewed diff has a user-visible effect."
-              }
-            }
-          }
-        },
-        {
-          "annotatorId": "model-annotator-v6-b",
-          "method": "model-assisted",
-          "model": "gpt-5.6-terra",
+          "model": "swe-2-high",
           "guideVersion": "pass1-label-guide-v1",
           "labels": {
             "taskType": {
@@ -7762,9 +7614,165 @@
                 {
                   "path": "state.taskText",
                   "span": "Review a small change to the Dovecote invoicing app"
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "Write review findings only."
                 }
               ],
-              "rationale": "The task asks for review findings only, not implementation of the change."
+              "rationale": "The task asks for review findings on a diff and explicitly limits output to findings, which is a review deliverable."
+            },
+            "skillCandidates": {
+              "status": "resolved",
+              "value": [
+                "skill-ux-copy-review"
+              ],
+              "evidence": [
+                {
+                  "path": "state.skills[skill-ux-copy-review].id",
+                  "span": "skill-ux-copy-review"
+                },
+                {
+                  "path": "state.skills[skill-ux-copy-review].description",
+                  "span": "user-facing copy changes"
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "Check the wording against our voice guide"
+                }
+              ],
+              "rationale": "The explicit work steps — checking copy against the voice guide and fit in the layout — are exactly user-facing copy review, while index tuning has no matching step."
+            },
+            "criticalGap": {
+              "status": "not_queried",
+              "value": null,
+              "evidence": [],
+              "rationale": "No criticalGapCandidates were supplied, so the pass-1 builder does not emit this question."
+            },
+            "reuseCandidate": {
+              "status": "resolved",
+              "value": null,
+              "evidence": [
+                {
+                  "path": "state.reuseCandidates[reuse-1].summary",
+                  "span": "a different surface with different readers"
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "Check the wording against our voice guide"
+                }
+              ],
+              "rationale": "The checklist serves a different surface and readership while the task names the voice guide as its standard, so applicability beyond topic similarity is not demonstrated."
+            },
+            "architectureFork": {
+              "status": "resolved",
+              "value": null,
+              "evidence": [
+                {
+                  "path": "state.architectureForks[fork-1].tradeoff",
+                  "span": "Naming preference only; no user-visible difference."
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "renames the string key"
+                }
+              ],
+              "rationale": "The stated tradeoff is non-material and the rename is already made in the diff under review, so no structural decision is required now."
+            },
+            "contextRelevance": {
+              "status": "resolved",
+              "value": null,
+              "evidence": [
+                {
+                  "path": "state.contextFragments[ctx-1].summary",
+                  "span": "standup moved to Tuesdays"
+                },
+                {
+                  "path": "state.contextFragments[ctx-2].summary",
+                  "span": "A legacy report builder is being sunset next year."
+                }
+              ],
+              "rationale": "Neither fragment bears on the copy wording or the sidebar rendering the review must check."
+            },
+            "riskDimensions": {
+              "security": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "rewrites the empty-state message customers see when they have no invoices yet"
+                  }
+                ],
+                "rationale": "The visible scope is a copy review of an empty-state message with no security-relevant surface."
+              },
+              "data-loss": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "swaps 'Nothing here' for 'Your invoices will appear here once created'"
+                  }
+                ],
+                "rationale": "Only display text changes; nothing in the task text evidences a data-loss risk."
+              },
+              "public-contract": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "Check the wording against our voice guide"
+                  }
+                ],
+                "rationale": "The named standard is an internal voice guide, not a public or contractual commitment."
+              },
+              "migration": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "renames the string key"
+                  }
+                ],
+                "rationale": "The only structural detail is a string-key rename inside a copy diff, which is not a data or system migration."
+              },
+              "user-behavior": {
+                "status": "resolved",
+                "value": "positive",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "the empty-state message customers see when they have no invoices yet"
+                  }
+                ],
+                "rationale": "The change alters a message customers see, which is user-visible behavior."
+              }
+            }
+          }
+        },
+        {
+          "annotatorId": "model-annotator-b",
+          "method": "model-assisted",
+          "model": "swe-2-high",
+          "guideVersion": "pass1-label-guide-v1",
+          "labels": {
+            "taskType": {
+              "status": "resolved",
+              "value": "review",
+              "evidence": [
+                {
+                  "path": "state.taskText",
+                  "span": "Review a small change to the Dovecote invoicing app"
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "Write review findings only"
+                }
+              ],
+              "rationale": "The deliverable is review findings on an existing diff with no code change requested."
             },
             "skillCandidates": {
               "status": "resolved",
@@ -7774,35 +7782,39 @@
               "evidence": [
                 {
                   "path": "state.taskText",
-                  "span": "Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout"
+                  "span": "Check the wording against our voice guide and whether the longer message renders correctly"
+                },
+                {
+                  "path": "state.skills[skill-ux-copy-review].id",
+                  "span": "skill-ux-copy-review"
                 },
                 {
                   "path": "state.skills[skill-ux-copy-review].description",
                   "span": "Review criteria for user-facing copy changes."
                 }
               ],
-              "rationale": "The copy-review skill directly covers the stated wording and container-fit review; index tuning does not."
+              "rationale": "The task explicitly asks to check customer-facing copy against the voice guide and its rendering, which only skill-ux-copy-review covers; index tuning has no matching work step."
             },
             "criticalGap": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No critical-gap candidates are supplied, so this optional question is not emitted."
+              "rationale": "No criticalGapCandidates array was supplied, so the critical_gap question is not emitted for this input."
             },
             "reuseCandidate": {
               "status": "resolved",
               "value": null,
               "evidence": [
                 {
-                  "path": "state.taskText",
-                  "span": "empty-state message customers see when they have no invoices yet"
+                  "path": "state.reuseCandidates[reuse-1].summary",
+                  "span": "a different surface with different readers"
                 },
                 {
-                  "path": "state.reuseCandidates[reuse-1].summary",
-                  "span": "Tone checklist used for admin-console error messages, a different surface with different readers."
+                  "path": "state.taskText",
+                  "span": "Check the wording against our voice guide"
                 }
               ],
-              "rationale": "The candidate is expressly for a different surface and audience, so it is not demonstrably reusable for customer invoicing empty-state copy."
+              "rationale": "The admin-console error-message checklist targets a different surface and readership than the customer empty-state copy check, so it is not demonstrably applicable."
             },
             "architectureFork": {
               "status": "resolved",
@@ -7813,7 +7825,7 @@
                   "span": "Naming preference only; no user-visible difference."
                 }
               ],
-              "rationale": "The two string-key names are a naming preference without a material structural trade-off."
+              "rationale": "The string-key naming choice is an ordinary implementation detail with no material trade-off, matching the guide's rename negative example."
             },
             "contextRelevance": {
               "status": "resolved",
@@ -7826,9 +7838,13 @@
                 {
                   "path": "state.contextFragments[ctx-2].summary",
                   "span": "A legacy report builder is being sunset next year."
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "rewrites the empty-state message customers see when they have no invoices yet"
                 }
               ],
-              "rationale": "Neither scheduling information nor the unrelated report-builder sunset changes the requested copy and layout review."
+              "rationale": "Neither fragment changes how to check the new copy against the voice guide or its sidebar rendering."
             },
             "riskDimensions": {
               "security": {
@@ -7837,10 +7853,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "The diff changes display copy and its local string key only"
+                    "span": "rewrites the empty-state message customers see when they have no invoices yet"
                   }
                 ],
-                "rationale": "A display-copy and local-key-only diff provides no security-control change."
+                "rationale": "The scope is a copy-string change and review with no security-relevant content in the task text."
               },
               "data-loss": {
                 "status": "resolved",
@@ -7848,10 +7864,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "it creates, deletes, or alters no invoice or account records or calculations"
+                    "span": "The diff swaps 'Nothing here' for 'Your invoices will appear here once created'"
                   }
                 ],
-                "rationale": "The task explicitly excludes changes to records and calculations."
+                "rationale": "Swapping a display string and renaming its key touches no stored data."
               },
               "public-contract": {
                 "status": "resolved",
@@ -7859,10 +7875,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "leaves every published billing API, export format, schema, and customer term unchanged"
+                    "span": "Check the wording against our voice guide"
                   }
                 ],
-                "rationale": "The task explicitly leaves published interfaces, formats, schema, and terms unchanged."
+                "rationale": "The voice guide is an internal style standard; no published customer commitment appears in the task."
               },
               "migration": {
                 "status": "resolved",
@@ -7870,10 +7886,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "The diff changes display copy and its local string key only"
+                    "span": "renames the string key"
                   }
                 ],
-                "rationale": "The bounded display-copy and key change does not describe a migration."
+                "rationale": "Renaming a string key is an ordinary code edit, not a data or system migration."
               },
               "user-behavior": {
                 "status": "resolved",
@@ -7881,19 +7897,23 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "empty-state message customers see when they have no invoices yet"
+                    "span": "the empty-state message customers see"
+                  },
+                  {
+                    "path": "state.taskText",
+                    "span": "whether the longer message renders correctly in the narrow sidebar layout"
                   }
                 ],
-                "rationale": "The task changes wording that customers see in the invoicing empty state."
+                "rationale": "The change alters text customers directly see and how it renders, so user-visible behavior is at stake."
               }
             }
           }
         }
       ],
       "adjudication": {
-        "adjudicatorId": "adjudicator-v6-2026-09-24",
+        "adjudicatorId": "coordinator-model-pi",
         "method": "model-assisted",
-        "model": "gpt-6-sol",
+        "model": "mimo-v2.6-pro",
         "guideVersion": "pass1-label-guide-v1",
         "disagreements": []
       },
@@ -7902,6 +7922,10 @@
           "status": "resolved",
           "value": "review",
           "evidence": [
+            {
+              "path": "state.taskText",
+              "span": "Review a small change to the Dovecote invoicing app"
+            },
             {
               "path": "state.taskText",
               "span": "Write review findings only."
@@ -7915,12 +7939,16 @@
           ],
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout."
+              "path": "state.skills[skill-ux-copy-review].id",
+              "span": "skill-ux-copy-review"
             },
             {
               "path": "state.skills[skill-ux-copy-review].description",
-              "span": "Review criteria for user-facing copy changes."
+              "span": "user-facing copy changes"
+            },
+            {
+              "path": "state.taskText",
+              "span": "Check the wording against our voice guide"
             }
           ]
         },
@@ -7934,12 +7962,12 @@
           "value": null,
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "empty-state message customers see when they have no invoices yet"
+              "path": "state.reuseCandidates[reuse-1].summary",
+              "span": "a different surface with different readers"
             },
             {
-              "path": "state.reuseCandidates[reuse-1].summary",
-              "span": "Tone checklist used for admin-console error messages, a different surface with different readers."
+              "path": "state.taskText",
+              "span": "Check the wording against our voice guide"
             }
           ]
         },
@@ -7948,12 +7976,12 @@
           "value": null,
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "Write review findings only."
-            },
-            {
               "path": "state.architectureForks[fork-1].tradeoff",
               "span": "Naming preference only; no user-visible difference."
+            },
+            {
+              "path": "state.taskText",
+              "span": "renames the string key"
             }
           ]
         },
@@ -7962,12 +7990,8 @@
           "value": null,
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "Check the wording against our voice guide and whether the longer message renders correctly in the narrow sidebar layout."
-            },
-            {
               "path": "state.contextFragments[ctx-1].summary",
-              "span": "The invoicing team's standup moved to Tuesdays."
+              "span": "standup moved to Tuesdays"
             },
             {
               "path": "state.contextFragments[ctx-2].summary",
@@ -7982,7 +8006,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "The diff changes display copy and its local string key only"
+                "span": "rewrites the empty-state message customers see when they have no invoices yet"
               }
             ]
           },
@@ -7992,7 +8016,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "it creates, deletes, or alters no invoice or account records or calculations"
+                "span": "swaps 'Nothing here' for 'Your invoices will appear here once created'"
               }
             ]
           },
@@ -8002,7 +8026,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "leaves every published billing API, export format, schema, and customer term unchanged"
+                "span": "Check the wording against our voice guide"
               }
             ]
           },
@@ -8012,7 +8036,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "The diff changes display copy and its local string key only"
+                "span": "renames the string key"
               }
             ]
           },
@@ -8022,7 +8046,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "rewrites the empty-state message customers see when they have no invoices yet"
+                "span": "the empty-state message customers see when they have no invoices yet"
               }
             ]
           }
@@ -9637,14 +9661,14 @@
       "familyId": "fam-air-quality-sensor-record-grain",
       "split": "evaluation",
       "author": {
-        "id": "author_negative_cases",
+        "id": "author_ambiguous_cases",
         "method": "model-assisted",
-        "model": "gpt-6-luna"
+        "model": "GPT-5"
       },
       "input": {
         "taskId": "EVAL-019",
-        "taskRevision": 2,
-        "taskText": "Decide how the Neighborhood Air Quality Monitor will store sensor readings before the field installation: as one record for every sample or as one daily roll-up for each sensor. The installation configuration needs the record structure now. The brief gives no sampling rate, audit requirement, correction behavior, retention target, or storage-budget constraint, so it does not establish that either structure is viable or state a material trade-off. This is only an internal storage-layout decision for the existing isolated sensor feed; it changes no security control or exposure, including access control, authentication, encryption, credentials, or network access, and no user-facing display, alert, or interaction.",
+        "taskRevision": 1,
+        "taskText": "Decide how the Neighborhood Air Quality Monitor will store sensor readings before the field installation: as one record for every sample or as one daily roll-up for each sensor. The installation configuration needs the record structure now. The brief gives no sampling rate, audit requirement, correction behavior, retention target, or storage-budget constraint, so it does not establish that either structure is viable or state a material trade-off.",
         "policyVersion": "pass1-lab-policy-v1",
         "catalogHash": "catalog-synthetic-v1",
         "explicitSkillIds": [],
@@ -9664,7 +9688,7 @@
       "forcedSkillIds": [],
       "annotations": [
         {
-          "annotatorId": "model-annotator-v6-a",
+          "annotatorId": "model-annotator-review-v5-a",
           "method": "model-assisted",
           "model": "gpt-6-sol",
           "guideVersion": "pass1-label-guide-v1",
@@ -9676,31 +9700,27 @@
                 {
                   "path": "state.taskText",
                   "span": "Decide how the Neighborhood Air Quality Monitor will store sensor readings before the field installation"
-                },
-                {
-                  "path": "state.taskText",
-                  "span": "The installation configuration needs the record structure now."
                 }
               ],
-              "rationale": "The current deliverable is a storage-structure decision for a future installation, not a request to implement it."
+              "rationale": "The request is to decide a record structure before implementation."
             },
             "skillCandidates": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "The skill catalog is empty."
+              "rationale": "No non-forced skill candidates are present in the visible input, so this optional question is not emitted."
             },
             "criticalGap": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No critical-gap candidate was supplied, despite missing details in the task text."
+              "rationale": "No critical-gap candidates are present in the visible input, so this optional question is not emitted."
             },
             "reuseCandidate": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No reuse candidate was supplied."
+              "rationale": "No reuse candidates are present in the visible input, so this optional question is not emitted."
             },
             "architectureFork": {
               "status": "ambiguous",
@@ -9716,20 +9736,20 @@
                 },
                 {
                   "path": "state.taskText",
-                  "span": "it does not establish that either structure is viable or state a material trade-off"
+                  "span": "it does not establish that either structure is viable or state a material trade-off."
                 },
                 {
                   "path": "state.architectureForks[air-quality-reading-record-grain].tradeoff",
                   "span": "No evidence establishes either structure's viability or a material sampling, audit, correction, retention, or storage trade-off."
                 }
               ],
-              "rationale": "A structural choice is required now, but viability and a material trade-off are unestablished; the guide's positive criteria cannot be confirmed and its missing-evidence example calls for ambiguity."
+              "rationale": "The choice is needed now, but viability and a material trade-off are expressly unknown, so the three-part positive rule is not established."
             },
             "contextRelevance": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No public context fragment was supplied."
+              "rationale": "No public context-fragment candidates are present in the visible input, so this optional question is not emitted."
             },
             "riskDimensions": {
               "security": {
@@ -9738,21 +9758,25 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "it changes no security control or exposure, including access control, authentication, encryption, credentials, or network access"
+                    "span": "store sensor readings before the field installation"
                   }
                 ],
-                "rationale": "The task expressly excludes changes to security controls and exposure."
+                "rationale": "The storage-granularity decision states no security boundary or security behavior."
               },
               "data-loss": {
-                "status": "resolved",
-                "value": "positive",
+                "status": "ambiguous",
+                "value": null,
                 "evidence": [
                   {
                     "path": "state.taskText",
                     "span": "as one record for every sample or as one daily roll-up for each sensor"
+                  },
+                  {
+                    "path": "state.taskText",
+                    "span": "no sampling rate, audit requirement, correction behavior, retention target"
                   }
                 ],
-                "rationale": "A daily roll-up in place of per-sample records would discard individual sample detail; the storage decision therefore presents data-loss risk."
+                "rationale": "Daily roll-up could discard raw samples, but the brief does not say whether raw samples must be retained or whether their absence is a loss."
               },
               "public-contract": {
                 "status": "resolved",
@@ -9760,10 +9784,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "only an internal storage-layout decision for the existing isolated sensor feed"
+                    "span": "The installation configuration needs the record structure now."
                   }
                 ],
-                "rationale": "The described decision is confined to internal storage for an isolated feed, with no public contract change indicated."
+                "rationale": "The task concerns internal installation configuration and does not state an external data contract."
               },
               "migration": {
                 "status": "resolved",
@@ -9772,13 +9796,9 @@
                   {
                     "path": "state.taskText",
                     "span": "before the field installation"
-                  },
-                  {
-                    "path": "state.taskText",
-                    "span": "The installation configuration needs the record structure now."
                   }
                 ],
-                "rationale": "The structure is being chosen for installation configuration before deployment, so no existing records or interfaces are being migrated by this decision."
+                "rationale": "This is an initial structure decision before installation, with no existing records to migrate in the visible task."
               },
               "user-behavior": {
                 "status": "resolved",
@@ -9786,16 +9806,16 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "no user-facing display, alert, or interaction"
+                    "span": "Decide how the Neighborhood Air Quality Monitor will store sensor readings"
                   }
                 ],
-                "rationale": "The task explicitly excludes changes to user-facing behavior."
+                "rationale": "Only sensor-reading storage is specified; no user interaction or visible behavior is described."
               }
             }
           }
         },
         {
-          "annotatorId": "model-annotator-v6-b",
+          "annotatorId": "model-annotator-review-v5-b",
           "method": "model-assisted",
           "model": "gpt-5.6-terra",
           "guideVersion": "pass1-label-guide-v1",
@@ -9809,133 +9829,152 @@
                   "span": "Decide how the Neighborhood Air Quality Monitor will store sensor readings before the field installation"
                 }
               ],
-              "rationale": "The requested current-stage output is a storage-layout decision before installation, rather than an implementation."
+              "rationale": "The requested current-stage deliverable is a record-structure decision before installation."
             },
             "skillCandidates": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "The skill catalog is empty, so this optional question is not emitted."
+              "rationale": "No non-forced skills are present."
             },
             "criticalGap": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No critical-gap candidates are supplied, so this optional question is not emitted."
+              "rationale": "No critical-gap candidates are present."
             },
             "reuseCandidate": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No reuse candidates are supplied, so this optional question is not emitted."
+              "rationale": "No reuse candidates are present."
             },
             "architectureFork": {
-              "status": "ambiguous",
+              "status": "resolved",
               "value": null,
               "evidence": [
                 {
                   "path": "state.taskText",
-                  "span": "as one record for every sample or as one daily roll-up for each sensor"
+                  "span": "The brief gives no sampling rate, audit requirement, correction behavior, retention target, or storage-budget constraint"
                 },
                 {
                   "path": "state.taskText",
-                  "span": "does not establish that either structure is viable or state a material trade-off"
-                },
-                {
-                  "path": "state.architectureForks[air-quality-reading-record-grain].tradeoff",
-                  "span": "No evidence establishes either structure's viability or a material sampling, audit, correction, retention, or storage trade-off."
+                  "span": "it does not establish that either structure is viable or state a material trade-off."
                 }
               ],
-              "rationale": "A storage decision and alternatives are requested, but the visible task expressly withholds the viability and material trade-off evidence needed to resolve the fork."
+              "rationale": "The task explicitly lacks the viability and material-trade-off evidence required for a positive architecture-fork label."
             },
             "contextRelevance": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No public context fragments are supplied, so this optional question is not emitted."
+              "rationale": "No public context fragments are present."
             },
             "riskDimensions": {
               "security": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "it changes no security control or exposure, including access control, authentication, encryption, credentials, or network access"
-                  }
-                ],
-                "rationale": "The task explicitly excludes changes to security controls and exposure."
+                "status": "ambiguous",
+                "value": null,
+                "evidence": [],
+                "rationale": "The visible task text supplies no evidence resolving a security-risk label."
               },
               "data-loss": {
                 "status": "ambiguous",
                 "value": null,
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "as one record for every sample or as one daily roll-up for each sensor"
-                  },
-                  {
-                    "path": "state.taskText",
-                    "span": "no sampling rate, audit requirement, correction behavior, retention target, or storage-budget constraint"
-                  }
-                ],
-                "rationale": "The record-grain choice could affect retained data, but the visible task supplies no retention, correction, or audit requirement that establishes either a data-loss risk or its absence."
+                "evidence": [],
+                "rationale": "The visible task text supplies no evidence resolving a data-loss-risk label."
               },
               "public-contract": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "This is only an internal storage-layout decision for the existing isolated sensor feed"
-                  }
-                ],
-                "rationale": "The task describes an internal, isolated storage layout rather than a public interface or contract."
+                "status": "ambiguous",
+                "value": null,
+                "evidence": [],
+                "rationale": "The visible task text supplies no evidence resolving a public-contract-risk label."
               },
               "migration": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "before the field installation"
-                  }
-                ],
-                "rationale": "The record structure is being decided before installation, with no data or system migration requested."
+                "status": "ambiguous",
+                "value": null,
+                "evidence": [],
+                "rationale": "The visible task text supplies no evidence resolving a migration-risk label."
               },
               "user-behavior": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "no user-facing display, alert, or interaction"
-                  }
-                ],
-                "rationale": "The task explicitly excludes user-facing displays, alerts, and interactions."
+                "status": "ambiguous",
+                "value": null,
+                "evidence": [],
+                "rationale": "The visible task text supplies no evidence resolving a user-behavior-risk label."
               }
             }
           }
         }
       ],
       "adjudication": {
-        "adjudicatorId": "adjudicator-v6-2026-09-24",
+        "adjudicatorId": "adjudicator-v5-final-2026-09-24",
         "method": "model-assisted",
         "model": "gpt-6-sol",
         "guideVersion": "pass1-label-guide-v1",
         "disagreements": [
           {
-            "signal": "riskDimensions.data-loss",
+            "signal": "architectureFork",
+            "annotatorA": {
+              "status": "ambiguous",
+              "value": null
+            },
+            "annotatorB": {
+              "status": "resolved",
+              "value": null
+            },
+            "outcome": "adopt-a",
+            "explanation": "Guide §5 requires two viable structural alternatives, a material trade-off, and a decision needed now for a positive fork. The record structure is needed now, but the task expressly says neither viability nor a material trade-off is established. Like the guide's ambiguous example, the visible evidence leaves the structural choice unresolved; resolved null would silently convert this missing evidence to a negative."
+          },
+          {
+            "signal": "riskDimensions.security",
             "annotatorA": {
               "status": "resolved",
-              "value": "positive"
+              "value": "negative"
             },
             "annotatorB": {
               "status": "ambiguous",
               "value": null
             },
-            "outcome": "adopt-a",
-            "explanation": "The task proposes one daily roll-up record per sensor in place of a record for every sample. A roll-up discards individual sample values; the guide asks whether the task text shows data-loss risk, without requiring an audit or retention need or an estimate of harm. The cited task span therefore resolves this risk as positive."
+            "outcome": "adopt-b",
+            "explanation": "Guide §5 requires visible task-text evidence for negative risk. Storing sensor readings before installation does not establish whether security boundaries or behavior are affected."
+          },
+          {
+            "signal": "riskDimensions.public-contract",
+            "annotatorA": {
+              "status": "resolved",
+              "value": "negative"
+            },
+            "annotatorB": {
+              "status": "ambiguous",
+              "value": null
+            },
+            "outcome": "adopt-b",
+            "explanation": "Guide §5 requires visible task-text evidence for negative risk. An installation configuration needing a record structure does not establish whether the records are an external contract."
+          },
+          {
+            "signal": "riskDimensions.migration",
+            "annotatorA": {
+              "status": "resolved",
+              "value": "negative"
+            },
+            "annotatorB": {
+              "status": "ambiguous",
+              "value": null
+            },
+            "outcome": "adopt-b",
+            "explanation": "Guide §5 requires visible task-text evidence for negative risk. 'Before the field installation' does not establish whether earlier sensor records or installations exist and must migrate."
+          },
+          {
+            "signal": "riskDimensions.user-behavior",
+            "annotatorA": {
+              "status": "resolved",
+              "value": "negative"
+            },
+            "annotatorB": {
+              "status": "ambiguous",
+              "value": null
+            },
+            "outcome": "adopt-b",
+            "explanation": "Guide §5 requires visible task-text evidence for negative risk. The sensor-reading storage decision does not establish whether users see or depend on the record grain."
           }
         ]
       },
@@ -9947,10 +9986,6 @@
             {
               "path": "state.taskText",
               "span": "Decide how the Neighborhood Air Quality Monitor will store sensor readings before the field installation"
-            },
-            {
-              "path": "state.taskText",
-              "span": "The installation configuration needs the record structure now."
             }
           ]
         },
@@ -9983,7 +10018,7 @@
             },
             {
               "path": "state.taskText",
-              "span": "it does not establish that either structure is viable or state a material trade-off"
+              "span": "it does not establish that either structure is viable or state a material trade-off."
             },
             {
               "path": "state.architectureForks[air-quality-reading-record-grain].tradeoff",
@@ -9998,58 +10033,38 @@
         },
         "riskDimensions": {
           "security": {
-            "status": "resolved",
-            "value": "negative",
-            "evidence": [
-              {
-                "path": "state.taskText",
-                "span": "it changes no security control or exposure, including access control, authentication, encryption, credentials, or network access"
-              }
-            ]
+            "status": "ambiguous",
+            "value": null,
+            "evidence": []
           },
           "data-loss": {
-            "status": "resolved",
-            "value": "positive",
+            "status": "ambiguous",
+            "value": null,
             "evidence": [
               {
                 "path": "state.taskText",
                 "span": "as one record for every sample or as one daily roll-up for each sensor"
+              },
+              {
+                "path": "state.taskText",
+                "span": "no sampling rate, audit requirement, correction behavior, retention target"
               }
             ]
           },
           "public-contract": {
-            "status": "resolved",
-            "value": "negative",
-            "evidence": [
-              {
-                "path": "state.taskText",
-                "span": "only an internal storage-layout decision for the existing isolated sensor feed"
-              }
-            ]
+            "status": "ambiguous",
+            "value": null,
+            "evidence": []
           },
           "migration": {
-            "status": "resolved",
-            "value": "negative",
-            "evidence": [
-              {
-                "path": "state.taskText",
-                "span": "before the field installation"
-              },
-              {
-                "path": "state.taskText",
-                "span": "The installation configuration needs the record structure now."
-              }
-            ]
+            "status": "ambiguous",
+            "value": null,
+            "evidence": []
           },
           "user-behavior": {
-            "status": "resolved",
-            "value": "negative",
-            "evidence": [
-              {
-                "path": "state.taskText",
-                "span": "no user-facing display, alert, or interaction"
-              }
-            ]
+            "status": "ambiguous",
+            "value": null,
+            "evidence": []
           }
         }
       }

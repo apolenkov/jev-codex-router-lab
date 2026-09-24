@@ -10884,7 +10884,7 @@
       "author": {
         "id": "author_ambiguous_cases",
         "method": "model-assisted",
-        "model": "gpt-5.6-terra"
+        "model": "GPT-5"
       },
       "input": {
         "taskId": "CAL-022",
@@ -20696,7 +20696,7 @@
       "author": {
         "id": "author_ambiguous_cases",
         "method": "model-assisted",
-        "model": "gpt-5.6-terra"
+        "model": "GPT-5"
       },
       "input": {
         "taskId": "CAL-041",
@@ -21172,7 +21172,7 @@
       "author": {
         "id": "author_ambiguous_cases",
         "method": "model-assisted",
-        "model": "gpt-5.6-terra"
+        "model": "GPT-5"
       },
       "input": {
         "taskId": "CAL-042",
@@ -21589,14 +21589,14 @@
       "familyId": "fam-queue-priorities",
       "split": "calibration",
       "author": {
-        "id": "author_negative_cases",
+        "id": "model-author-cal-2",
         "method": "model-assisted",
-        "model": "gpt-6-luna"
+        "model": "swe-2-high"
       },
       "input": {
         "taskId": "CAL-043",
-        "taskRevision": 2,
-        "taskText": "Explain how Solmey's job queue handles priorities and prevents starvation, for the platform onboarding doc. Cover how priority levels map to internal buckets, how workers select the next job, what anti-starvation mechanism keeps low-priority jobs moving — aging, fairness quotas, whatever we actually use — and which config knobs tune it. Base the explanation on the scheduler code and its config reference; write for engineers new to the platform. This is an internal documentation-only explanation of existing behavior: it does not change authentication, authorization, secret handling, or any user-facing workflow or output.",
+        "taskRevision": 1,
+        "taskText": "Explain how Solmey's job queue handles priorities and prevents starvation, for the platform onboarding doc. Cover how priority levels map to internal buckets, how workers select the next job, what anti-starvation mechanism keeps low-priority jobs moving — aging, fairness quotas, whatever we actually use — and which config knobs tune it. Base the explanation on the scheduler code and its config reference; write for engineers new to the platform.",
         "policyVersion": "pass1-lab-policy-v1",
         "catalogHash": "catalog-synthetic-v1",
         "explicitSkillIds": [],
@@ -21634,9 +21634,9 @@
       "forcedSkillIds": [],
       "annotations": [
         {
-          "annotatorId": "model-annotator-v6-a",
+          "annotatorId": "model-annotator-a",
           "method": "model-assisted",
-          "model": "gpt-6-sol",
+          "model": "swe-2-high",
           "guideVersion": "pass1-label-guide-v1",
           "labels": {
             "taskType": {
@@ -21645,10 +21645,151 @@
               "evidence": [
                 {
                   "path": "state.taskText",
-                  "span": "Explain how Solmey's job queue handles priorities and prevents starvation, for the platform onboarding doc."
+                  "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
                 }
               ],
-              "rationale": "The requested deliverable is an explanation of existing queue behavior for onboarding documentation."
+              "rationale": "The deliverable is an explanatory onboarding document about existing queue mechanics, which is an explain task."
+            },
+            "skillCandidates": {
+              "status": "resolved",
+              "value": [
+                "skill-job-scheduler-internals"
+              ],
+              "evidence": [
+                {
+                  "path": "state.taskText",
+                  "span": "how priority levels map to internal buckets, how workers select the next job"
+                },
+                {
+                  "path": "state.skills[skill-job-scheduler-internals].description",
+                  "span": "scheduler and queue mechanics for infrastructure docs"
+                }
+              ],
+              "rationale": "The explicit work steps — bucketing, worker selection, anti-starvation, config knobs — are exactly the scheduler mechanics this skill covers, while the SEO skill has no supporting work step."
+            },
+            "criticalGap": {
+              "status": "resolved",
+              "value": null,
+              "evidence": [
+                {
+                  "path": "state.criticalGaps[gap-1].fact",
+                  "span": "The brand-color hex codes for the admin console's dark theme."
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
+                }
+              ],
+              "rationale": "The only candidate concerns admin-console brand colors, which is unrelated to the queue-mechanics document and blocks nothing in it."
+            },
+            "reuseCandidate": {
+              "status": "not_queried",
+              "value": null,
+              "evidence": [],
+              "rationale": "No reuseCandidates were supplied, so this question is not emitted for this input."
+            },
+            "architectureFork": {
+              "status": "not_queried",
+              "value": null,
+              "evidence": [],
+              "rationale": "No architectureForkCandidates were supplied, so this question is not emitted for this input."
+            },
+            "contextRelevance": {
+              "status": "resolved",
+              "value": [
+                "ctx-1"
+              ],
+              "evidence": [
+                {
+                  "path": "state.contextFragments[ctx-1].summary",
+                  "span": "The scheduler config reference with priority and aging parameters."
+                },
+                {
+                  "path": "state.taskText",
+                  "span": "which config knobs tune it"
+                },
+                {
+                  "path": "state.contextFragments[ctx-2].summary",
+                  "span": "Results of the employee book-club poll."
+                }
+              ],
+              "rationale": "ctx-1 is the config reference the task names as a required source for the tuning knobs, while ctx-2's book-club poll has no bearing on the deliverable."
+            },
+            "riskDimensions": {
+              "security": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "how workers select the next job"
+                  }
+                ],
+                "rationale": "The text scopes the work to queue scheduling mechanics with no security-relevant surface."
+              },
+              "data-loss": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "how priority levels map to internal buckets"
+                  }
+                ],
+                "rationale": "Nothing in the text involves data destruction, loss, or recovery."
+              },
+              "public-contract": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "for the platform onboarding doc"
+                  }
+                ],
+                "rationale": "The deliverable is an internal onboarding document, not a public contract surface."
+              },
+              "migration": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "what anti-starvation mechanism keeps low-priority jobs moving"
+                  }
+                ],
+                "rationale": "No migration or platform change is mentioned anywhere in the task text."
+              },
+              "user-behavior": {
+                "status": "resolved",
+                "value": "negative",
+                "evidence": [
+                  {
+                    "path": "state.taskText",
+                    "span": "write for engineers new to the platform"
+                  }
+                ],
+                "rationale": "Writing an internal doc for engineers changes no user-visible behavior."
+              }
+            }
+          }
+        },
+        {
+          "annotatorId": "model-annotator-b",
+          "method": "model-assisted",
+          "model": "swe-2-high",
+          "guideVersion": "pass1-label-guide-v1",
+          "labels": {
+            "taskType": {
+              "status": "resolved",
+              "value": "explain",
+              "evidence": [
+                {
+                  "path": "state.taskText",
+                  "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
+                }
+              ],
+              "rationale": "The requested deliverable is an explanatory onboarding document describing existing scheduler mechanics, which is an explain task."
             },
             "skillCandidates": {
               "status": "resolved",
@@ -21663,173 +21804,40 @@
                 {
                   "path": "state.skills[skill-job-scheduler-internals].description",
                   "span": "Explains scheduler and queue mechanics for infrastructure docs."
+                },
+                {
+                  "path": "state.skills[skill-seo-copywriting].description",
+                  "span": "Writes search-engine-optimized marketing copy."
                 }
               ],
-              "rationale": "The scheduler skill directly supports the requested technical explanation; marketing copy does not."
+              "rationale": "The explicit work steps (buckets, worker selection, anti-starvation, config knobs) are scheduler-mechanics documentation matched only by the scheduler skill; the SEO skill has no corresponding work step."
             },
             "criticalGap": {
               "status": "resolved",
               "value": null,
               "evidence": [
                 {
-                  "path": "state.taskText",
-                  "span": "for the platform onboarding doc"
-                },
-                {
                   "path": "state.criticalGaps[gap-1].fact",
                   "span": "The brand-color hex codes for the admin console's dark theme."
-                }
-              ],
-              "rationale": "The only candidate concerns an admin-console restyle and cannot block the queue explanation."
-            },
-            "reuseCandidate": {
-              "status": "not_queried",
-              "value": null,
-              "evidence": [],
-              "rationale": "No reuse candidate was supplied."
-            },
-            "architectureFork": {
-              "status": "not_queried",
-              "value": null,
-              "evidence": [],
-              "rationale": "No architecture-fork candidate was supplied."
-            },
-            "contextRelevance": {
-              "status": "resolved",
-              "value": [
-                "ctx-1"
-              ],
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Base the explanation on the scheduler code and its config reference"
                 },
-                {
-                  "path": "state.contextFragments[ctx-1].summary",
-                  "span": "The scheduler config reference with priority and aging parameters."
-                }
-              ],
-              "rationale": "The config reference directly informs the requested priority, anti-starvation, and tuning explanation; the book-club poll does not."
-            },
-            "riskDimensions": {
-              "security": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "it does not change authentication, authorization, secret handling"
-                  }
-                ],
-                "rationale": "The documentation task explicitly leaves security controls and secrets unchanged."
-              },
-              "data-loss": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
-                  }
-                ],
-                "rationale": "Explaining existing behavior in documentation does not alter stored data."
-              },
-              "public-contract": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
-                  }
-                ],
-                "rationale": "The deliverable is internal documentation of an existing system, with no public interface change requested."
-              },
-              "migration": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
-                  }
-                ],
-                "rationale": "An explanation of existing behavior requires no migration."
-              },
-              "user-behavior": {
-                "status": "resolved",
-                "value": "negative",
-                "evidence": [
-                  {
-                    "path": "state.taskText",
-                    "span": "it does not change authentication, authorization, secret handling, or any user-facing workflow or output"
-                  }
-                ],
-                "rationale": "The task explicitly excludes changes to user-facing workflows and output."
-              }
-            }
-          }
-        },
-        {
-          "annotatorId": "model-annotator-v6-b",
-          "method": "model-assisted",
-          "model": "gpt-5.6-terra",
-          "guideVersion": "pass1-label-guide-v1",
-          "labels": {
-            "taskType": {
-              "status": "resolved",
-              "value": "explain",
-              "evidence": [
                 {
                   "path": "state.taskText",
                   "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
                 }
               ],
-              "rationale": "The requested deliverable is an explanation of existing scheduler behavior for onboarding documentation."
-            },
-            "skillCandidates": {
-              "status": "resolved",
-              "value": [
-                "skill-job-scheduler-internals"
-              ],
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "Base the explanation on the scheduler code and its config reference"
-                },
-                {
-                  "path": "state.skills[skill-job-scheduler-internals].description",
-                  "span": "Explains scheduler and queue mechanics for infrastructure docs."
-                }
-              ],
-              "rationale": "This skill directly supports the requested scheduler explanation; the marketing-copy skill has no justified task step."
-            },
-            "criticalGap": {
-              "status": "resolved",
-              "value": null,
-              "evidence": [
-                {
-                  "path": "state.taskText",
-                  "span": "This is an internal documentation-only explanation of existing behavior"
-                },
-                {
-                  "path": "state.criticalGaps[gap-1].fact",
-                  "span": "The brand-color hex codes for the admin console's dark theme."
-                }
-              ],
-              "rationale": "Dark-theme color values do not block an internal explanation of scheduler behavior."
+              "rationale": "The only gap candidate concerns admin-console theme colors, which the queue-priority explanation does not require."
             },
             "reuseCandidate": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No reuse candidates are supplied, so this optional question is not emitted."
+              "rationale": "No reuse candidates were supplied, so the reuse_candidate question is not emitted for this input."
             },
             "architectureFork": {
               "status": "not_queried",
               "value": null,
               "evidence": [],
-              "rationale": "No architecture-fork candidates are supplied, so this optional question is not emitted."
+              "rationale": "No architecture fork candidates were supplied, so the architecture_fork question is not emitted for this input."
             },
             "contextRelevance": {
               "status": "resolved",
@@ -21838,15 +21846,19 @@
               ],
               "evidence": [
                 {
+                  "path": "state.contextFragments[ctx-1].summary",
+                  "span": "The scheduler config reference with priority and aging parameters."
+                },
+                {
                   "path": "state.taskText",
                   "span": "which config knobs tune it"
                 },
                 {
-                  "path": "state.contextFragments[ctx-1].summary",
-                  "span": "The scheduler config reference with priority and aging parameters."
+                  "path": "state.contextFragments[ctx-2].summary",
+                  "span": "Results of the employee book-club poll."
                 }
               ],
-              "rationale": "The scheduler configuration reference changes how the requested explanation can cover tuning knobs; the book-club poll does not."
+              "rationale": "ctx-1 is the config reference the task says to base the explanation on, while the book-club poll is unrelated."
             },
             "riskDimensions": {
               "security": {
@@ -21855,10 +21867,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "it does not change authentication, authorization, secret handling"
+                    "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
                   }
                 ],
-                "rationale": "The task explicitly excludes authentication, authorization, and secret-handling changes."
+                "rationale": "The text scopes the work to scheduling-mechanics documentation with no auth, abuse, or credential surface."
               },
               "data-loss": {
                 "status": "resolved",
@@ -21866,10 +21878,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
+                    "span": "how workers select the next job"
                   }
                 ],
-                "rationale": "A documentation-only explanation does not create, alter, or remove data."
+                "rationale": "Nothing in the text involves deletion or loss of data; it describes queue mechanics."
               },
               "public-contract": {
                 "status": "resolved",
@@ -21877,10 +21889,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
+                    "span": "write for engineers new to the platform"
                   }
                 ],
-                "rationale": "The requested internal documentation explains current behavior rather than changing a public contract."
+                "rationale": "The deliverable is an internal onboarding doc for engineers, not a published external contract."
               },
               "migration": {
                 "status": "resolved",
@@ -21888,10 +21900,10 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "This is an internal documentation-only explanation of existing behavior"
+                    "span": "Base the explanation on the scheduler code and its config reference"
                   }
                 ],
-                "rationale": "The task requests no system or data transition; it is documentation only."
+                "rationale": "The task documents the current system and mentions no migration."
               },
               "user-behavior": {
                 "status": "resolved",
@@ -21899,19 +21911,19 @@
                 "evidence": [
                   {
                     "path": "state.taskText",
-                    "span": "any user-facing workflow or output"
+                    "span": "for the platform onboarding doc"
                   }
                 ],
-                "rationale": "The task explicitly excludes changes to user-facing workflows and outputs."
+                "rationale": "An internal doc for engineers changes no user-visible behavior."
               }
             }
           }
         }
       ],
       "adjudication": {
-        "adjudicatorId": "adjudicator-v6-2026-09-24",
+        "adjudicatorId": "coordinator-model-pi",
         "method": "model-assisted",
-        "model": "gpt-6-sol",
+        "model": "mimo-v2.6-pro",
         "guideVersion": "pass1-label-guide-v1",
         "disagreements": []
       },
@@ -21922,7 +21934,7 @@
           "evidence": [
             {
               "path": "state.taskText",
-              "span": "Explain how Solmey's job queue handles priorities and prevents starvation, for the platform onboarding doc."
+              "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
             }
           ]
         },
@@ -21934,11 +21946,11 @@
           "evidence": [
             {
               "path": "state.taskText",
-              "span": "Cover how priority levels map to internal buckets, how workers select the next job"
+              "span": "how priority levels map to internal buckets, how workers select the next job"
             },
             {
               "path": "state.skills[skill-job-scheduler-internals].description",
-              "span": "Explains scheduler and queue mechanics for infrastructure docs."
+              "span": "scheduler and queue mechanics for infrastructure docs"
             }
           ]
         },
@@ -21947,12 +21959,12 @@
           "value": null,
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "for the platform onboarding doc"
-            },
-            {
               "path": "state.criticalGaps[gap-1].fact",
               "span": "The brand-color hex codes for the admin console's dark theme."
+            },
+            {
+              "path": "state.taskText",
+              "span": "Explain how Solmey's job queue handles priorities and prevents starvation"
             }
           ]
         },
@@ -21973,12 +21985,16 @@
           ],
           "evidence": [
             {
-              "path": "state.taskText",
-              "span": "Base the explanation on the scheduler code and its config reference"
-            },
-            {
               "path": "state.contextFragments[ctx-1].summary",
               "span": "The scheduler config reference with priority and aging parameters."
+            },
+            {
+              "path": "state.taskText",
+              "span": "which config knobs tune it"
+            },
+            {
+              "path": "state.contextFragments[ctx-2].summary",
+              "span": "Results of the employee book-club poll."
             }
           ]
         },
@@ -21989,7 +22005,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "it does not change authentication, authorization, secret handling"
+                "span": "how workers select the next job"
               }
             ]
           },
@@ -21999,7 +22015,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "This is an internal documentation-only explanation of existing behavior"
+                "span": "how priority levels map to internal buckets"
               }
             ]
           },
@@ -22009,7 +22025,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "This is an internal documentation-only explanation of existing behavior"
+                "span": "for the platform onboarding doc"
               }
             ]
           },
@@ -22019,7 +22035,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "This is an internal documentation-only explanation of existing behavior"
+                "span": "what anti-starvation mechanism keeps low-priority jobs moving"
               }
             ]
           },
@@ -22029,7 +22045,7 @@
             "evidence": [
               {
                 "path": "state.taskText",
-                "span": "it does not change authentication, authorization, secret handling, or any user-facing workflow or output"
+                "span": "write for engineers new to the platform"
               }
             ]
           }
