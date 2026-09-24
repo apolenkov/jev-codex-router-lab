@@ -32,7 +32,7 @@ import {
   type Fetch,
   type Questions,
 } from "@typesafe-ai/sdk";
-import { loadCorpus, type CorpusCase, type Verdict } from "./score.js";
+import { loadCorpus, ScoreInputError, type CorpusCase, type Verdict } from "./score.js";
 
 export const JEV_MCP_VERSION = "0.5.0";
 export const DEFAULT_MODEL = "jev-1.13.0";
@@ -196,7 +196,7 @@ const parseChoiceAnswer = (
   const probabilities: Record<string, number> = {};
   for (const [label, probability] of Object.entries(value.probabilities)) {
     if (!isProbability(probability)) {
-      throw new RunLiveError(`${context}: probability for ${label} out of range`);
+      throw new RunLiveError(`${context}: probability out of range`);
     }
     probabilities[label] = probability;
   }
@@ -239,7 +239,7 @@ export const mapVerifyResponse = (
     );
     const verdict = RELATION_TO_VERDICT[relation.choice];
     if (verdict === undefined) {
-      throw new RunLiveError(`${context}: unknown relation choice ${relation.choice}`);
+      throw new RunLiveError(`${context}: unknown relation choice`);
     }
     const probabilities = {} as Record<Verdict, number>;
     for (const label of RELATION_LABELS) {
@@ -415,15 +415,23 @@ export const loadCoveredCaseIds = (resultsPath: string): ReadonlySet<string> => 
   return covered;
 };
 
+/** Provider request ids are opaque tokens; anything else is dropped, not trimmed. */
+const SAFE_REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
 /**
  * Bound an unknown thrown value to fields that cannot carry provider payload
  * text. SDK `APIError.message` embeds the response body, so only the class
- * name, HTTP status, request id and timeout fields are recorded; our own
- * `RunLiveError` messages are already bounded and stay intact.
+ * name, HTTP status, a charset-and-length-checked request id, and timeout
+ * fields are recorded. `RunLiveError` and `ScoreInputError` stay intact
+ * because this file constructs them only from local context — case ids,
+ * fixed labels, argv values, and file paths — never from provider values.
  */
 const describeCallError = (error: unknown): string => {
   if (error instanceof APIError) {
-    const requestId = error.requestId === undefined ? "" : ` request_id=${error.requestId}`;
+    const requestId =
+      typeof error.requestId === "string" && SAFE_REQUEST_ID.test(error.requestId)
+        ? ` request_id=${error.requestId}`
+        : "";
     return `${error.name} status=${error.status}${requestId}`;
   }
   if (error instanceof APITimeoutError) {
@@ -432,7 +440,7 @@ const describeCallError = (error: unknown): string => {
   if (error instanceof TypeSafeError) {
     return error.name;
   }
-  if (error instanceof RunLiveError) {
+  if (error instanceof RunLiveError || error instanceof ScoreInputError) {
     return `${error.name}: ${error.message}`;
   }
   if (error instanceof Error) {
@@ -575,7 +583,7 @@ if (isMain) {
       );
     })
     .catch((error: unknown) => {
-      console.error(error instanceof Error ? error.message : String(error));
+      console.error(describeCallError(error));
       process.exitCode = 2;
     });
 }
