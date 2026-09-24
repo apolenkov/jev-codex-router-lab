@@ -1,0 +1,644 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "case-001": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging",
+        "test-driven-development",
+        "verification-before-completion"
+      ],
+      "reason": null,
+      "inputTokens": 900,
+      "outputTokens": 60,
+      "latencyMs": 1200,
+      "costUsd": 0.001
+    },
+    "case-002": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 953,
+      "outputTokens": 91,
+      "latencyMs": 1297,
+      "costUsd": null
+    },
+    "case-003": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-004": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1059,
+      "outputTokens": 153,
+      "latencyMs": 1491,
+      "costUsd": null
+    },
+    "case-005": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1112,
+      "outputTokens": 184,
+      "latencyMs": 1588,
+      "costUsd": 0.003
+    },
+    "case-006": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-007": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1218,
+      "outputTokens": 106,
+      "latencyMs": 1782,
+      "costUsd": null
+    },
+    "case-008": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1271,
+      "outputTokens": 137,
+      "latencyMs": 1879,
+      "costUsd": null
+    },
+    "case-009": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-010": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging",
+        "verification-before-completion"
+      ],
+      "reason": null,
+      "inputTokens": 1377,
+      "outputTokens": 199,
+      "latencyMs": 2073,
+      "costUsd": null
+    },
+    "case-011": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging",
+        "test-driven-development",
+        "verification-before-completion"
+      ],
+      "reason": null,
+      "inputTokens": 1430,
+      "outputTokens": 90,
+      "latencyMs": 2170,
+      "costUsd": null
+    },
+    "case-012": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-013": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1536,
+      "outputTokens": 152,
+      "latencyMs": 2364,
+      "costUsd": 0.0025
+    },
+    "case-014": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": 1589,
+      "outputTokens": 183,
+      "latencyMs": 2461,
+      "costUsd": null
+    },
+    "case-015": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-016": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": 995,
+      "outputTokens": 105,
+      "latencyMs": 2655,
+      "costUsd": null
+    },
+    "case-017": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming"
+      ],
+      "reason": null,
+      "inputTokens": 1048,
+      "outputTokens": 136,
+      "latencyMs": 2752,
+      "costUsd": 0.0045
+    },
+    "case-018": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-019": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": 1154,
+      "outputTokens": 198,
+      "latencyMs": 2946,
+      "costUsd": null
+    },
+    "case-020": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1207,
+      "outputTokens": 89,
+      "latencyMs": 3043,
+      "costUsd": null
+    },
+    "case-021": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development",
+        "verification-before-completion"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-022": {
+      "status": "abstain",
+      "selectedSkillIds": [],
+      "reason": "uncertain-route",
+      "inputTokens": 1313,
+      "outputTokens": 151,
+      "latencyMs": 3237,
+      "costUsd": null
+    },
+    "case-023": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming"
+      ],
+      "reason": null,
+      "inputTokens": 1366,
+      "outputTokens": 182,
+      "latencyMs": 3334,
+      "costUsd": null
+    },
+    "case-024": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "test-driven-development"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-025": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 1472,
+      "outputTokens": 104,
+      "latencyMs": 3528,
+      "costUsd": 0.004
+    },
+    "case-026": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 1525,
+      "outputTokens": 135,
+      "latencyMs": 1225,
+      "costUsd": null
+    },
+    "case-027": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-028": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "executing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 931,
+      "outputTokens": 197,
+      "latencyMs": 1419,
+      "costUsd": null
+    },
+    "case-029": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 984,
+      "outputTokens": 88,
+      "latencyMs": 1516,
+      "costUsd": 0.0015
+    },
+    "case-030": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-031": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 1090,
+      "outputTokens": 150,
+      "latencyMs": 1710,
+      "costUsd": null
+    },
+    "case-032": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 1143,
+      "outputTokens": 181,
+      "latencyMs": 1807,
+      "costUsd": null
+    },
+    "case-033": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-034": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "executing-plans"
+      ],
+      "reason": null,
+      "inputTokens": 1249,
+      "outputTokens": 103,
+      "latencyMs": 2001,
+      "costUsd": null
+    },
+    "case-035": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1302,
+      "outputTokens": 134,
+      "latencyMs": 2098,
+      "costUsd": null
+    },
+    "case-036": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming",
+        "dispatching-parallel-agents",
+        "writing-plans"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-037": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1408,
+      "outputTokens": 196,
+      "latencyMs": 2292,
+      "costUsd": 0.001
+    },
+    "case-038": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming"
+      ],
+      "reason": null,
+      "inputTokens": 1461,
+      "outputTokens": 87,
+      "latencyMs": 2389,
+      "costUsd": null
+    },
+    "case-039": {
+      "status": "error",
+      "selectedSkillIds": [],
+      "reason": "selector-failure",
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-040": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1567,
+      "outputTokens": 149,
+      "latencyMs": 2583,
+      "costUsd": null
+    },
+    "case-041": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 920,
+      "outputTokens": 180,
+      "latencyMs": 2680,
+      "costUsd": 0.003
+    },
+    "case-042": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-043": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1026,
+      "outputTokens": 102,
+      "latencyMs": 2874,
+      "costUsd": null
+    },
+    "case-044": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "brainstorming"
+      ],
+      "reason": null,
+      "inputTokens": 1079,
+      "outputTokens": 133,
+      "latencyMs": 2971,
+      "costUsd": null
+    },
+    "case-045": {
+      "status": "abstain",
+      "selectedSkillIds": [],
+      "reason": "uncertain-route",
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-046": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": 1185,
+      "outputTokens": 195,
+      "latencyMs": 3165,
+      "costUsd": null
+    },
+    "case-047": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1238,
+      "outputTokens": 86,
+      "latencyMs": 3262,
+      "costUsd": null
+    },
+    "case-048": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "systematic-debugging"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-049": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1344,
+      "outputTokens": 148,
+      "latencyMs": 3456,
+      "costUsd": 0.0025
+    },
+    "case-050": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "receiving-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1397,
+      "outputTokens": 179,
+      "latencyMs": 3553,
+      "costUsd": null
+    },
+    "case-051": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-052": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "receiving-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1503,
+      "outputTokens": 101,
+      "latencyMs": 1347,
+      "costUsd": null
+    },
+    "case-053": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1556,
+      "outputTokens": 132,
+      "latencyMs": 1444,
+      "costUsd": 0.0045
+    },
+    "case-054": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-055": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 962,
+      "outputTokens": 194,
+      "latencyMs": 1638,
+      "costUsd": null
+    },
+    "case-056": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "receiving-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1015,
+      "outputTokens": 85,
+      "latencyMs": 1735,
+      "costUsd": null
+    },
+    "case-057": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    },
+    "case-058": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "receiving-code-review"
+      ],
+      "reason": null,
+      "inputTokens": 1121,
+      "outputTokens": 147,
+      "latencyMs": 1929,
+      "costUsd": null
+    },
+    "case-059": {
+      "status": "ok",
+      "selectedSkillIds": [],
+      "reason": null,
+      "inputTokens": 1174,
+      "outputTokens": 178,
+      "latencyMs": 2026,
+      "costUsd": null
+    },
+    "case-060": {
+      "status": "ok",
+      "selectedSkillIds": [
+        "requesting-code-review"
+      ],
+      "reason": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "latencyMs": null,
+      "costUsd": null
+    }
+  }
+}
+

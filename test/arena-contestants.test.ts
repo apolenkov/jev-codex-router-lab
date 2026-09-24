@@ -21,6 +21,7 @@ import {
   ARENA_TASK_REVISION,
   ArenaReplayError,
   arenaContestantInput,
+  createCodexFixtureContestant,
   createJevContestant,
   createJevReplayGateway,
   toArenaRouterInput,
@@ -333,4 +334,168 @@ test("two full jev replay runs are deeply equal", async () => {
   const [first, second] = [await runAll(), await runAll()];
   assert.deepEqual(first, second);
   assert.equal(JSON.stringify(first), JSON.stringify(second));
+});
+
+const NULL_TELEMETRY = {
+  inputTokens: null,
+  outputTokens: null,
+  latencyMs: null,
+  costUsd: null,
+} as const;
+
+const codexUnitFixture = {
+  schemaVersion: 1,
+  records: {
+    "unit-1": {
+      status: "ok",
+      selectedSkillIds: ["gamma", "alpha", "delta", "epsilon"],
+      reason: null,
+      inputTokens: 640,
+      outputTokens: 48,
+      latencyMs: 2600,
+      costUsd: 0.0042,
+    },
+    "unit-null": {
+      status: "ok",
+      selectedSkillIds: ["alpha"],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+    "unit-abstain": {
+      status: "abstain",
+      selectedSkillIds: [],
+      reason: "uncertain-route",
+      ...NULL_TELEMETRY,
+    },
+    "unit-dup": {
+      status: "ok",
+      selectedSkillIds: ["alpha", "alpha"],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+    "unit-unknown": {
+      status: "ok",
+      selectedSkillIds: ["not-a-skill"],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+    "unit-over": {
+      status: "ok",
+      selectedSkillIds: ["alpha", "beta", "gamma", "zeta"],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+    "unit-badshape": "not-a-record",
+    "unit-badstatus": {
+      status: "maybe",
+      selectedSkillIds: [],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+    "unit-badreason": {
+      status: "abstain",
+      selectedSkillIds: [],
+      reason: null,
+      ...NULL_TELEMETRY,
+    },
+  },
+};
+
+test("codex contestant replays a recorded route verbatim with telemetry", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  const result = await contestant.run(miniInput());
+  assert.equal(result.status, "ok");
+  assert.equal(result.contestantId, "codex");
+  assert.deepEqual(result.selectedSkillIds, ["alpha", "delta", "epsilon", "gamma"]);
+  assert.equal(result.reason, null);
+  assert.equal(result.inputTokens, 640);
+  assert.equal(result.outputTokens, 48);
+  assert.equal(result.latencyMs, 2600);
+  assert.equal(result.costUsd, 0.0042);
+});
+
+test("codex contestant passes null telemetry through unchanged", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  const result = await contestant.run(miniInput({ caseId: "unit-null" }));
+  assert.equal(result.status, "ok");
+  assert.deepEqual(result.selectedSkillIds, ["alpha"]);
+  assert.equal(result.inputTokens, null);
+  assert.equal(result.outputTokens, null);
+  assert.equal(result.latencyMs, null);
+  assert.equal(result.costUsd, null);
+});
+
+test("codex contestant replays a recorded abstain", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  const result = await contestant.run(miniInput({ caseId: "unit-abstain" }));
+  assert.equal(result.status, "abstain");
+  assert.equal(result.reason, "uncertain-route");
+  assert.deepEqual(result.selectedSkillIds, []);
+});
+
+test("codex contestant errors on a missing case record", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  const result = await contestant.run(miniInput({ caseId: "unit-absent" }));
+  assert.equal(result.status, "error");
+  assert.equal(result.reason, "missing-record");
+  assert.deepEqual(result.selectedSkillIds, []);
+});
+
+test("codex contestant errors on malformed records", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  for (const caseId of ["unit-badshape", "unit-badstatus", "unit-badreason"]) {
+    const result = await contestant.run(miniInput({ caseId }));
+    assert.equal(result.status, "error", caseId);
+    assert.equal(result.reason, "malformed-record", caseId);
+  }
+});
+
+test("codex contestant converts invalid routes to error results", async () => {
+  const contestant = createCodexFixtureContestant(codexUnitFixture, miniManifest);
+  const expectations: Record<string, string> = {
+    "unit-dup": "duplicate-skill-id",
+    "unit-unknown": "unknown-skill-id",
+    "unit-over": "too-many-optional-skills",
+  };
+  for (const [caseId, reason] of Object.entries(expectations)) {
+    const result = await contestant.run(miniInput({ caseId }));
+    assert.equal(result.status, "error", caseId);
+    assert.equal(result.reason, reason, caseId);
+  }
+});
+
+test("codex contestant rejects a malformed fixture envelope at construction", () => {
+  assert.throws(() => createCodexFixtureContestant(null, miniManifest));
+  assert.throws(() => createCodexFixtureContestant({ schemaVersion: 2, records: {} }, miniManifest));
+  assert.throws(() => createCodexFixtureContestant({ schemaVersion: 1, records: [] }, miniManifest));
+  assert.throws(() =>
+    createCodexFixtureContestant({ schemaVersion: 1, records: {}, extra: true }, miniManifest));
+});
+
+test("codex fixture contestant replays the frozen corpus deterministically", async () => {
+  const runAll = async () => {
+    const contestant = createCodexFixtureContestant(readJson("codex-replay.json"), manifest);
+    const results = [];
+    for (const arenaCase of arenaCases) {
+      results.push(await contestant.run(arenaContestantInput(arenaCase, manifest)));
+    }
+    return results;
+  };
+  const [first, second] = [await runAll(), await runAll()];
+  assert.equal(first.length, 60);
+  assert.deepEqual(first, second);
+  assert.equal(JSON.stringify(first), JSON.stringify(second));
+  const byId = new Map(first.map((result) => [result.caseId, result]));
+  assert.deepEqual(byId.get("case-001")?.selectedSkillIds, [
+    "systematic-debugging",
+    "test-driven-development",
+    "verification-before-completion",
+  ]);
+  assert.equal(byId.get("case-022")?.status, "abstain");
+  assert.equal(byId.get("case-039")?.status, "error");
+  assert.deepEqual(byId.get("case-036")?.selectedSkillIds, [
+    "brainstorming",
+    "dispatching-parallel-agents",
+    "writing-plans",
+  ]);
 });

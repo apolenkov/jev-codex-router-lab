@@ -476,3 +476,109 @@ export function createJevReplayGateway(fixture: unknown): SemanticGateway {
     },
   };
 }
+
+interface CodexFixtureRecord {
+  readonly status: "ok" | "abstain" | "error";
+  readonly selectedSkillIds: readonly string[];
+  readonly reason: string | null;
+  readonly inputTokens: number | null;
+  readonly outputTokens: number | null;
+  readonly latencyMs: number | null;
+  readonly costUsd: number | null;
+}
+
+const isNullableInteger = (value: unknown): value is number | null =>
+  value === null || isNonNegativeInteger(value);
+
+const isNullableAmount = (value: unknown): value is number | null =>
+  value === null || isNonNegativeNumber(value);
+
+// Returns the validated record, or null when the record is malformed. A null
+// marker is kept in the index so a malformed record yields a per-case error
+// result instead of failing the whole fixture at construction.
+const parseCodexRecord = (value: unknown): CodexFixtureRecord | null => {
+  if (
+    !isRecord(value) ||
+    !exactKeys(value, [
+      "status",
+      "selectedSkillIds",
+      "reason",
+      "inputTokens",
+      "outputTokens",
+      "latencyMs",
+      "costUsd",
+    ]) ||
+    (value.status !== "ok" && value.status !== "abstain" && value.status !== "error") ||
+    !isStringArray(value.selectedSkillIds) ||
+    !value.selectedSkillIds.every(isNonEmptyString)
+  ) {
+    return null;
+  }
+  if (value.status === "ok") {
+    if (value.reason !== null) {
+      return null;
+    }
+  } else if (!isNonEmptyString(value.reason) || value.selectedSkillIds.length !== 0) {
+    return null;
+  }
+  if (
+    !isNullableInteger(value.inputTokens) ||
+    !isNullableInteger(value.outputTokens) ||
+    !isNullableAmount(value.latencyMs) ||
+    !isNullableAmount(value.costUsd)
+  ) {
+    return null;
+  }
+  return {
+    status: value.status,
+    selectedSkillIds: [...value.selectedSkillIds],
+    reason: value.reason as string | null,
+    inputTokens: value.inputTokens,
+    outputTokens: value.outputTokens,
+    latencyMs: value.latencyMs,
+    costUsd: value.costUsd,
+  };
+};
+
+export function createCodexFixtureContestant(
+  fixture: unknown,
+  manifest: ArenaSkillManifest,
+): ArenaContestant {
+  if (
+    !isRecord(fixture) ||
+    !exactKeys(fixture, ["schemaVersion", "records"]) ||
+    fixture.schemaVersion !== 1 ||
+    !isRecord(fixture.records)
+  ) {
+    throw new Error("invalid-codex-fixture");
+  }
+  if (!isRecord(manifest) || !Array.isArray(manifest.skills) || manifest.skills.length === 0) {
+    throw new Error("invalid-arena-manifest");
+  }
+  const records = new Map<string, CodexFixtureRecord | null>();
+  for (const [caseId, value] of Object.entries(fixture.records)) {
+    if (!isNonEmptyString(caseId)) {
+      throw new Error("invalid-codex-fixture");
+    }
+    records.set(caseId, parseCodexRecord(value));
+  }
+  return {
+    id: "codex",
+    async run(input: ArenaContestantInput): Promise<ArenaResult> {
+      const entry = records.get(input.caseId);
+      if (entry === undefined) {
+        return normalizeArenaResult(
+          { contestantId: "codex", status: "error", reason: "missing-record" },
+          input,
+        );
+      }
+      if (entry === null) {
+        return normalizeArenaResult(
+          { contestantId: "codex", status: "error", reason: "malformed-record" },
+          input,
+        );
+      }
+      return normalizeArenaResult({ contestantId: "codex", ...entry }, input);
+    },
+  };
+}
