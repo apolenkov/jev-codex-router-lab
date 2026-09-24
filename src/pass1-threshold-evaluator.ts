@@ -6,6 +6,7 @@ import {
 import {
   runPass1ThresholdCollection,
   type Pass1AnnotatedCorpus,
+  type Pass1ThresholdCaseRecord,
   type Pass1ThresholdEvidenceSink,
   type Pass1ThresholdRunResult,
   type Pass1ThresholdTransport,
@@ -122,6 +123,13 @@ export interface RunPass1ThresholdEvaluationOptions {
   };
   readonly transport: Pass1ThresholdTransport;
   readonly sink: Pass1ThresholdEvidenceSink;
+  readonly resume?: {
+    readonly priorRecords: ReadonlyMap<string, Pass1ThresholdCaseRecord>;
+    readonly priorAccounting: {
+      readonly attempts: number;
+      readonly spentUsd: number;
+    };
+  };
   readonly writeReport: (
     report: Pass1ThresholdEvaluationReport,
   ) => Promise<void>;
@@ -144,6 +152,7 @@ export const runPass1ThresholdEvaluation = async (
     actual: options.actual,
     transport: options.transport,
     sink: options.sink,
+    ...(options.resume === undefined ? {} : { resume: options.resume }),
   });
   const report = buildPass1ThresholdEvaluation({
     artifact: options.artifact,

@@ -705,8 +705,13 @@ const parseCheckpoint = (
 export const createAtomicCalibrationCheckpointStore = (
   path: string,
   bounds: CalibrationCheckpointBounds = DEFAULT_CHECKPOINT_BOUNDS,
+  options?: { readonly resume?: boolean },
 ): CalibrationCheckpointStore => ({
   claim: async (checkpoint) => {
+    if (options?.resume === true) {
+      await writeJsonAtomic(path, parseCheckpoint(checkpoint, bounds));
+      return true;
+    }
     try {
       await writeFile(path, `${JSON.stringify(parseCheckpoint(checkpoint, bounds), null, 2)}\n`, {
         encoding: "utf8",

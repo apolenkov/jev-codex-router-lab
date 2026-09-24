@@ -188,6 +188,56 @@ test("evaluation requires the frozen selection artifact", async (t) => {
   assert.equal(result.error, "missing selection artifact");
 });
 
+test("an aborted calibration run resumes once in place", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const failOnce: Fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+    };
+    if (body.state.echo.taskId === "CAL-004") {
+      return new Response("upstream error", { status: 500 });
+    }
+    return fakeFetch(input, init);
+  };
+  const first = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOnce,
+  });
+  assert.equal(first.exitCode, 2);
+  assert.equal(first.summary?.status, "incomplete");
+  assert.equal(first.summary?.collected, 3);
+  assert.equal(first.summary?.attempts, 4);
+
+  const resumed = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.summary?.status, "complete");
+  assert.equal(resumed.summary?.collected, 56);
+  assert.equal(resumed.summary?.attempts, 57);
+
+  const evidenceDir = join(root, "artifacts", "pass1-threshold-evidence-calibration");
+  const manifest = JSON.parse(
+    await readFile(join(evidenceDir, "manifest.json"), "utf8"),
+  ) as { resumedFrom?: { attempts: number; spentUsd: number } };
+  assert.equal(manifest.resumedFrom?.attempts, 4);
+  assert.equal(typeof manifest.resumedFrom?.spentUsd, "number");
+  const case4 = JSON.parse(
+    await readFile(join(evidenceDir, "case-CAL-004.json"), "utf8"),
+  ) as { outcome: string };
+  assert.equal(case4.outcome, "collected");
+
+  const secondResume = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(secondResume.exitCode, 2);
+});
+
 test("offline select rejects missing and incomplete evidence", async (t) => {
   const root = await makeTempRoot();
   t.after(() => rm(root, { recursive: true, force: true }));

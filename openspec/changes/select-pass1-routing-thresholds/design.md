@@ -86,6 +86,14 @@ evaluation evidence; a poor evaluation is reported, not retuned.
   abort run, mark manifest `incomplete`, preserve collected evidence.
 - A case whose response fails schema validation counts as REJECTED for
   every tuple and is reported as `invalid-response`.
+- **Amendment 2026-09-24 (owner-approved option B):** on a transport-level
+  abort (timeout/provider/connection — no model answer received), the run
+  MAY be resumed at most once within the same evidence directory.
+  `collected` and `invalid-response` case records are never re-attempted or
+  overwritten; a `failed` case is retried exactly once and its record
+  replaced. Cumulative actual attempts across segments may exceed 56 by the
+  number of failed transport attempts (here: +1 → 57 for calibration); the
+  resumed manifest records `resumedFrom` accounting. Spend cap unchanged.
 - Protected-context fragments are stripped by the request builder; the
   corpus validator already proves no protected fragment reaches the wire.
 

@@ -20,12 +20,23 @@ the evidence manifest.
 
 The runner MUST create a fresh evidence directory per run, refuse to write
 into a pre-existing or modified directory, and preserve partial evidence
-marked incomplete on abort.
+marked incomplete on abort. An incomplete run MAY be resumed at most once
+in place under the resume rule: `collected` and `invalid-response` records
+are immutable, a `failed` record may be replaced by exactly one retry, and
+the manifest MUST record the carried-over accounting.
 
 #### Scenario: Stale evidence is not overwritten
 
 - **WHEN** the target evidence directory already exists
 - **THEN** the runner refuses to run and exits non-zero
+
+#### Scenario: A transport-aborted run resumes once in place
+
+- **WHEN** an incomplete run is resumed with `--resume`
+- **THEN** collected and invalid-response records are never re-attempted,
+  a failed case is retried once and its record replaced, manifest and
+  summary are atomically rewritten, and cumulative accounting continues
+  from the checkpoint
 
 ### Requirement: Threshold selection is offline and pre-registered
 

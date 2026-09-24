@@ -112,9 +112,13 @@ interface EvidenceDirectory {
   readonly directory: string;
 }
 
-const createOnceEvidenceDirectory = async (
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const openEvidenceDirectory = async (
   root: string,
   relativeDirectory: string,
+  resume: boolean,
 ): Promise<EvidenceDirectory | null> => {
   let handle: Awaited<ReturnType<typeof open>> | undefined;
   try {
@@ -125,7 +129,12 @@ const createOnceEvidenceDirectory = async (
     if (!isWithin(root, canonicalArtifacts)) return null;
 
     const directory = join(canonicalArtifacts, relativeDirectory);
-    await mkdir(directory, { mode: 0o700 });
+    if (resume) {
+      const existing = await lstat(directory);
+      if (!existing.isDirectory() || existing.isSymbolicLink()) return null;
+    } else {
+      await mkdir(directory, { mode: 0o700 });
+    }
     const directoryStat = await lstat(directory);
     if (!directoryStat.isDirectory() || directoryStat.isSymbolicLink()) {
       return null;
@@ -250,13 +259,16 @@ const loadFrozenInputs = async (
 const parseArgs = (
   argv: readonly string[],
 ):
-  | { mode: "collect"; split: Pass1CorpusSplit }
+  | { mode: "collect"; split: Pass1CorpusSplit; resume: boolean }
   | { mode: "select"; evidenceDir: string }
   | null => {
-  if (argv.length === 2 && argv[0] === "--split") {
+  if (
+    (argv.length === 2 || (argv.length === 3 && argv[2] === "--resume")) &&
+    argv[0] === "--split"
+  ) {
     const split = argv[1];
     if (split === "calibration" || split === "evaluation") {
-      return { mode: "collect", split };
+      return { mode: "collect", split, resume: argv.length === 3 };
     }
     return null;
   }
@@ -266,9 +278,71 @@ const parseArgs = (
   return null;
 };
 
+interface ResumeState {
+  readonly priorRecords: Map<string, Pass1ThresholdCaseRecord>;
+  readonly priorAccounting: { readonly attempts: number; readonly spentUsd: number };
+}
+
+const loadResumeState = async (
+  directory: string,
+  corpus: Pass1AnnotatedCorpus,
+  pins: { readonly corpusFileSha256: string; readonly questionBuilderSha256: string },
+): Promise<ResumeState | null> => {
+  try {
+    const manifestRaw = await readFile(join(directory, "manifest.json"), "utf8");
+    const manifest = JSON.parse(manifestRaw) as Record<string, unknown>;
+    const summaryRaw = await readFile(join(directory, "summary.json"), "utf8");
+    const summary = JSON.parse(summaryRaw) as Record<string, unknown>;
+    const checkpointRaw = await readFile(
+      join(directory, "checkpoint.json"),
+      "utf8",
+    );
+    const checkpoint = JSON.parse(checkpointRaw) as Record<string, unknown>;
+    const accounting = checkpoint.accounting as Record<string, unknown> | undefined;
+    const expectedFingerprint = createCorpusGuard(corpus).fingerprint;
+    if (
+      manifest.kind !== "pass1-threshold-evidence" ||
+      manifest.resumedFrom !== undefined ||
+      manifest.corpusFileSha256 !== pins.corpusFileSha256 ||
+      manifest.questionBuilderSha256 !== pins.questionBuilderSha256 ||
+      manifest.corpusFingerprint !== expectedFingerprint ||
+      checkpoint.corpusFingerprint !== expectedFingerprint ||
+      summary.status !== "incomplete" ||
+      !isRecord(accounting) ||
+      !Number.isInteger(accounting.attempts) ||
+      (accounting.attempts as number) < 0 ||
+      typeof accounting.spentUsd !== "number" ||
+      !Number.isFinite(accounting.spentUsd) ||
+      (accounting.spentUsd as number) < 0
+    ) {
+      return null;
+    }
+    const priorRecords = new Map<string, Pass1ThresholdCaseRecord>();
+    const names = await readdir(directory);
+    for (const name of names) {
+      if (!CASE_RECORD_PATTERN.test(name)) continue;
+      const record = parsePass1ThresholdCaseRecord(
+        JSON.parse(await readFile(join(directory, name), "utf8")),
+      );
+      priorRecords.set(record.caseId, record);
+    }
+    if (priorRecords.size === 0) return null;
+    return {
+      priorRecords,
+      priorAccounting: {
+        attempts: accounting.attempts as number,
+        spentUsd: accounting.spentUsd,
+      },
+    };
+  } catch {
+    return null;
+  }
+};
+
 const runCollection = async (
   root: string,
   split: Pass1CorpusSplit,
+  resume: boolean,
   options: Pass1ThresholdCliOptions,
 ): Promise<Pass1ThresholdCliResult> => {
   const apiKey = options.env !== undefined
@@ -281,9 +355,10 @@ const runCollection = async (
   if (frozen === null) {
     return { exitCode: 2, error: "invalid frozen input" };
   }
-  const directory = await createOnceEvidenceDirectory(
+  const directory = await openEvidenceDirectory(
     root,
     EVIDENCE_DIR[split],
+    resume,
   );
   if (directory === null) {
     return { exitCode: 2, error: "evidence path unavailable" };
@@ -294,12 +369,25 @@ const runCollection = async (
         throw new CalibrationError("evidence-write");
       }
     };
+    const resumeState = resume
+      ? await loadResumeState(directory.directory, frozen.corpus, frozen.pins)
+      : null;
+    if (resume && resumeState === null) {
+      return { exitCode: 2, error: "invalid resume state" };
+    }
+    const priorFailed = resumeState === null
+      ? 0
+      : [...resumeState.priorRecords.values()].filter(
+        (record) => record.outcome === "failed",
+      ).length;
+    const bounds = {
+      maxAttempts: PASS1_THRESHOLD_LIMITS[split].maxAttempts + priorFailed,
+      spendCapUsd: PASS1_THRESHOLD_LIMITS[split].spendCapUsd,
+    };
     const checkpoint = createAtomicCalibrationCheckpointStore(
       join(directory.directory, "checkpoint.json"),
-      {
-        maxAttempts: PASS1_THRESHOLD_LIMITS[split].maxAttempts,
-        spendCapUsd: PASS1_THRESHOLD_LIMITS[split].spendCapUsd,
-      },
+      bounds,
+      resume ? { resume: true } : undefined,
     );
     const transport = await (options.createTransport ??
       createPass1ThresholdTransport)({
@@ -307,12 +395,25 @@ const runCollection = async (
       corpus: frozen.corpus,
       fetch: options.fetch ?? globalThis.fetch,
       checkpoint,
-      limits: PASS1_THRESHOLD_LIMITS[split],
+      limits: {
+        maxAttempts: bounds.maxAttempts,
+        spendCapUsd: bounds.spendCapUsd,
+        requestReserveUsd: PASS1_THRESHOLD_LIMITS[split].requestReserveUsd,
+      },
       timeoutMs: PASS1_THRESHOLD_TIMEOUT_MS,
+      ...(resumeState === null
+        ? {}
+        : {
+          accounting: {
+            attempts: resumeState.priorAccounting.attempts,
+            spentUsd: resumeState.priorAccounting.spentUsd,
+          },
+        }),
     });
     const sink = createPass1ThresholdEvidenceSink(
       directory.directory,
       assertEvidencePath,
+      resume ? { resume: true } : undefined,
     );
 
     if (split === "calibration") {
@@ -324,6 +425,14 @@ const runCollection = async (
         actual: frozen.actual,
         transport,
         sink,
+        ...(resumeState === null
+          ? {}
+          : {
+            resume: {
+              priorRecords: resumeState.priorRecords,
+              priorAccounting: resumeState.priorAccounting,
+            },
+          }),
       });
       return {
         exitCode: result.status === "complete" ? 0 : 2,
@@ -371,6 +480,14 @@ const runCollection = async (
       actual: frozen.actual,
       transport,
       sink,
+      ...(resumeState === null
+        ? {}
+        : {
+          resume: {
+            priorRecords: resumeState.priorRecords,
+            priorAccounting: resumeState.priorAccounting,
+          },
+        }),
       writeReport: (evaluation) =>
         publishOnce(reportPath, evaluation, assertEvidencePath),
     });
@@ -502,7 +619,7 @@ export const runPass1ThresholdCli = async (
   if (parsed.mode === "select") {
     return runOfflineSelect(repositoryRoot, parsed.evidenceDir);
   }
-  return runCollection(repositoryRoot, parsed.split, options);
+  return runCollection(repositoryRoot, parsed.split, parsed.resume, options);
 };
 
 const main = async (): Promise<void> => {

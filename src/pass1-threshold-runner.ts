@@ -1,6 +1,7 @@
 import { constants } from "node:fs";
-import { open } from "node:fs/promises";
+import { open, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import {
   APITimeoutError,
   TypeSafeClient,
@@ -811,6 +812,10 @@ export interface Pass1ThresholdEvidenceManifest {
   readonly sdk: string;
   readonly model: string;
   readonly caseOrder: readonly string[];
+  readonly resumedFrom?: {
+    readonly attempts: number;
+    readonly spentUsd: number;
+  };
   readonly limits: {
     readonly maxAttempts: number;
     readonly spendCapUsd: number;
@@ -882,6 +887,13 @@ export interface RunPass1ThresholdCollectionOptions {
   };
   readonly transport: Pass1ThresholdTransport;
   readonly sink: Pass1ThresholdEvidenceSink;
+  readonly resume?: {
+    readonly priorRecords: ReadonlyMap<string, Pass1ThresholdCaseRecord>;
+    readonly priorAccounting: {
+      readonly attempts: number;
+      readonly spentUsd: number;
+    };
+  };
 }
 
 const closedChoice = (
@@ -974,8 +986,21 @@ export const runPass1ThresholdCollection = async (
     sdk: PASS1_THRESHOLD_SDK,
     model: PASS1_THRESHOLD_MODEL,
     caseOrder,
+    ...(options.resume === undefined
+      ? {}
+      : {
+        resumedFrom: {
+          attempts: options.resume.priorAccounting.attempts,
+          spentUsd: options.resume.priorAccounting.spentUsd,
+        },
+      }),
     limits: {
-      maxAttempts: PASS1_THRESHOLD_LIMITS[options.split].maxAttempts,
+      maxAttempts: PASS1_THRESHOLD_LIMITS[options.split].maxAttempts +
+        (options.resume === undefined
+          ? 0
+          : [...options.resume.priorRecords.values()].filter(
+            (record) => record.outcome === "failed",
+          ).length),
       spendCapUsd: PASS1_THRESHOLD_LIMITS[options.split].spendCapUsd,
       requestReserveUsd: PASS1_THRESHOLD_LIMITS[options.split].requestReserveUsd,
       maxInputTokens: CALIBRATION_MAX_INPUT_TOKENS,
@@ -1024,6 +1049,15 @@ export const runPass1ThresholdCollection = async (
     await sink.writeManifest(manifest);
     for (const corpusCase of cases) {
       guard.assertUnchanged();
+      const prior = options.resume?.priorRecords.get(corpusCase.caseId);
+      if (
+        prior !== undefined &&
+        (prior.outcome === "collected" || prior.outcome === "invalid-response")
+      ) {
+        records.push(prior);
+        recordById.set(corpusCase.caseId, prior);
+        continue;
+      }
       const request = buildPass1Request(corpusCase.input);
       let result: CalibrationTransportResult | null = null;
       let record: Pass1ThresholdCaseRecord;
@@ -1107,13 +1141,41 @@ export const runPass1ThresholdCollection = async (
   }
 };
 
+const hasErrorCode = (error: unknown, code: string): boolean =>
+  error instanceof Error && "code" in error && error.code === code;
+
 const CASE_FILE_PATTERN = /^case-(?:CAL|EVAL)-\d{3}\.json$/;
 
 export const createPass1ThresholdEvidenceSink = (
   directory: string,
   beforeWrite?: () => Promise<void>,
+  options?: { readonly resume?: boolean },
 ): Pass1ThresholdEvidenceSink => {
+  const resume = options?.resume === true;
+  const overwrite = async (name: string, value: unknown): Promise<void> => {
+    await beforeWrite?.();
+    const temporaryPath = join(
+      directory,
+      `${name}.${process.pid}.${randomUUID()}.tmp`,
+    );
+    try {
+      await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      await beforeWrite?.();
+      await rename(temporaryPath, join(directory, name));
+      await beforeWrite?.();
+    } finally {
+      await unlink(temporaryPath).catch(() => undefined);
+    }
+  };
   const write = async (name: string, value: unknown): Promise<void> => {
+    if (resume) {
+      await overwrite(name, value);
+      return;
+    }
     await beforeWrite?.();
     let file;
     try {
@@ -1145,7 +1207,26 @@ export const createPass1ThresholdEvidenceSink = (
       if (!CASE_FILE_PATTERN.test(name)) {
         throw new CalibrationError("invalid-case-id");
       }
-      await write(name, record);
+      if (!resume) {
+        await write(name, record);
+        return;
+      }
+      const path = join(directory, name);
+      try {
+        const existing = parsePass1ThresholdCaseRecord(
+          JSON.parse(await readFile(path, "utf8")),
+        );
+        if (existing.outcome !== "failed") {
+          throw new CalibrationError("evidence-exists");
+        }
+      } catch (error) {
+        if (hasErrorCode(error, "ENOENT")) {
+          await write(name, record);
+          return;
+        }
+        throw error;
+      }
+      await overwrite(name, record);
     },
     writeSummary: (summary) => write("summary.json", summary),
   };
