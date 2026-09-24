@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "triggers": [
+    {
+      "skillId": "executing-plans",
+      "kind": "regex",
+      "pattern": "утверждён|approved|execute|выполняй|по шагам|step by step"
+    },
+    {
+      "skillId": "writing-plans",
+      "kind": "regex",
+      "pattern": "план|plan|roadmap"
+    },
+    {
+      "skillId": "systematic-debugging",
+      "kind": "regex",
+      "pattern": "падает|падени|упал|crash|bug|флак|flak|причин|root cause|воспроизвед|debug|typeerror|enoent|устаревш|stale|медленн|сбой|сбоя|дедупликац|times out|теряется|задержк"
+    },
+    {
+      "skillId": "test-driven-development",
+      "kind": "regex",
+      "pattern": "tdd|test-driven|падающ|failing|регрессионн|tests first"
+    },
+    {
+      "skillId": "receiving-code-review",
+      "kind": "regex",
+      "pattern": "комментар|замечан|comment|reviewer|ревьюер|feedback|обоснованн"
+    },
+    {
+      "skillId": "requesting-code-review",
+      "kind": "regex",
+      "pattern": "ревью|review|аудит|audit|мерж|merge|дифф|diff"
+    },
+    {
+      "skillId": "brainstorming",
+      "kind": "regex",
+      "pattern": "обсуди|обсудить|discuss|walk me through|вариант|подход|approach|help me pick|подошёл"
+    },
+    {
+      "skillId": "verification-before-completion",
+      "kind": "regex",
+      "pattern": "перед сдачей|before handoff|полный прогон|прогони весь|весь набор|линтер|linter"
+    },
+    {
+      "skillId": "using-git-worktrees",
+      "kind": "literal",
+      "pattern": "worktree"
+    },
+    {
+      "skillId": "dispatching-parallel-agents",
+      "kind": "regex",
+      "pattern": "параллельн|parallel"
+    }
+  ]
+}

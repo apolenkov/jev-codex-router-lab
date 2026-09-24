@@ -111,6 +111,7 @@ git commit -m "feat: add arena contracts"
 - Create: `fixtures/arena/skill-manifest.json`
 - Create: `fixtures/arena/dev-cases.json`
 - Create: `fixtures/arena/dev-gold.json`
+- Create: `fixtures/arena/rubric-v1.md`
 - Create: `fixtures/arena/fingerprints.json`
 - Create: `test/arena-fixtures.test.ts`
 
@@ -129,7 +130,7 @@ assert.deepEqual(countBy(cases, largestAcceptedRouteSize), {
 });
 ```
 
-Also assert every source is `synthetic | hard-negative | minimal-pair`, all prose is intentionally public synthetic, related family members share language/stratum, zero-skill cases have exactly `[[]]`, provenance contains stable roles plus rubric version only, and all four stored SHA-256 values equal `canonicalFingerprint` of the parsed values.
+Also assert every source is `synthetic | hard-negative | minimal-pair`, all prose is intentionally public synthetic, related family members share language/stratum, zero-skill cases have exactly `[[]]`, provenance contains stable roles plus the version declared by `rubric-v1.md` only, and all three stored SHA-256 values equal `canonicalFingerprint` of the parsed manifest, cases, and gold.
 
 **Step 2: Run the focused test and confirm RED**
 
@@ -139,7 +140,7 @@ Expected: fixture reads fail because frozen files do not exist.
 
 **Step 3: Author the frozen fixtures**
 
-Use a small, bounded skill manifest drawn from the public skill IDs relevant to development routing. Author 60 concise synthetic prompts. Record two independent role labels and one adjudicated label for every case; do not record people or timestamps.
+Use a small, bounded skill manifest drawn from the public skill IDs relevant to development routing. Author 60 concise synthetic prompts. Freeze a concise, versioned labeling rubric at `fixtures/arena/rubric-v1.md`; give both independent labelers the same rubric, manifest, and cases, then have the adjudicator resolve every disagreement. Do not record people or timestamps.
 
 `fingerprints.json` starts with exact keys `schemaVersion`, `skillManifest`,
 `cases`, and `gold`; each fingerprint value must match `^[0-9a-f]{64}$` and
