@@ -96,12 +96,19 @@ const readPinnedText = async (
   root: string,
   relativePath: string,
 ): Promise<{ contents: string; sha256: string } | null> => {
-  const path = join(root, relativePath);
+  const resolved = resolve(root, relativePath);
+  if (!isWithin(root, resolved)) {
+    return null;
+  }
   try {
-    if (await realpath(path) !== path || !(await lstat(path)).isFile()) {
+    if (
+      await realpath(resolved) !== resolved ||
+      !isWithin(root, resolved) ||
+      !(await lstat(resolved)).isFile()
+    ) {
       return null;
     }
-    const contents = await readFile(path, "utf8");
+    const contents = await readFile(resolved, "utf8");
     return { contents, sha256: sha256Hex(contents) };
   } catch {
     return null;
@@ -520,6 +527,10 @@ const runCollection = async (
     );
     if (
       calibrationEvidence.evidenceSha256 !== artifact.inputs.evidenceSha256 ||
+      artifact.inputs.corpusFileSha256 !==
+        calibrationFrozen.actual.corpusFileSha256 ||
+      artifact.inputs.corpusFingerprint !==
+        createCorpusGuard(calibrationFrozen.corpus).fingerprint ||
       rederived.tuple.floor !== artifact.selected.floor ||
       rederived.tuple.lo !== artifact.selected.lo ||
       rederived.tuple.hi !== artifact.selected.hi

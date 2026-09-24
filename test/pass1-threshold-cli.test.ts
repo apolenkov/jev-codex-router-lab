@@ -396,6 +396,93 @@ test("an aborted evaluation replaces its incomplete report on resume", async (t)
   assert.equal(complete.totalCases, 28);
 });
 
+test("manifest paths cannot escape the repository root", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const manifestPath = join(root, "fixtures", "pass1-corpus-manifest.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+    hashes: {
+      splits: { calibration: { path: string } };
+      questionBuilder: { path: string };
+    };
+  };
+  let fetchCalls = 0;
+  const countingFetch: Fetch = async (input, init) => {
+    fetchCalls += 1;
+    return fakeFetch(input, init);
+  };
+  const options = {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: countingFetch,
+    delay: async () => {},
+  };
+
+  for (const escapePath of [
+    "../escape.json",
+    "../../outside.json",
+    join(root, "..", "absolute-shaped.json"),
+  ]) {
+    manifest.hashes.splits.calibration.path = escapePath;
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    const result = await runPass1ThresholdCli(["--split", "calibration"], options);
+    assert.equal(result.exitCode, 2, escapePath);
+    assert.equal(result.error, "invalid frozen input", escapePath);
+  }
+
+  manifest.hashes.splits.calibration.path =
+    "fixtures/pass1-calibration-cases.json";
+  manifest.hashes.questionBuilder.path = "../outside-questions.ts";
+  await writeFile(manifestPath, JSON.stringify(manifest));
+  const escaped = await runPass1ThresholdCli(["--split", "calibration"], options);
+  assert.equal(escaped.exitCode, 2);
+  assert.equal(escaped.error, "invalid frozen input");
+
+  assert.equal(fetchCalls, 0);
+});
+
+test("a tampered selection artifact is refused before any provider call", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
+  assert.equal(collect.exitCode, 0, collect.error);
+  const select = await runPass1ThresholdCli(
+    ["--offline-select", "pass1-threshold-evidence-calibration"],
+    collectOptions(root),
+  );
+  assert.equal(select.exitCode, 0, select.error);
+
+  const artifactPath = join(root, "artifacts", "pass1-threshold-selection.json");
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8")) as {
+    selected: { floor: number; lo: number; hi: number };
+  };
+  const alternate = PASS1_THRESHOLD_GRID.find(
+    (tuple) =>
+      tuple.floor !== artifact.selected.floor ||
+      tuple.lo !== artifact.selected.lo ||
+      tuple.hi !== artifact.selected.hi,
+  )!;
+  artifact.selected = { ...alternate };
+  await writeFile(artifactPath, JSON.stringify(artifact, null, 2));
+
+  let fetchCalls = 0;
+  const countingFetch: Fetch = async (input, init) => {
+    fetchCalls += 1;
+    return fakeFetch(input, init);
+  };
+  const evaluation = await runPass1ThresholdCli(["--split", "evaluation"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: countingFetch,
+    delay: async () => {},
+  });
+  assert.equal(evaluation.exitCode, 2);
+  assert.equal(evaluation.error, "selection artifact not derived");
+  assert.equal(fetchCalls, 0);
+});
+
 test("offline select rejects missing and incomplete evidence", async (t) => {
   const root = await makeTempRoot();
   t.after(() => rm(root, { recursive: true, force: true }));

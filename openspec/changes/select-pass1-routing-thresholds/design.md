@@ -86,6 +86,32 @@ evaluation evidence; a poor evaluation is reported, not retuned.
   abort run, mark manifest `incomplete`, preserve collected evidence.
 - A case whose response fails schema validation counts as REJECTED for
   every tuple and is reported as `invalid-response`.
+- Protected-context fragments are stripped by the request builder; the
+  corpus validator already proves no protected fragment reaches the wire.
+
+## Active protocol (as executed, post-amendments)
+
+- Sequential calls; `maxRetries: 0`; per-call timeout **120 s**; a fixed
+  **1000 ms** inter-call delay; redirects refused.
+- Hard ceilings: **80 cumulative attempts / USD 0.25 settled spend per run**
+  for calibration, **40 / USD 0.25** for evaluation. The cap is per bounded
+  run; accounting counts provider-reported settled usage only.
+- Abort on terminal transport failure preserves evidence as `incomplete`;
+  `--resume` may be repeated without limit, continues from the first
+  non-final case, never re-attempts `collected`/`invalid-response` records,
+  retries a `failed` record once per resume, and rewrites manifest, summary,
+  and (for evaluation) an `incomplete` report atomically. A `complete`
+  summary blocks any further resume.
+- Before any evaluation call the CLI verifies the frozen artifact derives
+  from the retained calibration evidence (recomputed selection tuple and
+  `evidenceSha256`, plus corpus file hash and corpus fingerprint must match
+  the artifact inputs).
+- Manifest-declared fixture paths are resolved against the repository root;
+  any path escaping the root (via `..`, absolute segments, or a symlink) is
+  rejected before reading or dispatch.
+
+## Amendment history (superseded values kept for provenance)
+
 - **Amendment 2026-09-24 v1 (owner-approved option B):** on a transport-level
   abort (timeout/provider/connection — no model answer received), the run
   MAY be resumed within the same evidence directory. `collected` and

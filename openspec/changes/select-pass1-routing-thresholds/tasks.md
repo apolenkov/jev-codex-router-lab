@@ -20,5 +20,5 @@
 - [x] 4.1 Live collection run — 56/56 collected over 73 attempts, USD 0.0028 (provider instability absorbed via authorized resume, ceiling 80).
 - [x] 4.2 Offline selection → frozen tuple artifact `{floor: 0.95, lo: 0.4, hi: 0.52}`, `eligible: false` (no zero-error tuple on the grid).
 - [x] 4.3 Live evaluation run — 28/28 collected over 37 attempts, USD 0.0014; single frozen tuple, no retune.
-- [ ] 4.4 Report: `docs/calibration.md` update (selection rule, results, n-limits), artifact hashes recorded in backlog task.
-- [ ] 4.5 Independent review; `npm run check` green; no `uncalibrated-thresholds` string in public docs.
+- [x] 4.4 Report: `docs/calibration.md` updated (selection rule, results, n-limits, spend semantics); artifact hash recorded.
+- [x] 4.5 Independent review (advisor CONCERNS → all findings fixed and rechecked); `npm run check` green. Note: the original wording "no `uncalibrated-thresholds` string in public docs" contradicted the negative result — the string is the fail-closed reason and legitimately appears in docs; the intent (no calibrated-threshold claims) is satisfied and recorded here instead of deleting the guard or the truthful docs.
