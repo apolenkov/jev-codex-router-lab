@@ -175,7 +175,7 @@ test("successful call records the mapped row and usage", () =>
     assert.equal(first.confidence, 0.9);
   }));
 
-test("bounded error keeps RunLiveError context but not foreign Error payloads", () =>
+test("foreign Error collapses to its SDK wrapper name without payload", () =>
   withApiKey(async () => {
     const workspace = makeWorkspace();
     const marker = "foreign-payload-marker";
@@ -186,4 +186,101 @@ test("bounded error keeps RunLiveError context but not foreign Error payloads", 
     const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
     assert.equal(entry.error, "APIConnectionError");
     assert.ok(!entry.error.includes(marker));
+  }));
+
+test("provider values inside a 200 answer cannot reach the errors file", () =>
+  withApiKey(async () => {
+    const workspace = makeWorkspace();
+    const marker = "provider-choice-marker-".padEnd(20_000, "x");
+    const body = {
+      model: "jev-1.13.0",
+      answers: {
+        relation_claim0: {
+          type: "choice",
+          choice: marker,
+          confidence: 0.9,
+          probabilities: { supports: 0.9, contradicts: 0.05, says_nothing: 0.05 },
+        },
+      },
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    const { fetch } = fetchReturning(200, body);
+    await runLive(makeOptions(workspace, { limit: 1 }), { fetch });
+    const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
+    assert.match(entry.error, /unknown relation choice/);
+    assert.ok(!entry.error.includes(marker), `errors file leaked provider choice: ${entry.error.length} chars`);
+  }));
+
+test("provider probability keys inside a 200 answer cannot reach the errors file", () =>
+  withApiKey(async () => {
+    const workspace = makeWorkspace();
+    const marker = "provider-key-marker-".padEnd(20_000, "y");
+    const body = {
+      model: "jev-1.13.0",
+      answers: {
+        relation_claim0: {
+          type: "choice",
+          choice: "supports",
+          confidence: 0.9,
+          probabilities: { supports: 0.9, contradicts: 0.05, says_nothing: 0.05, [marker]: 1.5 },
+        },
+      },
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    const { fetch } = fetchReturning(200, body);
+    await runLive(makeOptions(workspace, { limit: 1 }), { fetch });
+    const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
+    assert.match(entry.error, /probability out of range/);
+    assert.ok(!entry.error.includes(marker), `errors file leaked provider key: ${entry.error.length} chars`);
+  }));
+
+test("unsafe request ids are dropped from recorded API errors", () =>
+  withApiKey(async () => {
+    const workspace = makeWorkspace();
+    const marker = "request-id-marker-".padEnd(20_000, "z");
+    const fetch = async (): Promise<Response> =>
+      new Response(JSON.stringify({ error: "boom" }), {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+          "x-typesafe-request-id": marker,
+        },
+      });
+    await runLive(makeOptions(workspace, { limit: 1 }), { fetch });
+    const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
+    assert.match(entry.error, /status=500/);
+    assert.ok(!entry.error.includes("request_id"), `unsafe request id recorded: ${entry.error}`);
+    assert.ok(!entry.error.includes(marker));
+  }));
+
+test("safe request ids survive bounded error records", () =>
+  withApiKey(async () => {
+    const workspace = makeWorkspace();
+    const fetch = async (): Promise<Response> =>
+      new Response(JSON.stringify({ error: "boom" }), {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+          "x-typesafe-request-id": "req-AbC_123-xyz",
+        },
+      });
+    await runLive(makeOptions(workspace, { limit: 1 }), { fetch });
+    const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
+    assert.match(entry.error, /status=500 request_id=req-AbC_123-xyz/);
+  }));
+
+test("own validation errors keep bounded local context", () =>
+  withApiKey(async () => {
+    const workspace = makeWorkspace();
+    const body = {
+      model: "jev-1.13.0",
+      answers: {
+        relation_claim0: { type: "choice", choice: "supports", confidence: 0.9 },
+      },
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    const { fetch } = fetchReturning(200, body);
+    await runLive(makeOptions(workspace, { limit: 1 }), { fetch });
+    const entry = JSON.parse(readFileSync(workspace.errors, "utf8").trim()) as { error: string };
+    assert.match(entry.error, /^RunLiveError: case-a\.claims\[0\]\.relation: malformed choice answer$/);
   }));
