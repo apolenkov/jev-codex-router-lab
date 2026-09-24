@@ -9,7 +9,9 @@ calibration case per collection attempt, in declared corpus order, strictly
 sequentially, with an injected fetch implementation, `maxRetries: 0`, and a
 per-call timeout. The runner MUST count every actual HTTP attempt, including
 failed and retried ones, and record the counted number in the evidence
-manifest.
+manifest. Frozen corpus and question-builder file hashes MUST match the
+manifest pins before any evidence state is created or any call is
+dispatched.
 
 #### Scenario: Collection respects the attempt cap
 
@@ -39,8 +41,11 @@ the manifest MUST record the carried-over accounting and the resume count.
   a failed case may be retried and its record replaced, manifest and
   summary are atomically rewritten, cumulative accounting continues from
   the checkpoint, cumulative attempts stay within the declared
-  hard ceiling (80 calibration / 40 evaluation), and sequential calls
-  are spaced by the declared inter-call delay
+  hard ceiling (80 calibration / 40 evaluation), sequential calls
+  are spaced by the declared inter-call delay, the checkpoint
+  accounting is reconciled against the stored case records
+  (attempts and spend cannot shrink below recorded evidence),
+  and every evidence file read refuses symlinks
 
 ### Requirement: Threshold selection is offline and pre-registered
 
@@ -76,8 +81,9 @@ evaluation evidence.
 
 #### Scenario: Artifact must derive from evidence
 
-- **WHEN** the selection artifact's tuple or evidence hash does not match a
-  fresh recomputation over the retained calibration evidence
+- **WHEN** the selection artifact's tuple, eligibility flags, tied tuples,
+  grid, corpus pins, or evidence hash does not match a fresh recomputation
+  over the retained calibration evidence and frozen inputs
 - **THEN** the evaluator refuses to run and exits non-zero without any
   provider call
 

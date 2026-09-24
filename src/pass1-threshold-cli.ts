@@ -39,6 +39,9 @@ import {
 import {
   buildPass1SelectionArtifact,
   parsePass1SelectionArtifact,
+  PASS1_THRESHOLD_FLOORS,
+  PASS1_THRESHOLD_HIS,
+  PASS1_THRESHOLD_LOS,
   selectPass1Threshold,
   type Pass1SelectionInputs,
 } from "./pass1-threshold-selector.js";
@@ -265,7 +268,14 @@ const loadFrozenInputs = async (
   const corpusPin = manifest.splits[split];
   const corpusFile = await readPinnedText(root, corpusPin.path);
   const questionsFile = await readPinnedText(root, manifest.questionBuilder.path);
-  if (corpusFile === null || questionsFile === null) return null;
+  if (
+    corpusFile === null ||
+    questionsFile === null ||
+    corpusFile.sha256 !== corpusPin.sha256 ||
+    questionsFile.sha256 !== manifest.questionBuilder.sha256
+  ) {
+    return null;
+  }
   let corpus: Pass1AnnotatedCorpus;
   try {
     corpus = parsePass1AnnotatedCorpus(corpusFile.contents, split);
@@ -315,20 +325,38 @@ interface ResumeState {
   readonly resumeCount: number;
 }
 
+const readRegularFileText = async (path: string): Promise<string | null> => {
+  try {
+    const stat = await lstat(path);
+    if (!stat.isFile() || stat.isSymbolicLink()) {
+      return null;
+    }
+    return await readFile(path, "utf8");
+  } catch {
+    return null;
+  }
+};
+
 const loadResumeState = async (
   directory: string,
   corpus: Pass1AnnotatedCorpus,
   pins: { readonly corpusFileSha256: string; readonly questionBuilderSha256: string },
 ): Promise<ResumeState | null> => {
   try {
-    const manifestRaw = await readFile(join(directory, "manifest.json"), "utf8");
-    const manifest = JSON.parse(manifestRaw) as Record<string, unknown>;
-    const summaryRaw = await readFile(join(directory, "summary.json"), "utf8");
-    const summary = JSON.parse(summaryRaw) as Record<string, unknown>;
-    const checkpointRaw = await readFile(
-      join(directory, "checkpoint.json"),
-      "utf8",
+    const manifestRaw = await readRegularFileText(
+      join(directory, "manifest.json"),
     );
+    const summaryRaw = await readRegularFileText(
+      join(directory, "summary.json"),
+    );
+    const checkpointRaw = await readRegularFileText(
+      join(directory, "checkpoint.json"),
+    );
+    if (manifestRaw === null || summaryRaw === null || checkpointRaw === null) {
+      return null;
+    }
+    const manifest = JSON.parse(manifestRaw) as Record<string, unknown>;
+    const summary = JSON.parse(summaryRaw) as Record<string, unknown>;
     const checkpoint = JSON.parse(checkpointRaw) as Record<string, unknown>;
     const accounting = checkpoint.accounting as Record<string, unknown> | undefined;
     const expectedFingerprint = createCorpusGuard(corpus).fingerprint;
@@ -352,12 +380,24 @@ const loadResumeState = async (
     const names = await readdir(directory);
     for (const name of names) {
       if (!CASE_RECORD_PATTERN.test(name)) continue;
-      const record = parsePass1ThresholdCaseRecord(
-        JSON.parse(await readFile(join(directory, name), "utf8")),
-      );
+      const raw = await readRegularFileText(join(directory, name));
+      if (raw === null) return null;
+      const record = parsePass1ThresholdCaseRecord(JSON.parse(raw));
       priorRecords.set(record.caseId, record);
     }
     if (priorRecords.size === 0) return null;
+    let maxRecordedAttempts = 0;
+    let recordedCost = 0;
+    for (const record of priorRecords.values()) {
+      maxRecordedAttempts = Math.max(maxRecordedAttempts, record.attempts);
+      recordedCost += record.costUsd ?? 0;
+    }
+    if (
+      (accounting.attempts as number) < maxRecordedAttempts ||
+      (accounting.spentUsd as number) + 1e-12 < recordedCost
+    ) {
+      return null;
+    }
     const priorResumeCount = manifest.resumeCount;
     return {
       priorRecords,
@@ -533,7 +573,29 @@ const runCollection = async (
         createCorpusGuard(calibrationFrozen.corpus).fingerprint ||
       rederived.tuple.floor !== artifact.selected.floor ||
       rederived.tuple.lo !== artifact.selected.lo ||
-      rederived.tuple.hi !== artifact.selected.hi
+      rederived.tuple.hi !== artifact.selected.hi ||
+      rederived.eligible !== artifact.eligible ||
+      rederived.tieBroken !== artifact.tieBroken ||
+      artifact.tiedTuples.length !== rederived.tiedTuples.length ||
+      artifact.tiedTuples.some(
+        (tuple, index) =>
+          tuple.floor !== rederived.tiedTuples[index]?.floor ||
+          tuple.lo !== rederived.tiedTuples[index]?.lo ||
+          tuple.hi !== rederived.tiedTuples[index]?.hi,
+      ) ||
+      JSON.stringify(artifact.table) !== JSON.stringify(rederived.table) ||
+      artifact.grid.floors.length !== PASS1_THRESHOLD_FLOORS.length ||
+      artifact.grid.floors.some(
+        (floor, index) => floor !== PASS1_THRESHOLD_FLOORS[index],
+      ) ||
+      artifact.grid.los.length !== PASS1_THRESHOLD_LOS.length ||
+      artifact.grid.los.some(
+        (lo, index) => lo !== PASS1_THRESHOLD_LOS[index],
+      ) ||
+      artifact.grid.his.length !== PASS1_THRESHOLD_HIS.length ||
+      artifact.grid.his.some(
+        (hi, index) => hi !== PASS1_THRESHOLD_HIS[index],
+      )
     ) {
       return { exitCode: 2, error: "selection artifact not derived" };
     }
@@ -616,17 +678,22 @@ const loadCalibrationEvidence = async (
   const records: Pass1ThresholdCaseRecord[] = [];
   const evidenceHash = createHash("sha256");
   try {
-    const manifestRaw = await readFile(
+    const manifestRaw = await readRegularFileText(
       join(canonicalEvidenceDir, "manifest.json"),
-      "utf8",
     );
+    if (manifestRaw === null) {
+      return "invalid";
+    }
     const manifestEvidence = JSON.parse(manifestRaw) as { split?: unknown };
     if (manifestEvidence.split !== "calibration") {
       return "invalid";
     }
     evidenceHash.update(manifestRaw);
     for (const name of caseFiles) {
-      const raw = await readFile(join(canonicalEvidenceDir, name), "utf8");
+      const raw = await readRegularFileText(join(canonicalEvidenceDir, name));
+      if (raw === null) {
+        return "invalid";
+      }
       records.push(parsePass1ThresholdCaseRecord(JSON.parse(raw)));
       evidenceHash.update(raw);
     }

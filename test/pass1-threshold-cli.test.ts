@@ -8,6 +8,8 @@ import {
   readdir,
   readFile,
   rm,
+  symlink,
+  unlink,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -481,6 +483,97 @@ test("a tampered selection artifact is refused before any provider call", async 
   assert.equal(evaluation.exitCode, 2);
   assert.equal(evaluation.error, "selection artifact not derived");
   assert.equal(fetchCalls, 0);
+});
+
+test("corpus drift refuses before creating any evidence state", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const corpusPath = join(root, "fixtures", "pass1-calibration-cases.json");
+  const original = await readFile(corpusPath, "utf8");
+  await writeFile(corpusPath, original.replace("CAL-001", "CAL-XX1"));
+
+  let fetchCalls = 0;
+  const countingFetch: Fetch = async (input, init) => {
+    fetchCalls += 1;
+    return fakeFetch(input, init);
+  };
+  const result = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: countingFetch,
+    delay: async () => {},
+  });
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.error, "invalid frozen input");
+  assert.equal(fetchCalls, 0);
+  assert.deepEqual(await readdir(join(root, "artifacts")), []);
+});
+
+test("resume refuses shrunk accounting and symlinked evidence", async (t) => {
+  const root = await makeTempRoot();
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const failOnce: Fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as {
+      state: { echo: { taskId: string } };
+    };
+    if (body.state.echo.taskId === "CAL-004") {
+      return new Response("upstream error", { status: 500 });
+    }
+    return fakeFetch(input, init);
+  };
+  const first = await runPass1ThresholdCli(["--split", "calibration"], {
+    repositoryRoot: root,
+    env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
+    fetch: failOnce,
+    delay: async () => {},
+  });
+  assert.equal(first.summary?.status, "incomplete");
+
+  const evidenceDir = join(
+    root,
+    "artifacts",
+    "pass1-threshold-evidence-calibration",
+  );
+  const checkpointPath = join(evidenceDir, "checkpoint.json");
+  const checkpoint = JSON.parse(await readFile(checkpointPath, "utf8")) as {
+    accounting: { attempts: number };
+  };
+  checkpoint.accounting.attempts = 1;
+  await writeFile(checkpointPath, JSON.stringify(checkpoint));
+
+  const shrunk = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(shrunk.exitCode, 2);
+  assert.equal(shrunk.error, "invalid resume state");
+
+  checkpoint.accounting.attempts = 4;
+  await writeFile(checkpointPath, JSON.stringify(checkpoint));
+  const outside = join(root, "outside-case.json");
+  await writeFile(outside, "{}");
+  const casePath = join(evidenceDir, "case-CAL-002.json");
+  const original = await readFile(casePath, "utf8");
+  await rm(casePath);
+  await symlink(outside, casePath);
+
+  const symlinked = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(symlinked.exitCode, 2);
+  assert.equal(symlinked.error, "invalid resume state");
+
+  await unlink(casePath);
+  await writeFile(casePath, original);
+  const resumed = await runPass1ThresholdCli(
+    ["--split", "calibration", "--resume"],
+    collectOptions(root),
+  );
+  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.summary?.status, "complete");
 });
 
 test("offline select rejects missing and incomplete evidence", async (t) => {
