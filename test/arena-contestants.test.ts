@@ -24,6 +24,7 @@ import {
   createCodexFixtureContestant,
   createJevContestant,
   createJevReplayGateway,
+  createRulesContestant,
   toArenaRouterInput,
 } from "../src/arena-contestants.js";
 
@@ -497,5 +498,151 @@ test("codex fixture contestant replays the frozen corpus deterministically", asy
     "brainstorming",
     "dispatching-parallel-agents",
     "writing-plans",
+  ]);
+});
+
+const rulesUnitFixture = {
+  schemaVersion: 1,
+  triggers: [
+    { skillId: "alpha", kind: "literal", pattern: "crash" },
+    { skillId: "beta", kind: "regex", pattern: "flak(e|y)|flap" },
+    { skillId: "gamma", kind: "literal", pattern: "plan" },
+    { skillId: "zeta", kind: "regex", pattern: "audit|review" },
+    { skillId: "delta", kind: "literal", pattern: "migrate" },
+  ],
+};
+
+test("rules contestant evaluates the ordered trigger table on public input only", async () => {
+  const contestant = createRulesContestant(rulesUnitFixture, miniManifest);
+  const result = await contestant.run(
+    miniInput({ taskText: "Fix the flaky CRASH before the migration plan." }),
+  );
+  assert.equal(result.status, "ok");
+  assert.equal(result.contestantId, "rules");
+  assert.deepEqual(result.selectedSkillIds, ["alpha", "beta", "delta", "epsilon", "gamma"]);
+  assert.equal(result.reason, null);
+  assert.equal(result.inputTokens, null);
+  assert.equal(result.outputTokens, null);
+  assert.equal(result.latencyMs, null);
+  assert.equal(result.costUsd, null);
+});
+
+test("rules contestant stops after three optional skills", async () => {
+  const contestant = createRulesContestant(rulesUnitFixture, miniManifest);
+  const result = await contestant.run(miniInput({ taskText: "crash flaky plan review" }));
+  assert.equal(result.status, "ok");
+  assert.deepEqual(result.selectedSkillIds, ["alpha", "beta", "delta", "epsilon", "gamma"]);
+});
+
+test("rules contestant always retains forced skills", async () => {
+  const contestant = createRulesContestant(rulesUnitFixture, miniManifest);
+  const silent = await contestant.run(miniInput({ taskText: "no trigger here" }));
+  assert.equal(silent.status, "ok");
+  assert.deepEqual(silent.selectedSkillIds, ["delta", "epsilon"]);
+  const forcedMatch = await contestant.run(
+    miniInput({ taskText: "migrate crash flaky plan review" }),
+  );
+  assert.equal(forcedMatch.status, "ok");
+  assert.deepEqual(forcedMatch.selectedSkillIds, [
+    "alpha",
+    "beta",
+    "delta",
+    "epsilon",
+    "gamma",
+  ]);
+});
+
+test("rules contestant output is identical across repeats and input key order", async () => {
+  const contestant = createRulesContestant(rulesUnitFixture, miniManifest);
+  const forward: ArenaContestantInput = {
+    caseId: "unit-1",
+    taskText: "crash flaky plan",
+    skills: miniManifest.skills,
+    explicitSkillIds: ["delta"],
+    requiredSkillIds: ["epsilon"],
+  };
+  const reversed: ArenaContestantInput = {
+    requiredSkillIds: ["epsilon"],
+    explicitSkillIds: ["delta"],
+    skills: miniManifest.skills,
+    taskText: "crash flaky plan",
+    caseId: "unit-1",
+  };
+  const [a, b, c] = [
+    await contestant.run(forward),
+    await contestant.run(reversed),
+    await contestant.run(forward),
+  ];
+  assert.deepEqual(a, b);
+  assert.deepEqual(a, c);
+  assert.equal(JSON.stringify(a), JSON.stringify(b));
+});
+
+test("rules contestant rejects malformed trigger tables at construction", () => {
+  assert.throws(() => createRulesContestant(null, miniManifest));
+  assert.throws(() => createRulesContestant({ schemaVersion: 2, triggers: [] }, miniManifest));
+  assert.throws(() =>
+    createRulesContestant(
+      { schemaVersion: 1, triggers: [{ skillId: "nope", kind: "literal", pattern: "x" }] },
+      miniManifest,
+    ));
+  assert.throws(() =>
+    createRulesContestant(
+      { schemaVersion: 1, triggers: [{ skillId: "alpha", kind: "fuzzy", pattern: "x" }] },
+      miniManifest,
+    ));
+  assert.throws(() =>
+    createRulesContestant(
+      { schemaVersion: 1, triggers: [{ skillId: "alpha", kind: "literal", pattern: "" }] },
+      miniManifest,
+    ));
+  assert.throws(() =>
+    createRulesContestant(
+      { schemaVersion: 1, triggers: [{ skillId: "alpha", kind: "regex", pattern: "(" }] },
+      miniManifest,
+    ));
+});
+
+test("rules contestant takes a fixture object, never a path", () => {
+  assert.throws(() =>
+    createRulesContestant("fixtures/arena/rules.json" as unknown, miniManifest));
+});
+
+test("rules contestant replays the frozen corpus deterministically", async () => {
+  const runAll = async () => {
+    const contestant = createRulesContestant(readJson("rules.json"), manifest);
+    const results = [];
+    for (const arenaCase of arenaCases) {
+      results.push(await contestant.run(arenaContestantInput(arenaCase, manifest)));
+    }
+    return results;
+  };
+  const [first, second] = [await runAll(), await runAll()];
+  assert.equal(first.length, 60);
+  assert.deepEqual(first, second);
+  assert.equal(JSON.stringify(first), JSON.stringify(second));
+  const known = new Set(manifest.skills.map((skill) => skill.id));
+  for (const result of first) {
+    assert.equal(result.status, "ok", result.caseId);
+    for (const id of result.selectedSkillIds) {
+      assert.ok(known.has(id), `${result.caseId}: ${id}`);
+    }
+  }
+  const byId = new Map(first.map((result) => [result.caseId, result]));
+  assert.deepEqual(byId.get("case-001")?.selectedSkillIds, [
+    "systematic-debugging",
+    "test-driven-development",
+    "verification-before-completion",
+  ]);
+  assert.deepEqual(byId.get("case-003")?.selectedSkillIds, []);
+  assert.deepEqual(byId.get("case-028")?.selectedSkillIds, ["executing-plans", "writing-plans"]);
+  assert.deepEqual(byId.get("case-036")?.selectedSkillIds, [
+    "brainstorming",
+    "dispatching-parallel-agents",
+    "writing-plans",
+  ]);
+  assert.deepEqual(byId.get("case-050")?.selectedSkillIds, [
+    "receiving-code-review",
+    "requesting-code-review",
   ]);
 });

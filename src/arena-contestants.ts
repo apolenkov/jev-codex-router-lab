@@ -582,3 +582,88 @@ export function createCodexFixtureContestant(
     },
   };
 }
+
+interface RulesTrigger {
+  readonly skillId: string;
+  readonly matches: (taskText: string) => boolean;
+}
+
+const parseRulesFixture = (
+  fixture: unknown,
+  manifest: ArenaSkillManifest,
+): readonly RulesTrigger[] => {
+  if (!isRecord(manifest) || !Array.isArray(manifest.skills)) {
+    throw new Error("invalid-arena-manifest");
+  }
+  if (
+    !isRecord(fixture) ||
+    !exactKeys(fixture, ["schemaVersion", "triggers"]) ||
+    fixture.schemaVersion !== 1 ||
+    !Array.isArray(fixture.triggers)
+  ) {
+    throw new Error("invalid-rules-fixture");
+  }
+  const known = new Set(manifest.skills.map((skill) => skill.id));
+  return fixture.triggers.map((entry): RulesTrigger => {
+    if (
+      !isRecord(entry) ||
+      !exactKeys(entry, ["skillId", "kind", "pattern"]) ||
+      !isNonEmptyString(entry.skillId) ||
+      !known.has(entry.skillId) ||
+      (entry.kind !== "literal" && entry.kind !== "regex") ||
+      !isNonEmptyString(entry.pattern)
+    ) {
+      throw new Error("invalid-rules-trigger");
+    }
+    if (entry.kind === "literal") {
+      const needle = entry.pattern.toLowerCase();
+      return {
+        skillId: entry.skillId,
+        matches: (taskText) => taskText.toLowerCase().includes(needle),
+      };
+    }
+    let regex: RegExp;
+    try {
+      regex = new RegExp(entry.pattern, "i");
+    } catch {
+      throw new Error("invalid-rules-trigger");
+    }
+    return {
+      skillId: entry.skillId,
+      matches: (taskText) => regex.test(taskText),
+    };
+  });
+};
+
+export function createRulesContestant(
+  fixture: unknown,
+  manifest: ArenaSkillManifest,
+): ArenaContestant {
+  const triggers = parseRulesFixture(fixture, manifest);
+  return {
+    id: "rules",
+    async run(input: ArenaContestantInput): Promise<ArenaResult> {
+      const forced = new Set([...input.explicitSkillIds, ...input.requiredSkillIds]);
+      const optional: string[] = [];
+      for (const trigger of triggers) {
+        if (optional.length >= MAX_OPTIONAL_SKILL_CANDIDATES) {
+          break;
+        }
+        if (forced.has(trigger.skillId) || optional.includes(trigger.skillId)) {
+          continue;
+        }
+        if (trigger.matches(input.taskText)) {
+          optional.push(trigger.skillId);
+        }
+      }
+      return normalizeArenaResult(
+        {
+          contestantId: "rules",
+          status: "ok",
+          selectedSkillIds: [...forced, ...optional],
+        },
+        input,
+      );
+    },
+  };
+}
