@@ -147,7 +147,7 @@ test("offline fake-gateway example needs no credential or network", () => {
     fake: true,
     decision: {
       status: "fallback",
-      reason: "uncalibrated-thresholds",
+      reason: "service-error",
       forcedSkillIds: ["systematic-debugging"],
       protectedContextIds: ["synthetic-protected-context"],
     },

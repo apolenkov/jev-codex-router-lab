@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import test from "node:test";
+import test, { after } from "node:test";
 import {
   parseArenaCases,
   parseArenaGold,
@@ -29,8 +29,16 @@ const FIXTURE_NAMES = [
 const readJson = (name: string): unknown =>
   JSON.parse(readFileSync(join(ARENA_FIXTURES, name), "utf8"));
 
+const createdRoots: string[] = [];
+after(() => {
+  for (const root of createdRoots) {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 const makeRepository = (): string => {
   const root = mkdtempSync(join(tmpdir(), "arena-cli-test-"));
+  createdRoots.push(root);
   mkdirSync(join(root, "fixtures", "arena"), { recursive: true });
   for (const name of FIXTURE_NAMES) {
     copyFileSync(join(ARENA_FIXTURES, name), join(root, "fixtures", "arena", name));
