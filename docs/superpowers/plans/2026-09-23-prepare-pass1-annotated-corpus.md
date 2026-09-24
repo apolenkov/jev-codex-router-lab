@@ -35,7 +35,7 @@
 - Create `fixtures/pass1-evaluation-cases.json`: 28 disjoint cases and final annotations.
 - Create `fixtures/pass1-corpus-manifest.json`: split counts, coverage counts, guide and fixture SHA-256 values, and the question-builder fingerprint.
 - Create `test/pass1-annotated-corpus.test.ts`: test-local structural and cross-file assertions; no production validator.
-- Modify only `openspec/changes/prepare-pass1-annotated-corpus/tasks.md` and TASK-054.04 through the Backlog CLI.
+- Modify only `openspec/changes/prepare-pass1-annotated-corpus/tasks.md` and the parent backlog task 054.04 through the Backlog CLI.
 
 ## Work plan
 
@@ -78,7 +78,7 @@
 3. Compute SHA-256 for the guide, three split files, and current question builder; record them with exact coverage and status counts in the manifest.
 4. Run `npm run check`, `openspec validate prepare-pass1-annotated-corpus --strict --no-interactive`, and `git diff --check`. Confirm there were no Jev requests and no unrelated files were staged or lost.
 5. Obtain exactly one read-only AstraReviewer review on the final tested candidate. Fix important findings, then rerun affected checks and `npm run check`.
-6. Update OpenSpec checkboxes and TASK-054.04 with evidence, dataset limitations, hashes, and next steps. Do not mark later threshold calibration complete.
+6. Update OpenSpec checkboxes and backlog task 054.04 with evidence, dataset limitations, hashes, and next steps. Do not mark later threshold calibration complete.
 
 ## Delegation, isolation, and watchdog
 
