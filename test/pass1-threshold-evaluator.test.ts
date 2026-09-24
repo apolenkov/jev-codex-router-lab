@@ -265,6 +265,7 @@ const evaluate = async (
     },
     transport,
     sink: sink.sink,
+    delay: async () => {},
     writeReport: async (report) => {
       written.push(structuredClone(report));
     },

@@ -250,6 +250,7 @@ const collectWithMemorySink = async (
   });
   const pins = loadPins(split);
   const result = await runPass1ThresholdCollection({
+    delay: async () => {},
     split,
     corpus,
     corpusPath: manifest0(split).path,
@@ -669,6 +670,7 @@ test("collection records ordered closed evidence for every corpus case", async (
   });
   const pins = loadPins("calibration");
   const result = await runPass1ThresholdCollection({
+    delay: async () => {},
     split: "calibration",
     corpus,
     corpusPath: CALIBRATION_CORPUS_PATH,
@@ -856,6 +858,7 @@ test("collection refuses fingerprint drift before writing or dispatching", async
 
   await assert.rejects(
     runPass1ThresholdCollection({
+      delay: async () => {},
       split: "calibration",
       corpus,
       corpusPath: CALIBRATION_CORPUS_PATH,
@@ -891,6 +894,7 @@ test("collection refuses a transport bound to another corpus", async () => {
   const pins = loadPins("calibration");
   await assert.rejects(
     runPass1ThresholdCollection({
+      delay: async () => {},
       split: "calibration",
       corpus,
       corpusPath: CALIBRATION_CORPUS_PATH,

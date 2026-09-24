@@ -68,9 +68,11 @@ export const PASS1_THRESHOLD_LIMITS: Readonly<
 export const PASS1_THRESHOLD_RESUME_ATTEMPT_CEILING: Readonly<
   Record<Pass1CorpusSplit, number>
 > = {
-  calibration: 60,
-  evaluation: 32,
+  calibration: 70,
+  evaluation: 40,
 };
+
+export const PASS1_THRESHOLD_INTER_CALL_DELAY_MS = 1_000;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -834,6 +836,7 @@ export interface Pass1ThresholdEvidenceManifest {
     readonly timeoutMs: number;
     readonly retries: number;
     readonly redirects: "manual";
+    readonly interCallDelayMs: number;
   };
 }
 
@@ -903,6 +906,7 @@ export interface RunPass1ThresholdCollectionOptions {
     };
     readonly resumeCount: number;
   };
+  readonly delay?: (ms: number) => Promise<void>;
 }
 
 const closedChoice = (
@@ -1016,6 +1020,7 @@ export const runPass1ThresholdCollection = async (
       timeoutMs: PASS1_THRESHOLD_TIMEOUT_MS,
       retries: 0,
       redirects: "manual",
+      interCallDelayMs: PASS1_THRESHOLD_INTER_CALL_DELAY_MS,
     },
   };
 
@@ -1065,6 +1070,10 @@ export const runPass1ThresholdCollection = async (
         recordById.set(corpusCase.caseId, prior);
         continue;
       }
+      await (options.delay ??
+        ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))))(
+        PASS1_THRESHOLD_INTER_CALL_DELAY_MS,
+      );
       const request = buildPass1Request(corpusCase.input);
       let result: CalibrationTransportResult | null = null;
       let record: Pass1ThresholdCaseRecord;

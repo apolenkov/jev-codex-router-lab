@@ -84,6 +84,7 @@ const collectOptions = (root: string) => ({
   repositoryRoot: root,
   env: { TYPESAFE_API_KEY: "test-key" } as NodeJS.ProcessEnv,
   fetch: fakeFetch,
+  delay: async () => {},
 });
 
 test("usage errors exit 2 before any filesystem or network work", async () => {

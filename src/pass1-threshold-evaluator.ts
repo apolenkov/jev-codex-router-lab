@@ -131,6 +131,7 @@ export interface RunPass1ThresholdEvaluationOptions {
     };
     readonly resumeCount: number;
   };
+  readonly delay?: (ms: number) => Promise<void>;
   readonly writeReport: (
     report: Pass1ThresholdEvaluationReport,
   ) => Promise<void>;
@@ -154,6 +155,7 @@ export const runPass1ThresholdEvaluation = async (
     transport: options.transport,
     sink: options.sink,
     ...(options.resume === undefined ? {} : { resume: options.resume }),
+    ...(options.delay === undefined ? {} : { delay: options.delay }),
   });
   const report = buildPass1ThresholdEvaluation({
     artifact: options.artifact,

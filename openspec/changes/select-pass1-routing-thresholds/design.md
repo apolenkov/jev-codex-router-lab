@@ -94,12 +94,16 @@ evaluation evidence; a poor evaluation is reported, not retuned.
   records `resumedFrom` accounting and `resumeCount`.
 - **Amendment 2026-09-24 v2 (owner-approved after a second timeout):**
   resumes are unbounded in count; each resume continues from the first
-  non-final case. Cumulative actual attempts are hard-capped at **60 for
-  calibration and 32 for evaluation** (plan + up to 4 transport failures);
-  spend cap unchanged (USD 0.25). Per-call timeout raised 45 s → 120 s to
-  tolerate provider latency; the resumed manifest records the effective
-  `limits.maxAttempts` and `timeoutMs`. If attempts exhaust before all
-  cases collect, the run reports `incomplete` honestly.
+  non-final case. Per-call timeout raised 45 s → 120 s to tolerate provider
+  latency; the resumed manifest records the effective `limits.maxAttempts`
+  and `timeoutMs`. If attempts exhaust before all cases collect, the run
+  reports `incomplete` honestly.
+- **Amendment 2026-09-24 v3 (owner-approved after a third failure):**
+  provider failure rate observed ~25% (2 timeouts + 1 provider-error in
+  12 attempts). Cumulative attempt ceiling raised to **70 for calibration
+  and 40 for evaluation**; a fixed 1000 ms inter-call delay is inserted
+  between sequential calls to reduce rate-limit pressure and is recorded
+  in the manifest `limits.interCallDelayMs`. Spend cap unchanged.
 - Protected-context fragments are stripped by the request builder; the
   corpus validator already proves no protected fragment reaches the wire.
 

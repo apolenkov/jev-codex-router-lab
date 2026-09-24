@@ -58,6 +58,7 @@ export interface Pass1ThresholdCliOptions {
   readonly env?: NodeJS.ProcessEnv;
   readonly fetch?: Fetch;
   readonly createTransport?: typeof createPass1ThresholdTransport;
+  readonly delay?: (ms: number) => Promise<void>;
 }
 
 export interface Pass1ThresholdCliSummary {
@@ -430,6 +431,7 @@ const runCollection = async (
         actual: frozen.actual,
         transport,
         sink,
+        ...(options.delay === undefined ? {} : { delay: options.delay }),
         ...(resumeState === null
           ? {}
           : {
@@ -495,6 +497,7 @@ const runCollection = async (
             resumeCount: resumeState.resumeCount,
           },
         }),
+      ...(options.delay === undefined ? {} : { delay: options.delay }),
       writeReport: (evaluation) =>
         publishOnce(reportPath, evaluation, assertEvidencePath),
     });
