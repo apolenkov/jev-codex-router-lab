@@ -1,6 +1,6 @@
 export type TaskType = "explain" | "research" | "plan" | "diagnose" | "change" | "review" | "operate";
 export type RiskDimension = "security" | "data-loss" | "public-contract" | "migration" | "user-behavior";
-export type FallbackReason = "invalid-input" | "service-error" | "malformed-response" | "stale-decision" | "unknown-id" | "low-confidence";
+export type FallbackReason = "invalid-input" | "service-error" | "malformed-response" | "stale-decision" | "unknown-id" | "low-confidence" | "uncalibrated-thresholds";
 
 export const MAX_OPTIONAL_SKILL_CANDIDATES = 3;
 export const MAX_TASK_TEXT_CHARS = 8_000;

@@ -6,7 +6,10 @@ import type { RouterDecision, RouterInput } from "./contracts.js";
 import { PolicyError, precheck } from "./policy.js";
 import { NONE } from "./questions.js";
 import { routeWithTelemetry, type RouteExecution } from "./router.js";
-import type { SemanticGateway } from "./semantic-gateway.js";
+import {
+  SemanticGatewayError,
+  type SemanticGateway,
+} from "./semantic-gateway.js";
 import { buildReport, type PriceEnvironment } from "./telemetry.js";
 import { createTypeSafeGateway } from "./typesafe-gateway.js";
 
@@ -278,10 +281,15 @@ const writeReport = async (
   }
 };
 
-const serviceFallback = (checked: ReturnType<typeof precheck>): RouteExecution => ({
+const serviceFallback = (
+  checked: ReturnType<typeof precheck>,
+  error?: unknown,
+): RouteExecution => ({
   decision: {
     status: "fallback",
-    reason: "service-error",
+    reason: error instanceof SemanticGatewayError
+      ? error.reason
+      : "service-error",
     forcedSkillIds: checked.forcedSkillIds,
     protectedContextIds: checked.protectedContextIds,
   },
@@ -370,8 +378,8 @@ export async function runCli(
     try {
       const gateway = (options.createGateway ?? createTypeSafeGateway)();
       execution = await routeWithTelemetry(parsed as RouterInput, gateway);
-    } catch {
-      execution = serviceFallback(checked);
+    } catch (error) {
+      execution = serviceFallback(checked, error);
     }
 
     if (openedReport !== undefined) {

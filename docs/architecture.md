@@ -15,12 +15,19 @@ precheck (deterministic)
    |  validate shape, sizes, IDs, mandatory skills
    |  derive forcedSkillIds + protectedContextIds
    v
+pass-1 threshold policy (deterministic)
+   |  JEV_PASS1_THRESHOLDS_JSON must hold the exact policy shape;
+   |  missing or invalid policy fails closed before credentials
+   |  are read or any provider request is made
+   v
 pass 1 (Jev)
    |  classify task; rank optional skills and other allowlisted candidates;
    |  score five risk dimensions
    v
-postcheck (deterministic)
-   |  validate closed schema, echoes, probabilities, allowlisted IDs
+pass-1 confidence gate + postcheck (deterministic)
+   |  a queried Choice below the configured floor or a Noul inside the
+   |  configured uncertainty band rejects the whole pass;
+   |  validate closed schema, echoes, probabilities, allowlisted IDs;
    |  cap optional skills at three
    +---------------------- no optional skills --------------------+
    |                                                            |
@@ -76,11 +83,16 @@ The `RouterDecision` union has two forms:
 - `ok`: the seven checked advisory signals plus `forcedSkillIds` and
   `protectedContextIds`;
 - `fallback`: one of `invalid-input`, `service-error`, `malformed-response`,
-  `stale-decision`, `unknown-id`, or `low-confidence`, plus the deterministic
-  mandatory/protected IDs recoverable from the input.
+  `stale-decision`, `unknown-id`, `low-confidence`, or
+  `uncalibrated-thresholds`, plus the deterministic mandatory/protected IDs
+  recoverable from the input.
 
-Pass 2 is skipped when pass 1 selects no optional skill. A service or model
-failure never triggers a command or permission change; it produces fallback.
+Pass-1 thresholds come only from `JEV_PASS1_THRESHOLDS_JSON` and are
+independent of pass 2; a missing or invalid policy fails closed as
+`uncalibrated-thresholds` before credentials are read or any provider request
+is made. Pass 2 is skipped when pass 1 selects no optional skill. A service
+or model failure never triggers a command or permission change; it produces
+fallback.
 
 ## Telemetry
 

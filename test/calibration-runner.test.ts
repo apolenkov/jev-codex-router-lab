@@ -34,7 +34,45 @@ import {
   type CalibrationCheckpointStore,
   type CalibrationError,
   type CalibrationReport,
+  type CalibrationTransportResult,
 } from "../src/calibration-runner.js";
+import { PASS1_THRESHOLDS_ENV } from "../src/pass1-thresholds.js";
+
+const TEST_PASS1_POLICY = JSON.stringify({
+  choiceConfidenceMin: 0.5,
+  noulUncertaintyLower: 0.4,
+  noulUncertaintyUpper: 0.6,
+});
+const TEST_PASS1_BAND = { lower: 0.4, upper: 0.6 } as const;
+process.env[PASS1_THRESHOLDS_ENV] = TEST_PASS1_POLICY;
+
+const withPass1Policy = async (
+  value: string | undefined,
+  run: () => Promise<void>,
+): Promise<void> => {
+  const previous = process.env[PASS1_THRESHOLDS_ENV];
+  if (value === undefined) {
+    delete process.env[PASS1_THRESHOLDS_ENV];
+  } else {
+    process.env[PASS1_THRESHOLDS_ENV] = value;
+  }
+  try {
+    await run();
+  } finally {
+    if (previous === undefined) {
+      delete process.env[PASS1_THRESHOLDS_ENV];
+    } else {
+      process.env[PASS1_THRESHOLDS_ENV] = previous;
+    }
+  }
+};
+
+const confidentRiskValue = (range: { min: number; max: number }): number =>
+  range.min < TEST_PASS1_BAND.lower
+    ? range.min
+    : range.max > TEST_PASS1_BAND.upper
+      ? range.max
+      : (range.min + range.max) / 2;
 
 test("canonical fingerprint ignores object insertion order but covers nested labels", () => {
   const left = { b: 1, a: { d: ["x", "y"], c: 2 } };
@@ -410,6 +448,7 @@ const loadSmokeInput = async (): Promise<RouterInput> => JSON.parse(
 const experimentFetch = (
   corpus: ReturnType<typeof loadCalibrationCorpus>,
   beforeRequest?: (caseId: string) => void,
+  riskValue: (range: { min: number; max: number }) => number = confidentRiskValue,
 ): Fetch => async (_input, init) => {
   const body = JSON.parse(String(init?.body)) as {
     state: Record<string, unknown>;
@@ -441,7 +480,7 @@ const experimentFetch = (
       if (id.startsWith("risk_")) {
         const dimension = id.slice("risk_".length).replaceAll("_", "-") as
           keyof typeof expected.riskDimensions;
-        answers[id] = { type: "noul", noul: midpoint(expected.riskDimensions[dimension]) };
+        answers[id] = { type: "noul", noul: riskValue(expected.riskDimensions[dimension]) };
       } else {
         const index = Number(id.slice("skill_fit_".length));
         const skillId = skills[index]!.id;
@@ -1005,4 +1044,235 @@ test("atomic checkpoint claim permits only one concurrent transport and dispatch
   const persisted = JSON.parse(await readFile(path, "utf8")) as CalibrationCheckpoint;
   assert.equal(persisted.accounting.attempts, 1);
   assert.equal(persisted.accounting.reservedUsd, 0);
+});
+
+test("runner fails closed before transport when the pass-1 policy is missing or invalid", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+
+  for (const policy of [undefined, "not-json", "[]", "{}"]) {
+    await withPass1Policy(policy, async () => {
+      const calls = { systemOne: 0, terminalize: 0, complete: 0, reports: 0 };
+      const transport = {
+        fingerprint: canonicalFingerprint(corpus),
+        systemOne: async (): Promise<CalibrationTransportResult> => {
+          calls.systemOne += 1;
+          throw new Error("transport must not be reached");
+        },
+        accounting: () => ({
+          attempts: 0,
+          spentUsd: 0,
+          reservedUsd: 0,
+          terminal: false,
+        }),
+        terminalize: async () => {
+          calls.terminalize += 1;
+        },
+        complete: async () => {
+          calls.complete += 1;
+        },
+      };
+
+      await assert.rejects(
+        runCalibrationExperiment({
+          corpus,
+          smokeInput,
+          transport,
+          writeReport: async () => {
+            calls.reports += 1;
+          },
+        }),
+        calibrationReason("uncalibrated-thresholds"),
+      );
+      assert.deepEqual(calls, { systemOne: 0, terminalize: 0, complete: 0, reports: 0 });
+    });
+  }
+});
+
+test("runner stops collection at pass-1 low-confidence after one provider request", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const midpointFetch = experimentFetch(corpus, undefined, midpoint);
+  let calls = 0;
+  const countingFetch: Fetch = async (input, init) => {
+    calls += 1;
+    return midpointFetch(input, init);
+  };
+  const checkpoint = memoryCheckpointStore();
+  const transport = await createCalibrationTransport({
+    apiKey: "test-key",
+    corpus,
+    checkpoint: checkpoint.store,
+    fetch: countingFetch,
+  });
+  const persisted: CalibrationReport[] = [];
+
+  await assert.rejects(
+    runCalibrationExperiment({
+      corpus,
+      smokeInput,
+      transport,
+      writeReport: async (snapshot) => { persisted.push(structuredClone(snapshot)); },
+    }),
+    calibrationReason("invalid-provider-evidence"),
+  );
+
+  assert.equal(calls, 1);
+  const terminal = persisted.at(-1)!;
+  assert.equal(terminal.phase, "calibration-records");
+  assert.equal(terminal.calibration.pass, null);
+  assert.equal(terminal.selectedTuple, null);
+  assert.equal(terminal.holdout, null);
+  assert.equal(terminal.smoke, null);
+  assert.equal(terminal.calibration.failure?.caseId, "C1");
+  assert.equal(terminal.calibration.failure?.stage, "pass1");
+  assert.equal(terminal.calibration.failure?.reason, "invalid-provider-evidence");
+  assert.equal(terminal.accounting.attempts, 1);
+  assert.equal(terminal.accounting.terminal, true);
+  assert.equal(checkpoint.snapshots.at(-1)?.phase, "terminal");
+  assert.equal(checkpoint.snapshots.at(-1)?.failureReason, "post-transport-validation");
+});
+
+test("runner uses the supplied environment policy when the global policy is absent", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const transport = await createTestTransport({
+    apiKey: "test-key",
+    corpus,
+    fetch: experimentFetch(corpus),
+  });
+
+  await withPass1Policy(undefined, async () => {
+    const report = await runCalibrationExperiment({
+      corpus,
+      smokeInput,
+      transport,
+      writeReport: async () => undefined,
+      env: { [PASS1_THRESHOLDS_ENV]: TEST_PASS1_POLICY },
+    });
+
+    assert.equal(report.phase, "smoke-completed");
+    assert.equal(report.smoke?.status, "completed");
+    assert.equal(report.accounting.terminal, true);
+  });
+});
+
+test("runner follows the supplied policy when it differs from a valid global policy", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const strictPolicy = JSON.stringify({
+    choiceConfidenceMin: 0.95,
+    noulUncertaintyLower: 0.4,
+    noulUncertaintyUpper: 0.6,
+  });
+  const transport = await createTestTransport({
+    apiKey: "test-key",
+    corpus,
+    fetch: experimentFetch(corpus),
+  });
+  const persisted: CalibrationReport[] = [];
+
+  await assert.rejects(
+    runCalibrationExperiment({
+      corpus,
+      smokeInput,
+      transport,
+      writeReport: async (snapshot) => { persisted.push(structuredClone(snapshot)); },
+      env: { [PASS1_THRESHOLDS_ENV]: strictPolicy },
+    }),
+    calibrationReason("invalid-provider-evidence"),
+  );
+
+  const terminal = persisted.at(-1)!;
+  assert.equal(terminal.phase, "calibration-records");
+  assert.equal(terminal.calibration.failure?.caseId, "C1");
+  assert.equal(terminal.calibration.failure?.stage, "pass1");
+  assert.equal(terminal.calibration.failure?.reason, "invalid-provider-evidence");
+  assert.equal(terminal.accounting.attempts, 1);
+  assert.equal(terminal.accounting.terminal, true);
+});
+
+test("an explicit environment without the policy does not inherit the global value", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+
+  for (const env of [{}, { [PASS1_THRESHOLDS_ENV]: "not-json" }]) {
+    const calls = { systemOne: 0, terminalize: 0, complete: 0, reports: 0 };
+    const transport = {
+      fingerprint: canonicalFingerprint(corpus),
+      systemOne: async (): Promise<CalibrationTransportResult> => {
+        calls.systemOne += 1;
+        throw new Error("transport must not be reached");
+      },
+      accounting: () => ({
+        attempts: 0,
+        spentUsd: 0,
+        reservedUsd: 0,
+        terminal: false,
+      }),
+      terminalize: async () => {
+        calls.terminalize += 1;
+      },
+      complete: async () => {
+        calls.complete += 1;
+      },
+    };
+
+    await assert.rejects(
+      runCalibrationExperiment({
+        corpus,
+        smokeInput,
+        transport,
+        writeReport: async () => {
+          calls.reports += 1;
+        },
+        env,
+      }),
+      calibrationReason("uncalibrated-thresholds"),
+    );
+    assert.deepEqual(calls, { systemOne: 0, terminalize: 0, complete: 0, reports: 0 });
+  }
+});
+
+test("runner reads the supplied environment policy once and uses it consistently", async () => {
+  const corpus = loadCalibrationCorpus(DEFAULT_CALIBRATION_CORPUS_PATH);
+  const smokeInput = await loadSmokeInput();
+  const strictPolicy = JSON.stringify({
+    choiceConfidenceMin: 0.95,
+    noulUncertaintyLower: 0.4,
+    noulUncertaintyUpper: 0.6,
+  });
+  let policyReads = 0;
+  const env = new Proxy({} as Record<string, string | undefined>, {
+    get: (_target, property) =>
+      property === PASS1_THRESHOLDS_ENV
+        ? (++policyReads === 1 ? strictPolicy : TEST_PASS1_POLICY)
+        : undefined,
+  });
+  const transport = await createTestTransport({
+    apiKey: "test-key",
+    corpus,
+    fetch: experimentFetch(corpus),
+  });
+  const persisted: CalibrationReport[] = [];
+
+  await assert.rejects(
+    runCalibrationExperiment({
+      corpus,
+      smokeInput,
+      transport,
+      writeReport: async (snapshot) => { persisted.push(structuredClone(snapshot)); },
+      env,
+    }),
+    calibrationReason("invalid-provider-evidence"),
+  );
+
+  const terminal = persisted.at(-1)!;
+  assert.equal(terminal.phase, "calibration-records");
+  assert.equal(terminal.calibration.failure?.caseId, "C1");
+  assert.equal(terminal.calibration.failure?.stage, "pass1");
+  assert.equal(terminal.calibration.failure?.reason, "invalid-provider-evidence");
+  assert.equal(terminal.accounting.attempts, 1);
+  assert.equal(terminal.accounting.terminal, true);
+  assert.equal(policyReads, 1);
 });

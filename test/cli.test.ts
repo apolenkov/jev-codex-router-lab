@@ -17,7 +17,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import type { RouterInput } from "../src/contracts.js";
-import type { SemanticGateway } from "../src/semantic-gateway.js";
+import {
+  SemanticGatewayError,
+  type SemanticGateway,
+} from "../src/semantic-gateway.js";
 import { runCli, type CliOptions } from "../src/cli.js";
 
 const validInput: RouterInput = {
@@ -130,6 +133,26 @@ test("CLI keeps service fallback on exit 0 and never exposes the exception", asy
     protectedContextIds: [],
   });
   assert.equal(JSON.stringify(result).includes("DO-NOT-LOG"), false);
+});
+
+test("CLI keeps a gateway factory's typed reason instead of collapsing it to service-error", async (t) => {
+  const { root } = await setupRepository(t);
+
+  const result = await runCli(["--input", "input.json"], {
+    cwd: root,
+    repositoryRoot: root,
+    createGateway: () => {
+      throw new SemanticGatewayError("uncalibrated-thresholds");
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.decision, {
+    status: "fallback",
+    reason: "uncalibrated-thresholds",
+    forcedSkillIds: ["brainstorming"],
+    protectedContextIds: [],
+  });
 });
 
 test("synthetic smoke fixture keeps the required skill and metadata report body-free on fallback", async (t) => {
@@ -552,24 +575,48 @@ test("compiled CLI prints exactly one fallback decision JSON and exits 0 without
   const { inputPath } = await setupRepository(t);
   const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
   const cliPath = fileURLToPath(new URL("../src/cli.js", import.meta.url));
-  const env = { ...process.env, TYPESAFE_API_KEY: "" };
-
-  const result = spawnSync(process.execPath, [cliPath, "--input", inputPath], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-    env,
+  const pass1Policy = JSON.stringify({
+    choiceConfidenceMin: 0.5,
+    noulUncertaintyLower: 0.4,
+    noulUncertaintyUpper: 0.6,
   });
+  const cases: readonly [{ [key: string]: string | undefined }, string][] = [
+    [
+      { TYPESAFE_API_KEY: "", JEV_PASS1_THRESHOLDS_JSON: undefined },
+      "uncalibrated-thresholds",
+    ],
+    [
+      { TYPESAFE_API_KEY: "", JEV_PASS1_THRESHOLDS_JSON: pass1Policy },
+      "service-error",
+    ],
+  ];
 
-  assert.equal(result.status, 0, result.stderr);
-  const lines = result.stdout.trim().split("\n");
-  assert.equal(lines.length, 1);
-  assert.deepEqual(JSON.parse(lines[0]!), {
-    status: "fallback",
-    reason: "service-error",
-    forcedSkillIds: ["brainstorming"],
-    protectedContextIds: [],
-  });
-  assert.equal(result.stderr, "");
+  for (const [overrides, reason] of cases) {
+    const env = { ...process.env };
+    for (const [name, value] of Object.entries(overrides)) {
+      if (value === undefined) {
+        delete env[name];
+      } else {
+        env[name] = value;
+      }
+    }
+    const result = spawnSync(process.execPath, [cliPath, "--input", inputPath], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      env,
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    const lines = result.stdout.trim().split("\n");
+    assert.equal(lines.length, 1);
+    assert.deepEqual(JSON.parse(lines[0]!), {
+      status: "fallback",
+      reason,
+      forcedSkillIds: ["brainstorming"],
+      protectedContextIds: [],
+    });
+    assert.equal(result.stderr, "");
+  }
 });
 
 test("compiled CLI exits 2 with no decision for invalid local JSON", async (t) => {

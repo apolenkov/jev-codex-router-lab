@@ -98,6 +98,55 @@ task revision, policy version, and catalogue hash. Any mismatch MUST produce a
 - **WHEN** the echoed catalogue hash differs from the request's catalogue hash
 - **THEN** the decision is `fallback` with reason `stale-decision`
 
+### Requirement: Pass-1 confidence is checked atomically
+
+The system SHALL evaluate every queried non-echo semantic answer in pass 1
+against a pass-1 threshold policy that is independent of pass 2. A Choice
+answer below the configured Choice confidence floor, or a Noul probability
+inside the configured inclusive uncertainty interval, MUST reject the entire
+pass-1 result with reason `low-confidence`; no pass-1 signal may be accepted
+independently of the others. A confident Noul probability near zero is a
+confident "no" and MUST NOT be rejected merely for being low. Optional
+questions omitted because their candidate lists are empty MUST NOT be treated
+as missing or uncertain answers. Echo fields are validated for freshness and
+shape, not semantic confidence.
+
+Pass-1 thresholds MUST be configured separately from pass 2 through the exact
+`JEV_PASS1_THRESHOLDS_JSON` object with numeric fields `choiceConfidenceMin`,
+`noulUncertaintyLower`, and `noulUncertaintyUpper`, each in `[0,1]` and with
+the Noul interval strictly containing `0.5`. The code validates the schema and
+ranges, but does not claim to verify calibration provenance. If configuration
+is missing or invalid, the gateway MUST fail closed with reason
+`uncalibrated-thresholds` before reading credentials or making a provider
+request. Pass-1 threshold values MUST NOT be copied from the pass-2 policy and
+MUST be selected from separate calibration evidence before live routing is
+enabled.
+
+#### Scenario: One uncertain Choice answer rejects the whole pass
+
+- **WHEN** any queried pass-1 Choice answer is below the pass-1 confidence floor
+- **THEN** the route is `fallback` with reason `low-confidence`, preserves mandatory skills, and does not call pass 2
+
+#### Scenario: One uncertain Noul answer rejects the whole pass
+
+- **WHEN** any queried pass-1 Noul probability is on or between the configured uncertainty boundaries
+- **THEN** the route is `fallback` with reason `low-confidence`, preserves mandatory skills, and accepts none of the other pass-1 signals
+
+#### Scenario: Confident negative Noul answer is accepted
+
+- **WHEN** a queried pass-1 Noul probability is below the uncertainty interval
+- **THEN** the confidence gate accepts that answer as a confident "no"
+
+#### Scenario: Missing threshold policy fails before network access
+
+- **WHEN** no valid pass-1 threshold policy is configured
+- **THEN** the route is `fallback` with reason `uncalibrated-thresholds`, preserves mandatory skills, and makes no semantic call
+
+#### Scenario: Omitted optional question is not uncertain
+
+- **WHEN** an optional candidate list is empty and its pass-1 question is omitted
+- **THEN** the absent answer does not cause a confidence fallback
+
 ### Requirement: Decision output is ok or fallback
 
 The system SHALL return a typed decision that is either `ok` or `fallback`.

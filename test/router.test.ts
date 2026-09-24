@@ -5,6 +5,7 @@ import type {
   RouterInput,
   SemanticResponse,
 } from "../src/contracts.js";
+import { PASS1_THRESHOLDS_ENV } from "../src/pass1-thresholds.js";
 import {
   SemanticGatewayError,
   type Pass1Result,
@@ -14,6 +15,13 @@ import {
 import { route, routeWithTelemetry } from "../src/router.js";
 import { buildReport } from "../src/telemetry.js";
 import { TypeSafeGateway } from "../src/typesafe-gateway.js";
+
+const TEST_PASS1_POLICY = JSON.stringify({
+  choiceConfidenceMin: 0.5,
+  noulUncertaintyLower: 0.4,
+  noulUncertaintyUpper: 0.6,
+});
+process.env[PASS1_THRESHOLDS_ENV] = TEST_PASS1_POLICY;
 
 const validInput: RouterInput = {
   taskId: "synthetic-router-001",
@@ -165,6 +173,7 @@ test("route maps every typed gateway reason without losing forced skills", async
     "stale-decision",
     "unknown-id",
     "low-confidence",
+    "uncalibrated-thresholds",
   ];
 
   for (const reason of reasons) {
@@ -226,6 +235,35 @@ test("route rejects a gateway result that omits a nullable signal", async () => 
   });
   assert.equal(serialized.includes('"status":"ok"'), false);
   assert.equal(serialized.includes('"signals"'), false);
+});
+
+test("route preserves forced skills and skips both passes when the pass-1 policy is uncalibrated", async () => {
+  const previousPolicy = process.env[PASS1_THRESHOLDS_ENV];
+  delete process.env[PASS1_THRESHOLDS_ENV];
+  try {
+    let clientCalls = 0;
+    const execution = await routeWithTelemetry(validInput, new TypeSafeGateway({
+      systemOne: async () => {
+        clientCalls += 1;
+        return {};
+      },
+    }));
+
+    assert.deepEqual(execution.decision, {
+      status: "fallback",
+      reason: "uncalibrated-thresholds",
+      forcedSkillIds: forcedSkills,
+      protectedContextIds: [],
+    });
+    assert.equal(clientCalls, 0);
+    assert.deepEqual(execution.telemetry.passes.map(({ pass }) => pass), ["pass1"]);
+  } finally {
+    if (previousPolicy === undefined) {
+      delete process.env[PASS1_THRESHOLDS_ENV];
+    } else {
+      process.env[PASS1_THRESHOLDS_ENV] = previousPolicy;
+    }
+  }
 });
 
 test("route returns invalid-input before the gateway and preserves valid forced IDs", async () => {
