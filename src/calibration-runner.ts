@@ -641,7 +641,20 @@ export const createAtomicCalibrationReportWriter = (
   };
 };
 
-const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
+export interface CalibrationCheckpointBounds {
+  readonly maxAttempts: number;
+  readonly spendCapUsd: number;
+}
+
+const DEFAULT_CHECKPOINT_BOUNDS: CalibrationCheckpointBounds = {
+  maxAttempts: CALIBRATION_MAX_ATTEMPTS,
+  spendCapUsd: CALIBRATION_SPEND_CAP_USD,
+};
+
+const parseCheckpoint = (
+  value: unknown,
+  bounds: CalibrationCheckpointBounds,
+): CalibrationCheckpoint => {
   if (
     !isRecord(value) ||
     !exactKeys(value, [
@@ -661,11 +674,11 @@ const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
     !exactKeys(value.accounting, ["attempts", "spentUsd", "reservedUsd", "terminal"]) ||
     !Number.isInteger(value.accounting.attempts) ||
     (value.accounting.attempts as number) < 0 ||
-    (value.accounting.attempts as number) > CALIBRATION_MAX_ATTEMPTS ||
+    (value.accounting.attempts as number) > bounds.maxAttempts ||
     typeof value.accounting.spentUsd !== "number" ||
     !Number.isFinite(value.accounting.spentUsd) ||
     value.accounting.spentUsd < 0 ||
-    value.accounting.spentUsd > CALIBRATION_SPEND_CAP_USD ||
+    value.accounting.spentUsd > bounds.spendCapUsd ||
     typeof value.accounting.reservedUsd !== "number" ||
     ![0, CALIBRATION_REQUEST_RESERVE_USD].includes(value.accounting.reservedUsd) ||
     typeof value.accounting.terminal !== "boolean" ||
@@ -691,10 +704,11 @@ const parseCheckpoint = (value: unknown): CalibrationCheckpoint => {
 
 export const createAtomicCalibrationCheckpointStore = (
   path: string,
+  bounds: CalibrationCheckpointBounds = DEFAULT_CHECKPOINT_BOUNDS,
 ): CalibrationCheckpointStore => ({
   claim: async (checkpoint) => {
     try {
-      await writeFile(path, `${JSON.stringify(parseCheckpoint(checkpoint), null, 2)}\n`, {
+      await writeFile(path, `${JSON.stringify(parseCheckpoint(checkpoint, bounds), null, 2)}\n`, {
         encoding: "utf8",
         flag: "wx",
         mode: 0o600,
@@ -707,7 +721,8 @@ export const createAtomicCalibrationCheckpointStore = (
       throw error;
     }
   },
-  write: async (checkpoint) => writeJsonAtomic(path, parseCheckpoint(checkpoint)),
+  write: async (checkpoint) =>
+    writeJsonAtomic(path, parseCheckpoint(checkpoint, bounds)),
 });
 
 interface CalibrationTransportOptions {
