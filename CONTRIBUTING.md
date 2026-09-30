@@ -25,6 +25,8 @@ npm run check
 git diff --check
 ```
 
+OpenSpec agent skills (`.claude/skills/openspec-*`, `.claude/commands/opsx/`) are not tracked; recreate them after cloning with `openspec update`.
+
 The default workflow is credential-free and must not make a provider request.
 Add the smallest focused test that proves a behavior change. Keep documentation
 and synthetic examples consistent with the actual contract and evidence.
