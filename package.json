@@ -33,7 +33,6 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "prepare": "lefthook install",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
