@@ -13,9 +13,9 @@ A cell passes when agreement >= 90% and coverage >= 40%; the pick is the passing
 
 - corpus pairs: 70; scored: asis 70 (errors 0), stripped 70 (errors 0)
 - by number of options (asis): 2 options: 21; 3 options: 45; 4 options: 4
-- Kev: jaredpalmer/kev-4b@6cfce5c2fa4b4bd64026336ab649c5ca78857d52; Kev pointer head on Qwen/Qwen3.5-4B-Base, serving jaredpalmer/kev-4b@6cfce5c2fa4b4bd64026336ab649c5ca78857d52 at temperature 2.41
-- Kev latency, asis: mean 554 ms, median 680 ms, p95 856 ms
-- Kev latency, stripped: mean 550 ms, median 681 ms, p95 872 ms
+- Kev revision: jaredpalmer/kev-4b@6cfce5c2fa4b4bd64026336ab649c5ca78857d52
+- Kev latency, asis: mean 566 ms, median 689 ms, p95 864 ms
+- Kev latency, stripped: mean 561 ms, median 687 ms, p95 903 ms
 - For 2-option questions margin = 2*p1 - 1, so T and M are redundant there; the grid mixes them with 3+ option questions.
 
 ## Variant asis
@@ -86,4 +86,5 @@ Hold-out (sessions split into two halves by hash; pick on one half, evaluate on 
 - Pairs are extracted from past sessions; the answer to an earlier question can shape later ones, so pairs are not independent.
 - Multi-select, free-text, timed-out and refused questions are excluded, so the autopilot is calibrated only for single-choice questions.
 - Kev sees the goal and the assistant's closing text, trimmed to a fixed size, not the whole session; owner messages that start with `<` (slash commands, pasted blocks) are dropped, so the goal is short or empty for about half of the pairs. The verdict is "Kev with this state is not calibrated", not "Kev cannot".
-- The model and its serving temperature are those reported above; a different Kev revision needs a new run.
+- A different Kev revision needs a new run (rows are keyed by the request and the revision).
+- The `stripped` variant removes the hint only from option labels and descriptions; if the question or the assistant's closing text carries the marker, it stays.

@@ -10,10 +10,10 @@
  */
 
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { HINT, stateDir, type Pair } from "./extract.js";
+import { appendPrivate, HINT, privateDir, stateDir, writePrivate, type Pair } from "./extract.js";
 
 export const VARIANTS = ["asis", "stripped"] as const;
 export type Variant = (typeof VARIANTS)[number];
@@ -37,19 +37,34 @@ export const stripHint = (label: string): string =>
 export const stateOf = (pair: Pick<Pair, "goal" | "tail" | "question">): string =>
   `Owner goal: ${pair.goal}\n\nAssistant said:\n${pair.tail}\n\nQuestion: ${pair.question}`.slice(-STATE_MAX);
 
-/** Unique criteria keys (a repeated label gets its index) and their option index. */
+/** Unique stable keys for the whole label list: a repeat gets " #n", checked against ALL labels and generated keys. */
+export const keysOf = (labels: readonly string[]): string[] => {
+  const taken = new Set(labels);
+  const used = new Set<string>();
+  return labels.map((label, index) => {
+    let key = label;
+    for (let n = index + 1; used.has(key) || (key !== label && taken.has(key)); n += 1) key = `${label} #${n}`;
+    used.add(key);
+    return key;
+  });
+};
+
+/** Criteria keyed by unique labels. The hint marker is also removed from option descriptions in `stripped`. */
 export const criteriaOf = (
   pair: Pick<Pair, "options">,
   variant: Variant,
 ): { keys: string[]; criteria: Record<string, string> } => {
-  const keys: string[] = [];
+  const clean = variant === "stripped" ? stripHint : (text: string): string => text;
+  const labels = pair.options.map((option) => clean(option.label));
+  const keys = keysOf(labels);
   const criteria: Record<string, string> = {};
   pair.options.forEach((option, index) => {
-    const label = variant === "stripped" ? stripHint(option.label) : option.label;
-    const key = keys.includes(label) ? `${label} #${index + 1}` : label;
-    keys.push(key);
-    criteria[key] = option.description === "" ? label : option.description;
+    const description = clean(option.description);
+    criteria[keys[index] as string] = description === "" ? (labels[index] as string) : description;
   });
+  if (keys.length !== pair.options.length || Object.keys(criteria).length !== pair.options.length) {
+    throw new Error("criteria keys do not match the options");
+  }
   return { keys, criteria };
 };
 
@@ -63,8 +78,13 @@ export const bodyOf = (pair: Pair, variant: Variant): { body: string; keys: stri
   return { body, keys };
 };
 
+/** Fingerprint of one scored row: the exact request body and the Kev revision. */
+export const fpOf = (body: string, run: string): string =>
+  createHash("sha256").update(`${run}\0${body}`).digest("hex");
+
 export interface Row {
   readonly id: string;
+  readonly fp: string;
   readonly variant: Variant;
   readonly sessionId: string;
   readonly nOptions: number;
@@ -271,9 +291,10 @@ const cellText = (cell: Cell | null): string =>
     : `T=${cell.T.toFixed(2)}, M=${cell.M.toFixed(1)}: auto ${cell.auto}, coverage ${pct(cell.coverage, 1)}, agreement ${pct(cell.agreement, 1)}, Wilson low ${pct(cell.wilsonLow, 1)}`;
 
 export interface KevInfo {
-  readonly description: string;
   readonly run: string;
 }
+
+const RUN_OK = /^[A-Za-z0-9._/@-]{1,120}$/;
 
 export interface ReportInput {
   readonly date: string;
@@ -307,7 +328,7 @@ export const renderReport = (input: ReportInput): string => {
     "",
     `- corpus pairs: ${input.corpusSize}; scored: ${VARIANTS.map((variant) => `${variant} ${input.rows[variant].length} (errors ${input.errors[variant]})`).join(", ")}`,
     `- by number of options (asis): ${[...breakdownOf(asis)].map(([n, count]) => `${n} options: ${count}`).join("; ")}`,
-    `- Kev: ${input.kev.run}; ${input.kev.description}`,
+    `- Kev revision: ${input.kev.run}`,
     ...VARIANTS.map((variant) => {
       const latency = latencyOf(input.rows[variant]);
       return `- Kev latency, ${variant}: mean ${latency.mean.toFixed(0)} ms, median ${latency.median.toFixed(0)} ms, p95 ${latency.p95.toFixed(0)} ms`;
@@ -352,7 +373,8 @@ export const renderReport = (input: ReportInput): string => {
     "- Pairs are extracted from past sessions; the answer to an earlier question can shape later ones, so pairs are not independent.",
     "- Multi-select, free-text, timed-out and refused questions are excluded, so the autopilot is calibrated only for single-choice questions.",
     "- Kev sees the goal and the assistant's closing text, trimmed to a fixed size, not the whole session; owner messages that start with `<` (slash commands, pasted blocks) are dropped, so the goal is short or empty for about half of the pairs. The verdict is \"Kev with this state is not calibrated\", not \"Kev cannot\".",
-    "- The model and its serving temperature are those reported above; a different Kev revision needs a new run.",
+    "- A different Kev revision needs a new run (rows are keyed by the request and the revision).",
+    "- The `stripped` variant removes the hint only from option labels and descriptions; if the question or the assistant's closing text carries the marker, it stays.",
     "",
   );
   return out.join("\n");
@@ -383,7 +405,8 @@ export const kevInfoOf = async (kevUrl: string): Promise<KevInfo> => {
   }
   const models = isRecord(body) && Array.isArray(body["models"]) ? body["models"].filter(isRecord) : [];
   const model = models.find((candidate) => candidate["name"] === "kev-latest") ?? models[0] ?? {};
-  return { description: String(model["description"] ?? "unknown"), run: String(model["run"] ?? "unknown") };
+  const run = model["run"];
+  return { run: typeof run === "string" && RUN_OK.test(run) ? run : "unknown" };
 };
 
 export interface RunOptions {
@@ -399,17 +422,33 @@ export const runCalibration = async (options: RunOptions): Promise<{ reportPath:
   const kev = await kevInfoOf(options.kevUrl);
   const corpus = readJsonl<Pair>(join(options.dir, "corpus.jsonl"));
   if (corpus.length === 0) throw new Error(`empty corpus: run autopilot:extract first (${options.dir})`);
+  privateDir(options.dir);
   const errorsPath = join(options.dir, "errors.jsonl");
   const rows = { asis: [] as Row[], stripped: [] as Row[] };
   const errors = { asis: 0, stripped: 0 };
+  let unscored = 0;
 
   for (const variant of VARIANTS) {
     const rowsPath = join(options.dir, `rows-${variant}.jsonl`);
-    rows[variant] = readJsonl<Row>(rowsPath);
-    const done = new Set(rows[variant].map((row) => row.id));
-    for (const pair of corpus) {
-      if (done.has(pair.id)) continue;
+    const requests = corpus.map((pair) => {
       const { body, keys } = bodyOf(pair, variant);
+      return { pair, body, keys, fp: fpOf(body, kev.run) };
+    });
+    // Resume only rows whose pair is still in the corpus and was asked with the same request and Kev revision.
+    const want = new Map(requests.map((request) => [request.pair.id, request.fp]));
+    const stored = readJsonl<Row>(rowsPath);
+    const seen = new Set<string>();
+    rows[variant] = stored.filter((row) => {
+      const keep = want.get(row.id) === row.fp && !seen.has(row.id);
+      seen.add(row.id);
+      return keep;
+    });
+    if (rows[variant].length !== stored.length) {
+      writePrivate(rowsPath, rows[variant].map((row) => `${JSON.stringify(row)}\n`).join(""));
+    }
+    const done = new Set(rows[variant].map((row) => row.id));
+    for (const { pair, body, keys, fp } of requests) {
+      if (done.has(pair.id)) continue;
       const started = performance.now();
       try {
         const response = await fetch(`${options.kevUrl}/v1/systemone`, {
@@ -425,6 +464,7 @@ export const runCalibration = async (options: RunOptions): Promise<{ reportPath:
         const pick = readPick(json, keys);
         const finished: Row = {
           id: pair.id,
+          fp,
           variant,
           sessionId: pair.sessionId,
           nOptions: pair.options.length,
@@ -434,20 +474,19 @@ export const runCalibration = async (options: RunOptions): Promise<{ reportPath:
           recommendedIdx: pair.recommendedIdx,
           latencyMs: reported,
         };
-        appendFileSync(rowsPath, `${JSON.stringify(finished)}\n`);
+        appendPrivate(rowsPath, `${JSON.stringify(finished)}\n`);
         rows[variant].push(finished);
         log(`${variant} ${rows[variant].length}/${corpus.length}`);
       } catch (error) {
         errors[variant] += 1;
         const message = error instanceof Error ? error.message : String(error);
-        appendFileSync(errorsPath, `${JSON.stringify({ id: pair.id, variant, error: message, at: new Date().toISOString() })}\n`);
+        appendPrivate(errorsPath, `${JSON.stringify({ id: pair.id, variant, error: message, at: new Date().toISOString() })}\n`);
         log(`${variant} error: ${message}`);
       }
     }
+    unscored += corpus.length - rows[variant].length;
   }
-  if (rows.asis.length === 0 || rows.stripped.length === 0) {
-    throw new Error(`no scored rows (errors in ${errorsPath}); the report was not written`);
-  }
+  if (unscored > 0) throw new Error(`${unscored} pairs unscored; rerun to resume`);
   const input: ReportInput = { date: options.date, rows, errors, corpusSize: corpus.length, kev };
   mkdirSync(options.resultsDir, { recursive: true });
   const reportPath = join(options.resultsDir, `calibration-${options.date}.md`);

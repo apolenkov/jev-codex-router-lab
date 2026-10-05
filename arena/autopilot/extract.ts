@@ -9,7 +9,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, chmodSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -63,6 +63,25 @@ const TAIL_KEEP = 4000;
 export const HINT = /\s*\((?:Recommended|Рекомендую|Рекомендуется)\)/iu;
 
 export const stateDir = (): string => join(homedir(), ".local", "state", "autopilot-calib");
+
+/** Private state: owner-only directory and files, also tightened when they already exist. */
+export const privateDir = (dir: string): void => {
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  chmodSync(dir, 0o700);
+};
+export const writePrivate = (path: string, text: string): void => {
+  writeFileSync(path, text, { mode: 0o600 });
+  chmodSync(path, 0o600);
+};
+export const appendPrivate = (path: string, text: string): void => {
+  appendFileSync(path, text, { mode: 0o600 });
+  chmodSync(path, 0o600);
+};
+
+export const writeCorpus = (dir: string, pairs: readonly Pair[]): void => {
+  privateDir(dir);
+  writePrivate(join(dir, "corpus.jsonl"), pairs.map((pair) => `${JSON.stringify(pair)}\n`).join(""));
+};
 
 export const newShared = (): Shared => ({
   seenCalls: new Set(),
@@ -237,9 +256,7 @@ export const extractAll = (projectsDir: string): Shared => {
 
 const main = (): void => {
   const shared = extractAll(join(homedir(), ".claude", "projects"));
-  const dir = stateDir();
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "corpus.jsonl"), shared.pairs.map((pair) => `${JSON.stringify(pair)}\n`).join(""));
+  writeCorpus(stateDir(), shared.pairs);
   const { stats } = shared;
   console.log(`tool calls: ${stats.calls}`);
   console.log(`questions: ${stats.questions}`);

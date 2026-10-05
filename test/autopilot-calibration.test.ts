@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,9 +10,12 @@ import {
   bodyOf,
   cellOf,
   criteriaOf,
+  fpOf,
   gridOf,
   halfOf,
   holdoutOf,
+  kevInfoOf,
+  keysOf,
   KevDownError,
   M_GRID,
   readPick,
@@ -28,7 +31,7 @@ import {
   type Row,
   type Scored,
 } from "../arena/autopilot/calibrate.js";
-import { extractLines, newShared, type Pair } from "../arena/autopilot/extract.js";
+import { extractLines, newShared, writeCorpus, type Pair } from "../arena/autopilot/extract.js";
 
 // ---------------------------------------------------------------- extract
 
@@ -191,6 +194,7 @@ test("halves are deterministic and hold-out evaluates on the other half", () => 
 
 const row = (over: Partial<Row>): Row => ({
   id: "r",
+  fp: "fp",
   variant: "asis",
   sessionId: "s",
   nOptions: 3,
@@ -278,16 +282,24 @@ const listen = (server: Server): Promise<string> =>
     server.listen(0, "127.0.0.1", () => resolve(`http://127.0.0.1:${(server.address() as AddressInfo).port}`));
   });
 
-const stubKev = (calls: { count: number }): Server =>
+const stubKev = (calls: { count: number; run?: string; failFrom?: number; bodies?: string[] }): Server =>
   createServer((request, response) => {
     if (request.method === "GET") {
-      response.end(JSON.stringify({ models: [{ name: "kev-latest", description: "stub model", run: "stub@1" }] }));
+      response.end(
+        JSON.stringify({ models: [{ name: "kev-latest", description: "SECRET-MODEL-DESCRIPTION", run: calls.run ?? "stub@1" }] }),
+      );
       return;
     }
     let text = "";
     request.on("data", (chunk: Buffer) => (text += chunk.toString()));
     request.on("end", () => {
       calls.count += 1;
+      calls.bodies?.push(text);
+      if (calls.failFrom !== undefined && calls.count >= calls.failFrom) {
+        response.statusCode = 500;
+        response.end("{}");
+        return;
+      }
       const body = JSON.parse(text) as { questions: { pick: { criteria: Record<string, string> } } };
       const keys = Object.keys(body.questions.pick.criteria);
       const probabilities = Object.fromEntries(keys.map((key, i) => [key, i === 0 ? 0.8 : 0.2 / (keys.length - 1)]));
@@ -327,7 +339,7 @@ test("runCalibration scores both variants, resumes from rows, and writes an aggr
     const report = readFileSync(first.reportPath, "utf8");
     assert.ok(report.startsWith("# Autopilot calibration 2000-01-01"));
     assert.ok(report.includes("stub@1"));
-    for (const secret of ["PRIVATE-QUESTION", "PRIVATE-DESCRIPTION", "sess-", dir]) {
+    for (const secret of ["PRIVATE-QUESTION", "PRIVATE-DESCRIPTION", "SECRET-MODEL-DESCRIPTION", "sess-", dir]) {
       assert.equal(report.includes(secret), false, `report leaks ${secret}`);
     }
     assert.equal(renderReport(first.input), report);
@@ -346,4 +358,167 @@ test("runCalibration fails clearly when Kev is down", async () => {
     runCalibration({ dir, kevUrl: url, resultsDir: dir, date: "2000-01-01" }),
     (error: unknown) => error instanceof KevDownError && /never starts a server/.test(error.message),
   );
+});
+
+// ---------------------------------------------------------------- review fixes
+
+const withKev = async (
+  calls: { count: number; run?: string; failFrom?: number; bodies?: string[] },
+  body: (url: string) => Promise<void>,
+): Promise<void> => {
+  const server = stubKev(calls);
+  const url = await listen(server);
+  try {
+    await body(url);
+  } finally {
+    server.closeAllConnections();
+    server.close();
+  }
+};
+
+const syntheticCorpus = (n: number, tag = "Q"): Pair[] =>
+  Array.from({ length: n }, (_, i) =>
+    pair({
+      id: `p${i}`,
+      sessionId: `sess-${i}`,
+      question: `${tag}-${i}`,
+      options: [
+        { label: "First (Recommended)", description: "d1" },
+        { label: "Second", description: "d2" },
+      ],
+      answer: { idx: 0, label: "First (Recommended)" },
+    }),
+  );
+
+const rowsOf = (dir: string, variant: string): Row[] =>
+  readFileSync(join(dir, `rows-${variant}.jsonl`), "utf8")
+    .split("\n")
+    .filter((text) => text !== "")
+    .map((text) => JSON.parse(text) as Row);
+
+test("rows carry a fingerprint; stale rows (gone pair, other request, other Kev run) are dropped and re-asked", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "autopilot-calib-"));
+  const resultsDir = mkdtempSync(join(tmpdir(), "autopilot-results-"));
+  const corpus = syntheticCorpus(3);
+  writeCorpus(dir, corpus);
+  const calls = { count: 0, run: "rev-1" };
+  await withKev(calls, async (url) => {
+    await runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" });
+    assert.equal(calls.count, 6);
+    const asis = rowsOf(dir, "asis");
+    assert.equal(asis[0]?.fp, fpOf(bodyOf(corpus[0] as Pair, "asis").body, "rev-1"));
+    assert.notEqual(asis[0]?.fp, rowsOf(dir, "stripped")[0]?.fp);
+
+    // Same corpus and revision: nothing is re-asked.
+    await runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" });
+    assert.equal(calls.count, 6);
+
+    // p2 changes its question (same id), p1 leaves the corpus: p2 is re-asked, p1's row is gone from the file.
+    const next = [corpus[0] as Pair, { ...(corpus[2] as Pair), question: "changed" }];
+    writeCorpus(dir, next);
+    await runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" });
+    assert.equal(calls.count, 8, "only the changed pair is re-asked, once per variant");
+    for (const variant of ["asis", "stripped"]) {
+      assert.deepEqual(rowsOf(dir, variant).map((item) => item.id).sort(), ["p0", "p2"]);
+    }
+
+    // Another Kev revision invalidates every row.
+    calls.run = "rev-2";
+    await runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" });
+    assert.equal(calls.count, 12);
+    assert.ok(rowsOf(dir, "asis").every((item) => item.fp === fpOf(bodyOf(next[item.id === "p0" ? 0 : 1] as Pair, "asis").body, "rev-2")));
+  });
+});
+
+test("stripped removes the hint from labels and descriptions, leaves state alone", () => {
+  const hinted = pair({
+    question: "Pick (Recommended)?",
+    tail: "I suggest B (Recommended)",
+    options: [
+      { label: "A (Recommended)", description: "Best (Recommended) choice" },
+      { label: "B (Рекомендую)", description: "(Рекомендуется)" },
+    ],
+  });
+  const stripped = criteriaOf(hinted, "stripped");
+  assert.deepEqual(stripped.keys, ["A", "B"]);
+  assert.deepEqual(stripped.criteria, { A: "Best choice", B: "B" });
+  assert.deepEqual(criteriaOf(hinted, "asis").criteria, {
+    "A (Recommended)": "Best (Recommended) choice",
+    "B (Рекомендую)": "(Рекомендуется)",
+  });
+  const state = JSON.parse(bodyOf(hinted, "stripped").body) as { state: string };
+  assert.ok(state.state.includes("Pick (Recommended)?") && state.state.includes("B (Recommended)"));
+});
+
+test("criteria keys are unique against all labels and generated keys, and match the option count", () => {
+  assert.deepEqual(keysOf(["A", "A", "A #2"]), ["A", "A #3", "A #2"]);
+  assert.deepEqual(keysOf(["A", "A #2", "A"]), ["A", "A #2", "A #3"]);
+  for (const labels of [["A", "A", "A #2"], ["A", "A #2", "A"], ["A", "A", "A", "A #2", "A #3"], ["", "", ""], ["x", "x #1", "x"]]) {
+    const keys = keysOf(labels);
+    assert.equal(new Set(keys).size, labels.length, JSON.stringify(labels));
+    labels.forEach((label, index) => {
+      // a plain label is never renamed unless it is a repeat
+      if (labels.indexOf(label) === index) assert.equal(keys[index], label);
+    });
+    assert.deepEqual(keys, keysOf(labels), "stable");
+  }
+  const crowded = pair({
+    options: ["A", "A", "A #2", "A (Recommended)"].map((label) => ({ label, description: label })),
+  });
+  for (const variant of ["asis", "stripped"] as const) {
+    const { keys, criteria } = criteriaOf(crowded, variant);
+    assert.equal(keys.length, 4);
+    assert.equal(Object.keys(criteria).length, 4);
+  }
+});
+
+test("an incomplete run writes no report and fails with the unscored count; a rerun resumes", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "autopilot-calib-"));
+  const resultsDir = mkdtempSync(join(tmpdir(), "autopilot-results-"));
+  writeCorpus(dir, syntheticCorpus(3));
+  const calls: { count: number; failFrom?: number } = { count: 0, failFrom: 5 };
+  await withKev(calls, async (url) => {
+    // asis: 3 ok; stripped: 1 ok, then 2 fail -> 2 unscored
+    await assert.rejects(
+      runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" }),
+      /^Error: 2 pairs unscored; rerun to resume$/,
+    );
+    assert.equal(existsSync(join(resultsDir, "calibration-2000-01-01.md")), false);
+    delete calls.failFrom;
+    const done = await runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" });
+    assert.equal(done.input.rows.stripped.length, 3);
+    assert.equal(calls.count, 8, "the rerun asks only the 2 missing pairs");
+  });
+});
+
+test("Kev metadata: only a well-formed run revision reaches the report, never the model description", async () => {
+  await withKev({ count: 0, run: "ok.rev/1@x-2_3" }, async (url) => assert.deepEqual(await kevInfoOf(url), { run: "ok.rev/1@x-2_3" }));
+  for (const run of ["bad run", "x".repeat(121), "# injected\nline", ""]) {
+    await withKev({ count: 0, run }, async (url) => assert.deepEqual(await kevInfoOf(url), { run: "unknown" }));
+  }
+});
+
+test("private state is owner-only, also when it already exists with loose modes", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "autopilot-calib-"));
+  const resultsDir = mkdtempSync(join(tmpdir(), "autopilot-results-"));
+  const mode = (path: string): number => statSync(path).mode & 0o777;
+  chmodSync(dir, 0o755);
+  writeFileSync(join(dir, "corpus.jsonl"), "", { mode: 0o644 });
+  writeCorpus(dir, syntheticCorpus(2));
+  assert.equal(mode(dir), 0o700);
+  assert.equal(mode(join(dir, "corpus.jsonl")), 0o600);
+
+  const fresh = join(dir, "nested", "state");
+  writeCorpus(fresh, syntheticCorpus(1));
+  assert.equal(mode(fresh), 0o700);
+
+  writeFileSync(join(dir, "rows-asis.jsonl"), "", { mode: 0o644 });
+  chmodSync(dir, 0o755);
+  await withKev({ count: 0, failFrom: 4 }, async (url) => {
+    await assert.rejects(runCalibration({ dir, kevUrl: url, resultsDir, date: "2000-01-01" }), /unscored/);
+  });
+  assert.equal(mode(dir), 0o700);
+  for (const name of ["rows-asis.jsonl", "rows-stripped.jsonl", "errors.jsonl"]) {
+    assert.equal(mode(join(dir, name)), 0o600, name);
+  }
 });

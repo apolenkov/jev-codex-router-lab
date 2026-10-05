@@ -29,7 +29,10 @@ npm run autopilot:calibrate   # corpus -> Kev -> rows, report in results/
 
 `autopilot:calibrate` needs a running Kev at `127.0.0.1:8010` and never starts
 one; it stops with a clear error when Kev does not answer. A rerun skips pairs
-already in `rows-<variant>.jsonl`.
+already in `rows-<variant>.jsonl` when the pair is still in the corpus and the row's
+fingerprint (request body plus Kev `run` revision) matches; other rows are dropped.
+If any pair stays unscored (Kev errors), no report is written and the exit code is
+non-zero (`N pairs unscored; rerun to resume`).
 
 ## Pipeline
 
@@ -61,6 +64,11 @@ tool call, so the answer cannot leak into the state sent to Kev.
   what the autopilot would see in use.
 - `stripped`: the `(Recommended)` marker (also the Russian forms) is removed, so
   Kev cannot copy the assistant's pick and its own signal is measured.
+
+## Limits
+
+- `stripped` removes the hint marker only from option labels and descriptions. If the
+  question or the assistant's closing text (the state) contains the marker, it is left as is.
 
 ## Reading the report
 
