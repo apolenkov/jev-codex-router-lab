@@ -249,7 +249,7 @@ test("the bundled sample fixture parses and covers full claim sets of its cases"
 
 test("the cli scores the frozen sample fixture and stays deterministic across runs", () => {
   const first = runScoreCli([], REPO_ROOT);
-  assert.equal(first.exitCode, 0, first.error);
+  assert.equal(first.exitCode, 0, first.error ?? "no error output");
   assert.ok(first.output?.includes("done-gate calibration scoring"));
   assert.ok(first.output?.includes("corpus: 117 cases / 129 claims"));
 
@@ -257,7 +257,7 @@ test("the cli scores the frozen sample fixture and stays deterministic across ru
   assert.deepEqual(second, first);
 
   const asJson = runScoreCli(["--json"], REPO_ROOT);
-  assert.equal(asJson.exitCode, 0, asJson.error);
+  assert.equal(asJson.exitCode, 0, asJson.error ?? "no error output");
   const parsed = JSON.parse(asJson.output ?? "") as {
     rows: { threshold: number }[];
     corpus: { cases: number };
@@ -279,7 +279,7 @@ test("the cli fails closed on unknown flags, bad manifests and unmet coverage", 
   );
   assert.equal(runScoreCli(["--domain", "no-such-domain"], REPO_ROOT).exitCode, 2);
   const domain = runScoreCli(["--domain", "config"], REPO_ROOT);
-  assert.equal(domain.exitCode, 0, domain.error);
+  assert.equal(domain.exitCode, 0, domain.error ?? "no error output");
   assert.ok(domain.output?.includes("2 cases scored"));
 });
 
