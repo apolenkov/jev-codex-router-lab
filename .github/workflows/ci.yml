@@ -37,8 +37,10 @@ jobs:
       - name: Run the complete local gate
         run: npm run check
 
-      - name: Audit high-severity dependencies
-        run: npm audit --audit-level=high
+      # Runtime dependencies only: GHSA-vfj7-8cjw-p6xm (braces, no patched
+      # release) reaches the repo solely through the dev-only OpenSpec CLI.
+      - name: Audit high-severity runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Validate dependency licenses
         run: npm run check:licenses
