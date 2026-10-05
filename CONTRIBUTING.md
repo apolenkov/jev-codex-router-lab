@@ -23,6 +23,7 @@ npm ci
 npm run example:offline
 npm run check
 git diff --check
+npx lefthook install   # optional: commit-message and pre-push hooks
 ```
 
 OpenSpec agent skills (`.claude/skills/openspec-*`, `.claude/commands/opsx/`) are not tracked; recreate them after cloning with `openspec update`.

@@ -1,0 +1,34 @@
+# Weekly version updates; a new release waits 3 days before Dependabot
+# proposes it (cooldown), so a pulled or compromised version is skipped.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    # typescript-eslint supports TypeScript < 6.1 only; take a new TypeScript
+    # major once it does.
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    groups:
+      tooling:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+      include: scope
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+      include: scope

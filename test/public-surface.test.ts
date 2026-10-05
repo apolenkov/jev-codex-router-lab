@@ -38,6 +38,8 @@ test("every installed dependency has a reviewed compatible SPDX license", () => 
     "BSD-3-Clause",
     "ISC",
     "MIT",
+    // Permissive PSF license; dev-only (argparse, via commitlint).
+    "Python-2.0",
   ]);
   const rejected = Object.entries(packages)
     .filter(([path]) => path.startsWith("node_modules/"))
