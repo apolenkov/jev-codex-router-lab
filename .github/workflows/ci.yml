@@ -30,6 +30,10 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci
 
+      - name: Lint commit messages
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+
       - name: Run the complete local gate
         run: npm run check
 

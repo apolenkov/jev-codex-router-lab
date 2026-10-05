@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t d">
+<title id="t">jev-codex-router-lab</title>
+<desc id="d">A routing diagram: one task enters a deterministic gate, fans out to advisory skill candidates, and a solid fallback path always stays open. Tagline: advisory skill routing, deterministic boundaries, evidence first.</desc>
+<defs><pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#e7e2d3" stroke-width="1"/></pattern></defs>
+<rect width="1280" height="320" fill="#f6f3ea"/>
+<rect width="1280" height="320" fill="url(#g)"/>
+<g transform="translate(640,0)">
+<g fill="none" stroke-width="3" stroke-linecap="round">
+<path d="M70 160.0 H190" stroke="#13233b"/>
+<path d="M250 160.0 C310 160.0 310 90.0 380 90.0" stroke="#b86e00" stroke-dasharray="2 9"/>
+<path d="M250 160.0 H380" stroke="#b86e00" stroke-dasharray="2 9"/>
+<path d="M250 160.0 C310 160.0 310 230.0 380 230.0" stroke="#0b7a5a"/>
+</g>
+<circle cx="70" cy="160.0" r="9" fill="#13233b"/>
+<path d="M190 160.0 L220 128.0 L250 160.0 L220 192.0 Z" fill="#f6f3ea" stroke="#13233b" stroke-width="4" stroke-linejoin="round"/>
+<path d="M208 160.0 l9 9 l17 -19" fill="none" stroke="#0b7a5a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="380" cy="90.0" r="8" fill="none" stroke="#b86e00" stroke-width="3"/>
+<circle cx="380" cy="160.0" r="8" fill="none" stroke="#b86e00" stroke-width="3"/>
+<rect x="372" y="222.0" width="16" height="16" rx="3" fill="#0b7a5a"/>
+<text x="402" y="95.0" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" fill="#4a5a70">advisory</text>
+<text x="402" y="165.0" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" fill="#4a5a70">advisory</text>
+<text x="402" y="235.0" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" fill="#0b7a5a">safe fallback</text>
+</g>
+<text x="64" y="152.0" font-family="ui-monospace,Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="19" letter-spacing="3" fill="#b86e00">JEV x CODEX</text>
+<text x="64" y="206.0" font-family="ui-monospace,Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="56" font-weight="700" fill="#13233b">router-lab</text>
+<text x="64" y="248.0" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="21" fill="#4a5a70">Advisory skill routing. Deterministic boundaries. Evidence first.</text>
+</svg>

@@ -33,6 +33,7 @@
     "node": ">=20.19.0"
   },
   "scripts": {
+    "prepare": "lefthook install",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
@@ -54,10 +55,13 @@
     "@typesafe-ai/sdk": "0.6.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
     "@eslint/js": "10.0.1",
     "@fission-ai/openspec": "1.13.1",
     "@types/node": "25.5.0",
     "eslint": "10.11.0",
+    "lefthook": "2.1.17",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.0"
   }

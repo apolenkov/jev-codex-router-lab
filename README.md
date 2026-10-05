@@ -1,9 +1,51 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.svg">
+    <img alt="jev-codex-router-lab: advisory skill routing, deterministic boundaries, evidence first" src=".github/assets/banner-light.svg" width="100%">
+  </picture>
+</p>
+
+[![CI](https://github.com/apolenkov/jev-codex-router-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/jev-codex-router-lab/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/apolenkov/jev-codex-router-lab/actions/workflows/codeql.yml/badge.svg)](https://github.com/apolenkov/jev-codex-router-lab/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apolenkov/jev-codex-router-lab/badge)](https://scorecard.dev/viewer/?uri=github.com/apolenkov/jev-codex-router-lab)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node.js >=20.19](https://img.shields.io/badge/node-%3E%3D20.19-339933.svg)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.json)
+
 # Jev Codex Router Lab
 
 An experimental TypeScript reference implementation for testing Jev as an
 advisory skill-and-context router. Jev proposes typed semantic judgments;
 deterministic code validates every boundary, preserves mandatory requirements,
 and decides whether to return a result or a safe fallback.
+
+![npm run example:offline printing a typed fallback that keeps the forced skill and protected context](.github/assets/demo.gif)
+
+> [!IMPORTANT]
+> **Status: research lab.** The code is a reference implementation; the
+> evidence is deliberately narrow (see [Current evidence](#current-evidence)):
+> one live smoke and one single-observation synthetic smoke. Nothing here
+> demonstrates routing quality, savings, or production readiness.
+
+## Why
+
+Letting a language model pick skills and context is cheap to try and hard to
+trust. This lab tests a narrow design: the model only advises, typed and
+confidence-gated, while deterministic code keeps every guarantee (mandatory
+skills, protected context, allowlists, fallback). The point is to measure that
+design with recorded evidence, not to assert that it works.
+
+## Features
+
+- Two-pass advisory routing (shortlist, then ranking) with seven typed signals.
+- Mandatory skills and protected context are computed before Jev is called and
+  cannot be removed by it.
+- Typed `fallback` on any error, stale or malformed response, unknown ID, or low
+  confidence; pass-1 confidence gate fails closed without configured thresholds.
+- Credential-free offline example and an offline, fixture-replay development
+  arena.
+- Opt-in, capped, create-once evidence collectors; retained smoke and
+  calibration summaries under `artifacts/`.
 
 This is a lab, not a production Codex integration. It does not execute skills,
 choose between agents, change permissions, or modify a working Codex setup.
@@ -110,6 +152,14 @@ terminated with `post-transport-validation` before holdout. It was not retried
 or tuned after seeing the result. See [calibration and evidence](docs/calibration.md)
 and the retained [smoke](artifacts/smoke-summary.md) and
 [calibration](artifacts/calibration-summary.md) summaries.
+
+## Configuration
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `TYPESAFE_API_KEY` | live route, calibration collectors | Provider credential; never read in the offline example |
+| `TYPESAFE_INPUT_USD_PER_MILLION`, `TYPESAFE_OUTPUT_USD_PER_MILLION` | live route | Price snapshot used for cost accounting |
+| `JEV_PASS1_THRESHOLDS_JSON` | live route | Required pass-1 confidence policy; missing or invalid fails closed |
 
 ## Live execution is opt-in
 
