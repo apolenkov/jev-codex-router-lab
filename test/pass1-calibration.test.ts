@@ -767,7 +767,7 @@ test("pass-1 CLI writes single-use closed evidence under the ignored directory",
     fetch: fakePass1Fetch({ requests }),
   });
 
-  assert.equal(result.exitCode, 0, result.error);
+  assert.equal(result.exitCode, 0, result.error ?? "no error output");
   assert.equal(result.summary?.status, "complete");
   assert.equal(result.summary?.collectedCases, 8);
   assert.equal(result.summary?.attempts, 8);

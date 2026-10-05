@@ -129,7 +129,7 @@ test("calibration collection writes bounded evidence and selects offline", async
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
-  assert.equal(collect.exitCode, 0, collect.error);
+  assert.equal(collect.exitCode, 0, collect.error ?? "no error output");
   assert.equal(collect.summary?.mode, "collect");
   assert.equal(collect.summary?.split, "calibration");
   assert.equal(collect.summary?.status, "complete");
@@ -147,7 +147,7 @@ test("calibration collection writes bounded evidence and selects offline", async
     ["--offline-select", "pass1-threshold-evidence-calibration"],
     collectOptions(root),
   );
-  assert.equal(select.exitCode, 0, select.error);
+  assert.equal(select.exitCode, 0, select.error ?? "no error output");
   assert.equal(select.summary?.mode, "select");
   assert.ok(
     PASS1_THRESHOLD_GRID.some(
@@ -177,7 +177,7 @@ test("evidence directories are create-once", async (t) => {
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const first = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
-  assert.equal(first.exitCode, 0, first.error);
+  assert.equal(first.exitCode, 0, first.error ?? "no error output");
   const second = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
   assert.equal(second.exitCode, 2);
   assert.equal(second.error, "evidence path unavailable");
@@ -219,7 +219,7 @@ test("an aborted calibration run resumes once in place", async (t) => {
     ["--split", "calibration", "--resume"],
     collectOptions(root),
   );
-  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.exitCode, 0, resumed.error ?? "no error output");
   assert.equal(resumed.summary?.status, "complete");
   assert.equal(resumed.summary?.collected, 56);
   assert.equal(resumed.summary?.attempts, 57);
@@ -280,7 +280,7 @@ test("repeated aborts resume in place until complete", async (t) => {
     ["--split", "calibration", "--resume"],
     collectOptions(root),
   );
-  assert.equal(third.exitCode, 0, third.error);
+  assert.equal(third.exitCode, 0, third.error ?? "no error output");
   assert.equal(third.summary?.status, "complete");
   assert.equal(third.summary?.collected, 56);
   assert.equal(third.summary?.attempts, 58);
@@ -349,12 +349,12 @@ test("an aborted evaluation replaces its incomplete report on resume", async (t)
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
-  assert.equal(collect.exitCode, 0, collect.error);
+  assert.equal(collect.exitCode, 0, collect.error ?? "no error output");
   const select = await runPass1ThresholdCli(
     ["--offline-select", "pass1-threshold-evidence-calibration"],
     collectOptions(root),
   );
-  assert.equal(select.exitCode, 0, select.error);
+  assert.equal(select.exitCode, 0, select.error ?? "no error output");
 
   const failOnce: Fetch = async (input, init) => {
     const body = JSON.parse(String(init?.body)) as {
@@ -385,7 +385,7 @@ test("an aborted evaluation replaces its incomplete report on resume", async (t)
     ["--split", "evaluation", "--resume"],
     collectOptions(root),
   );
-  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.exitCode, 0, resumed.error ?? "no error output");
   assert.equal(resumed.summary?.status, "complete");
 
   const complete = JSON.parse(await readFile(reportPath, "utf8")) as {
@@ -449,12 +449,12 @@ test("a tampered selection artifact is refused before any provider call", async 
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
-  assert.equal(collect.exitCode, 0, collect.error);
+  assert.equal(collect.exitCode, 0, collect.error ?? "no error output");
   const select = await runPass1ThresholdCli(
     ["--offline-select", "pass1-threshold-evidence-calibration"],
     collectOptions(root),
   );
-  assert.equal(select.exitCode, 0, select.error);
+  assert.equal(select.exitCode, 0, select.error ?? "no error output");
 
   const artifactPath = join(root, "artifacts", "pass1-threshold-selection.json");
   const artifact = JSON.parse(await readFile(artifactPath, "utf8")) as {
@@ -572,7 +572,7 @@ test("resume refuses shrunk accounting and symlinked evidence", async (t) => {
     ["--split", "calibration", "--resume"],
     collectOptions(root),
   );
-  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.exitCode, 0, resumed.error ?? "no error output");
   assert.equal(resumed.summary?.status, "complete");
 });
 
@@ -584,12 +584,12 @@ test("drifted calibration corpus refuses evaluation before evidence creation", a
     ["--split", "calibration"],
     collectOptions(root),
   );
-  assert.equal(collect.exitCode, 0, collect.error);
+  assert.equal(collect.exitCode, 0, collect.error ?? "no error output");
   const select = await runPass1ThresholdCli(
     ["--offline-select", "pass1-threshold-evidence-calibration"],
     collectOptions(root),
   );
-  assert.equal(select.exitCode, 0, select.error);
+  assert.equal(select.exitCode, 0, select.error ?? "no error output");
 
   const corpusPath = join(root, "fixtures", "pass1-calibration-cases.json");
   const original = await readFile(corpusPath, "utf8");
@@ -670,7 +670,7 @@ test("resume refuses case files inconsistent with the summary", async (t) => {
     ["--split", "calibration", "--resume"],
     collectOptions(root),
   );
-  assert.equal(resumed.exitCode, 0, resumed.error);
+  assert.equal(resumed.exitCode, 0, resumed.error ?? "no error output");
   assert.equal(resumed.summary?.status, "complete");
 });
 
@@ -686,7 +686,7 @@ test("offline select rejects missing and incomplete evidence", async (t) => {
   assert.equal(missing.error, "evidence path unavailable");
 
   const collect = await runPass1ThresholdCli(["--split", "calibration"], collectOptions(root));
-  assert.equal(collect.exitCode, 0, collect.error);
+  assert.equal(collect.exitCode, 0, collect.error ?? "no error output");
   const escape = await runPass1ThresholdCli(
     ["--offline-select", "../outside"],
     collectOptions(root),
